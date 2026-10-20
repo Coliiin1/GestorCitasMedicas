@@ -11,6 +11,15 @@ public class Paciente extends Usuario {
     private String telefono;
     private String correo;
 
+    public Paciente(String curp, Date fechaNacimiento, String sexo, String domicilio, String telefono, String correo) {
+        this.curp = curp;
+        this.fechaNacimiento = fechaNacimiento;
+        this.sexo = sexo;
+        this.domicilio = domicilio;
+        this.telefono = telefono;
+        this.correo = correo;
+    }
+
     public String getCurp() {
         return curp;
     }

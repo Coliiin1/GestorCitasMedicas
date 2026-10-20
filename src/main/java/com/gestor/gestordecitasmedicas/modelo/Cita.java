@@ -7,7 +7,6 @@ public class Cita {
     public int idCita;
     public Date fechaCita;
     public Estado estado;
-    public String motivo;
     public String curp;
 
     public int getIdCita() {
@@ -32,14 +31,6 @@ public class Cita {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
-    }
-
-    public String getMotivo() {
-        return motivo;
-    }
-
-    public void setMotivo(String motivo) {
-        this.motivo = motivo;
     }
 
     public String getCurp() {

@@ -4,6 +4,10 @@ public class Asistente extends Personal {
 
     private int idAsistente;
 
+    public Asistente(int idAsistente) {
+        this.idAsistente = idAsistente;
+    }
+
     public int getIdAsistente() {
         return idAsistente;
     }

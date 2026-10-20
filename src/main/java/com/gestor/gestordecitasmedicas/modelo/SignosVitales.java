@@ -10,6 +10,16 @@ public class SignosVitales {
     private float peso;
     private int talla;
 
+    public SignosVitales(String presionArterial, int frecuenciaCardiaca, int frecuenciaRespiratoria, float temperaturaCorporal, int saturacionOxigeno, float peso, int talla) {
+        this.presionArterial = presionArterial;
+        this.frecuenciaCardiaca = frecuenciaCardiaca;
+        this.frecuenciaRespiratoria = frecuenciaRespiratoria;
+        this.temperaturaCorporal = temperaturaCorporal;
+        this.saturacionOxigeno = saturacionOxigeno;
+        this.peso = peso;
+        this.talla = talla;
+    }
+
     public String getPresionArterial() {
         return presionArterial;
     }
