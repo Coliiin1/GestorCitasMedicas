@@ -1,0 +1,340 @@
+<!DOCTYPE html><html lang="es"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediDesk Pro - Administración de Pacientes</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Typography and Custom Styles -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'League Spartan', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  </style>
+<style data-purpose="custom-theme">
+    /* Subtle custom scrollbar and theme tweaks */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-[#f1f5f9] text-slate-800 antialiased min-h-screen flex flex-col select-none">
+<!-- BEGIN: DesktopWindowFrame -->
+
+<!-- END: DesktopWindowFrame -->
+<!-- BEGIN: MainContentWrapper -->
+<main class="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6" data-purpose="patient-management-container">
+<!-- BEGIN: CleanHeaderSection -->
+<section class="border-b border-slate-200 pb-4" data-purpose="module-header">
+<h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 uppercase">
+        Administración de Pacientes
+      </h1>
+<p class="text-slate-500 text-sm sm:text-base font-normal mt-1">
+        Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida.
+      </p>
+</section>
+<!-- END: CleanHeaderSection -->
+<!-- BEGIN: SearchAndFiltersSection -->
+<section class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-5" data-purpose="search-and-filters">
+<form class="space-y-4" id="search-patient-form">
+<!-- Main Search Bar directly from layout requirement -->
+<div class="flex flex-col sm:flex-row gap-3">
+<div class="relative flex-1">
+<span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<input class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 focus:bg-white text-sm sm:text-base transition-all" id="search-input" name="patient_query" placeholder="Buscar Paciente por Nombre o CURP..." type="text">
+</div>
+<button class="inline-flex items-center justify-center px-6 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-medium text-sm sm:text-base rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-600" type="submit">
+            Buscar
+          </button>
+</div>
+<!-- Filter tabs for quick view -->
+<div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 text-xs font-medium">
+<div class="flex items-center gap-1.5">
+<span class="text-slate-400 mr-1">Filtros:</span>
+<button class="px-3 py-1 rounded-md bg-sky-100 text-sky-800 font-semibold border border-sky-200" type="button">
+              Todos (142)
+            </button>
+<button class="px-3 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" type="button">
+              Activos (128)
+            </button>
+<button class="px-3 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" type="button">
+              Con cita hoy (8)
+            </button>
+</div>
+<div class="text-slate-400 hidden sm:block">
+            Búsqueda por coincidencia fonética y alfanumérica
+          </div>
+</div>
+</form>
+</section>
+<!-- END: SearchAndFiltersSection -->
+<!-- BEGIN: PatientRecordsList -->
+<section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1" data-purpose="patient-data-table-container">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse" id="patient-table">
+<thead>
+<tr class="bg-slate-50/80 text-slate-600 uppercase text-[11px] font-bold tracking-wider border-b border-slate-200">
+<th class="py-3.5 px-4 sm:px-6" scope="col">Nombre del Paciente</th>
+<th class="py-3.5 px-4" scope="col">CURP</th>
+<th class="py-3.5 px-4" scope="col">Teléfono / Contacto</th>
+<th class="py-3.5 px-4" scope="col">Última Consulta</th>
+<th class="py-3.5 px-4" scope="col">Estado</th>
+<th class="py-3.5 px-4 sm:px-6 text-right" scope="col">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 text-sm">
+<!-- Patient Row 1 -->
+<tr class="hover:bg-sky-50/40 transition-colors">
+<td class="py-4 px-4 sm:px-6 font-semibold text-slate-900">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">
+                    CM
+                  </div>
+<div>
+<span class="">Carlos Alberto Mendoza Ruiz</span>
+<span class="block text-xs font-normal text-slate-500">Expediente: #EXP-0982</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 font-mono text-xs text-slate-600 font-medium">MERC840912HDFNR03</td>
+<td class="py-4 px-4 text-slate-600">+52 55 4192 8831</td>
+<td class="py-4 px-4 text-slate-600">14 Oct 2024</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Activo
+                </span>
+</td>
+<td class="py-4 px-4 sm:px-6 text-right space-x-2 whitespace-nowrap">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors" type="button">
+                  Editar
+                </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors" type="button">
+                  Eliminar
+                </button>
+</td>
+</tr>
+<!-- Patient Row 2 -->
+<tr class="hover:bg-sky-50/40 transition-colors">
+<td class="py-4 px-4 sm:px-6 font-semibold text-slate-900">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">
+                    EN
+                  </div>
+<div>
+<span class="">Elena Navarro Velázquez</span>
+<span class="block text-xs font-normal text-slate-500">Expediente: #EXP-1045</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 font-mono text-xs text-slate-600 font-medium">NAVE910405MDFLL02</td>
+<td class="py-4 px-4 text-slate-600">+52 55 7823 4901</td>
+<td class="py-4 px-4 text-slate-600">02 Nov 2024</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Activo
+                </span>
+</td>
+<td class="py-4 px-4 sm:px-6 text-right space-x-2 whitespace-nowrap">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors" type="button">
+                  Editar
+                </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors" type="button">
+                  Eliminar
+                </button>
+</td>
+</tr>
+<!-- Patient Row 3 -->
+<tr class="hover:bg-sky-50/40 transition-colors">
+<td class="py-4 px-4 sm:px-6 font-semibold text-slate-900">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">
+                    RG
+                  </div>
+<div>
+<span class="">Roberto Gómez Fernández</span>
+<span class="block text-xs font-normal text-slate-500">Expediente: #EXP-0872</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 font-mono text-xs text-slate-600 font-medium">GOFR751218HJCR01</td>
+<td class="py-4 px-4 text-slate-600">+52 33 1290 8472</td>
+<td class="py-4 px-4 text-slate-600">22 Ene 2024</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                  Inactivo
+                </span>
+</td>
+<td class="py-4 px-4 sm:px-6 text-right space-x-2 whitespace-nowrap">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors" type="button">
+                  Editar
+                </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors" type="button">
+                  Eliminar
+                </button>
+</td>
+</tr>
+<!-- Patient Row 4 -->
+<tr class="hover:bg-sky-50/40 transition-colors">
+<td class="py-4 px-4 sm:px-6 font-semibold text-slate-900">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">
+                    MV
+                  </div>
+<div>
+<span class="">Miriam Valenzuela Castro</span>
+<span class="block text-xs font-normal text-slate-500">Expediente: #EXP-1120</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 font-mono text-xs text-slate-600 font-medium">VACM980614MDFSM08</td>
+<td class="py-4 px-4 text-slate-600">+52 55 6012 3499</td>
+<td class="py-4 px-4 text-slate-600">Hoy, 10:30 AM</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Activo
+                </span>
+</td>
+<td class="py-4 px-4 sm:px-6 text-right space-x-2 whitespace-nowrap">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors" type="button">
+                  Editar
+                </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors" type="button">
+                  Eliminar
+                </button>
+</td>
+</tr>
+<!-- Patient Row 5 -->
+<tr class="hover:bg-sky-50/40 transition-colors">
+<td class="py-4 px-4 sm:px-6 font-semibold text-slate-900">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 font-bold flex items-center justify-center text-xs">
+                    JA
+                  </div>
+<div>
+<span class="">Jorge Antonio Aguilar Ríos</span>
+<span class="block text-xs font-normal text-slate-500">Expediente: #EXP-1134</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 font-mono text-xs text-slate-600 font-medium">AIRJ890102HDFNR09</td>
+<td class="py-4 px-4 text-slate-600">+52 55 9012 8765</td>
+<td class="py-4 px-4 text-slate-600">28 Oct 2024</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Activo
+                </span>
+</td>
+<td class="py-4 px-4 sm:px-6 text-right space-x-2 whitespace-nowrap">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition-colors" type="button">
+                  Editar
+                </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-md text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors" type="button">
+                  Eliminar
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination and Record Counter Bar -->
+<footer class="bg-slate-50 border-t border-slate-200 px-4 py-3 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+<div class="">
+          Mostrando <span class="font-bold text-slate-800">5</span> de <span class="font-bold text-slate-800">142</span> pacientes registrados
+        </div>
+<div class="flex items-center space-x-1">
+<button class="px-2.5 py-1 border border-slate-300 rounded bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-50" type="button">
+            Anterior
+          </button>
+<button class="px-2.5 py-1 border border-sky-600 bg-sky-600 text-white font-medium rounded" type="button">
+            1
+          </button>
+<button class="px-2.5 py-1 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50" type="button">
+            2
+          </button>
+<button class="px-2.5 py-1 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50" type="button">
+            3
+          </button>
+<span class="px-1 text-slate-400">...</span>
+<button class="px-2.5 py-1 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50" type="button">
+            29
+          </button>
+<button class="px-2.5 py-1 border border-slate-300 rounded bg-white text-slate-700 hover:bg-slate-50" type="button">
+            Siguiente
+          </button>
+</div>
+<div class="flex items-center gap-2">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition" type="button">
+            Exportar Excel
+          </button>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition" type="button">
+            PDF
+          </button>
+</div>
+</footer>
+</section>
+<!-- END: PatientRecordsList -->
+<!-- BEGIN: PrimaryActionButtonSection -->
+<section class="w-full pt-1 pb-4" data-purpose="primary-action-container">
+<button class="w-full py-4 px-6 bg-sky-700 hover:bg-sky-800 text-white font-bold text-base sm:text-lg rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 tracking-wide focus:outline-none focus:ring-4 focus:ring-sky-500/30" id="btn-create-patient" type="button">
+<span class="text-xl leading-none font-extrabold">+</span>
+<span class="">Crear Nuevo Paciente</span>
+</button>
+</section>
+<!-- END: PrimaryActionButtonSection -->
+</main>
+<!-- END: MainContentWrapper -->
+<!-- BEGIN: ApplicationFooterStatus -->
+<footer class="bg-white border-t border-slate-200 px-6 py-2 text-xs text-slate-500 flex flex-wrap justify-between items-center gap-2 flex-shrink-0" data-purpose="status-bar">
+<div class="flex items-center gap-4">
+<span class="">Sistema: <strong>En Línea</strong></span>
+<span class="">Base de datos: <strong>SQL Server MediDesk</strong></span>
+<span class="">Cifrado: <strong>AES-256 Activo</strong></span>
+</div>
+<div>
+<span class="">Última sincronización: <strong>Hoy, hace 2 min</strong></span>
+</div>
+</footer>
+<!-- END: ApplicationFooterStatus -->
+<!-- Interactive handlers script -->
+<script data-purpose="interface-interactions">
+    document.addEventListener('DOMContentLoaded', () => {
+      // Basic Search form submit handler for responsiveness
+      const searchForm = document.getElementById('search-patient-form');
+      if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const query = document.getElementById('search-input').value.trim();
+          if (query) {
+            console.log(`Buscando paciente: ${query}`);
+          }
+        });
+      }
+
+      // Add click feedback to Create Patient Button
+      const createBtn = document.getElementById('btn-create-patient');
+      if (createBtn) {
+        createBtn.addEventListener('click', () => {
+          console.log('Iniciando modal de captura para nuevo paciente...');
+        });
+      }
+    });
+  </script>
+
+
+</body></html>

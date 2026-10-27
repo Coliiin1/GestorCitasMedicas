@@ -1,0 +1,603 @@
+<!DOCTYPE html><html lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediDesk Pro - Gestión de Citas</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            spartan: ['"League Spartan"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts: League Spartan -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'League Spartan', sans-serif;
+    }
+  </style>
+<!-- Custom Scrollbar and Specific Grid Styling -->
+<style data-purpose="desktop-styles">
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Calendar slot custom hover */
+    .schedule-cell {
+      min-height: 72px;
+      transition: all 0.15s ease-in-out;
+    }
+  </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800&amp;display=swap" data-snapdom="injected-import"></head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+<!-- BEGIN: DesktopApplicationHeader -->
+
+<!-- END: DesktopApplicationHeader -->
+<!-- BEGIN: MainContainer -->
+<!-- Note: Left sidebar is explicitly omitted per prompt instructions; layout occupies full width -->
+<main class="flex-1 flex flex-col p-4 md:p-6 max-w-[1720px] w-full mx-auto" data-purpose="appointment-management-root">
+<!-- BEGIN: SectionTopActionBar -->
+<!-- Replicating upper header bar layout: Citas Title | Semáforo status indicator | Agendar Nueva Cita button -->
+<section class="bg-white border border-slate-200 rounded-xl p-4 mb-5 shadow-xs flex flex-wrap items-center justify-between gap-4" data-purpose="management-actions-bar">
+<!-- Title & Context -->
+<div class="flex items-center space-x-4">
+<div>
+<h1 class="text-xl md:text-2xl font-bold tracking-tight text-slate-900 uppercase">
+            Gestión y Control de Citas Médicas
+          </h1>
+<p class="text-xs text-slate-500 font-medium">Planificación semanal de consultas ambulatorias y triaje general</p>
+</div>
+</div>
+<!-- Controls & Actions -->
+<div class="flex items-center flex-wrap gap-3">
+<!-- Week navigation display -->
+<div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200 text-xs font-semibold text-slate-700">
+<button class="px-2.5 py-1 rounded hover:bg-white text-slate-600 hover:text-slate-900 transition shadow-xs" title="Semana Anterior" type="button">
+            ←
+          </button>
+<span class="px-3 py-1 font-bold text-slate-800">Semana del 24 al 28 de Octubre, 2024</span>
+<button class="px-2.5 py-1 rounded hover:bg-white text-slate-600 hover:text-slate-900 transition shadow-xs" title="Semana Siguiente" type="button">
+            →
+          </button>
+</div>
+<!-- Semáforo de Estado (Clinical Status Legend & Quick Switcher) -->
+<div class="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-xs space-x-2.5 text-xs font-medium" data-purpose="traffic-light-legend">
+<span class="text-slate-400 font-bold uppercase text-[10px] tracking-wider border-r border-slate-200 pr-2">Semáforo:</span>
+<div class="flex items-center space-x-1" title="Espacio libre para agendar">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+<span class="text-slate-600">Disponible</span>
+</div>
+<div class="flex items-center space-x-1" title="Paciente en sala de espera">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+<span class="text-slate-600">En Sala</span>
+</div>
+<div class="flex items-center space-x-1" title="Consulta activa o turno lleno">
+<span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+<span class="text-slate-600">Ocupado</span>
+</div>
+</div>
+<!-- Agendar Nueva Cita Button -->
+<button class="inline-flex items-center px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold rounded-lg shadow-sm hover:shadow transition transform active:scale-[0.99]" data-purpose="btn-schedule-new" type="button">
+<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+          Agendar Nueva Cita
+        </button>
+</div>
+</section>
+<!-- END: SectionTopActionBar -->
+<!-- BEGIN: WorkspaceLayout -->
+<!-- Two Column Layout per Sketch: Left Side: Mini Calendar + Selected Patient Data; Right Side: 5-Day Time Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-5 flex-1 items-start" data-purpose="workspace-columns">
+<!-- BEGIN: LeftWorkPanel -->
+<!-- Left side: Calendar + Patient Selection + Appointment Details + Action -->
+<section class="xl:col-span-4 2xl:col-span-3 flex flex-col gap-4" data-purpose="left-appointment-details-panel">
+<!-- Mini Calendar Card -->
+<div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs" data-purpose="mini-calendar">
+<div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+<h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Calendario Mensual</h2>
+<div class="flex items-center space-x-1 text-slate-700 font-bold text-sm">
+<span class="">Octubre 2024</span>
+<div class="flex ml-2">
+<button class="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800" type="button">‹</button>
+<button class="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-slate-800" type="button">›</button>
+</div>
+</div>
+</div>
+<!-- Calendar Days Grid -->
+<div class="grid grid-cols-7 gap-1 text-center text-xs">
+<span class="font-bold text-slate-400 py-1">L</span>
+<span class="font-bold text-slate-400 py-1">M</span>
+<span class="font-bold text-slate-400 py-1">X</span>
+<span class="font-bold text-slate-400 py-1">J</span>
+<span class="font-bold text-slate-400 py-1">V</span>
+<span class="font-bold text-slate-400 py-1">S</span>
+<span class="font-bold text-slate-400 py-1">D</span>
+<!-- Calendar Days Row 1 -->
+<span class="text-slate-300 py-1.5">29</span>
+<span class="text-slate-300 py-1.5">30</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">1</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">2</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">3</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">4</span>
+<span class="text-slate-400 font-medium py-1.5">5</span>
+<!-- Calendar Days Row 2 -->
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">6</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">7</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">8</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">9</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">10</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">11</span>
+<span class="text-slate-400 font-medium py-1.5">12</span>
+<!-- Calendar Days Row 3 -->
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">13</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">14</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">15</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">16</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">17</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">18</span>
+<span class="text-slate-400 font-medium py-1.5">19</span>
+<!-- Calendar Days Row 4 (Active Week highlighted) -->
+<span class="bg-brand-600 text-white font-bold py-1.5 rounded-md cursor-pointer shadow-xs" title="Día seleccionado">24</span>
+<span class="text-brand-900 bg-brand-50 font-semibold py-1.5 rounded cursor-pointer hover:bg-brand-100">25</span>
+<span class="text-brand-900 bg-brand-50 font-semibold py-1.5 rounded cursor-pointer hover:bg-brand-100">26</span>
+<span class="text-brand-900 bg-brand-50 font-semibold py-1.5 rounded cursor-pointer hover:bg-brand-100">27</span>
+<span class="text-brand-900 bg-brand-50 font-semibold py-1.5 rounded cursor-pointer hover:bg-brand-100">28</span>
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">29</span>
+<span class="text-slate-400 font-medium py-1.5">30</span>
+<!-- Calendar Days Row 5 -->
+<span class="text-slate-700 font-medium py-1.5 hover:bg-slate-50 rounded cursor-pointer">31</span>
+<span class="text-slate-300 py-1.5">1</span>
+<span class="text-slate-300 py-1.5">2</span>
+<span class="text-slate-300 py-1.5">3</span>
+<span class="text-slate-300 py-1.5">4</span>
+<span class="text-slate-300 py-1.5">5</span>
+<span class="text-slate-300 py-1.5">6</span>
+</div>
+</div>
+<!-- Appointment & Patient Details Form Block (Matching Sketch fields) -->
+<div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col space-y-4" data-purpose="selected-appointment-card">
+<div class="border-b border-slate-100 pb-2">
+<h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ficha de Cita Seleccionada</h2>
+<p class="text-xs text-brand-700 font-medium mt-0.5">Turno en curso / Próximo a atender</p>
+</div>
+<!-- Field: Nombre del Paciente -->
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" for="patient-name">
+              Nombre del Paciente:
+            </label>
+<div class="relative">
+<input class="w-full text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-300 rounded-lg px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition" id="patient-name" name="patient-name" placeholder="Ingrese o busque paciente..." type="text" value="Carlos Alberto Mendoza Ruiz">
+
+</div>
+<div class="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+<span class="">Edad: 42 años</span>
+
+</div>
+</div>
+<!-- Field: Datos de la Cita: Fecha / Hora -->
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              Datos de la Cita:
+            </label>
+<div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-2">
+<div class="flex items-center justify-between">
+<span class="text-slate-500 font-medium">Fecha programada:</span>
+<span class="font-bold text-slate-800">Lunes, 24 Octubre 2024</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-slate-500 font-medium">Hora de inicio:</span>
+<span class="font-extrabold text-brand-700 bg-white px-2 py-0.5 rounded border border-brand-200">10:00 AM (45 min)</span>
+</div>
+<div class="flex items-center justify-between">
+
+
+</div>
+<div class="flex items-center justify-between">
+
+
+</div>
+</div>
+</div>
+<!-- Action Button: Iniciar Cita -->
+<div class="pt-2">
+<button class="w-full bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold py-3.5 px-4 rounded-lg shadow transition text-sm flex items-center justify-center space-x-2 tracking-wide uppercase" data-purpose="btn-iniciar-cita" type="button">
+<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="">Iniciar Cita Clínica</span>
+</button>
+<p class="text-[11px] text-center text-slate-500 mt-2">Abre el expediente clínico y módulo de diagnóstico</p>
+</div>
+</div>
+<!-- Quick Summary Mini Widget -->
+<div class="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs flex items-center justify-between text-xs">
+<div>
+<span class="text-slate-500 font-medium block">Citas programadas hoy:</span>
+<span class="text-lg font-bold text-slate-800">8 pacientes</span>
+</div>
+<div class="text-right">
+<span class="text-slate-500 font-medium block">Completadas:</span>
+<span class="text-sm font-bold text-emerald-600">2 de 8 (25%)</span>
+</div>
+</div>
+</section>
+<!-- END: LeftWorkPanel -->
+<!-- BEGIN: RightWorkPanel -->
+<!-- Right Side: Weekly Agenda Grid (Days headers + Hourly slots as in IMAGE_17) -->
+<section class="xl:col-span-8 2xl:col-span-9 bg-white border border-slate-200 rounded-xl p-4 md:p-5 shadow-xs overflow-hidden flex flex-col" data-purpose="weekly-agenda-grid-container">
+<!-- Header Info of the Weekly Schedule -->
+<div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+<div>
+<h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider">
+              Agenda Semanal de Turnos Médicos
+            </h2>
+<span class="text-xs text-slate-500">Haz clic en cualquier celda para ver la ficha o crear un turno rápido</span>
+</div>
+<div class="flex items-center space-x-2 text-xs">
+<span class="text-slate-400 font-medium">Vista:</span>
+<button class="px-2.5 py-1 bg-brand-50 text-brand-700 font-bold rounded border border-brand-200" type="button">Semana (5 Días)</button>
+<button class="px-2.5 py-1 bg-white text-slate-600 hover:bg-slate-100 rounded border border-slate-200" type="button">Día</button>
+</div>
+</div>
+<!-- Agenda Scrollable Wrapper -->
+<div class="overflow-x-auto">
+<div class="min-w-[760px]">
+<!-- Agenda Grid Header: [Hour Column] + [5 Day Columns: Lunes to Viernes] -->
+<div class="grid grid-cols-12 gap-2 mb-2 items-center text-center">
+<!-- Empty spacer for the Hour column -->
+<div class="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider text-left pl-2">
+                Horario
+              </div>
+<!-- Day Column 1 (Selected Day) -->
+<div class="col-span-2 bg-brand-600 text-white rounded-lg py-2.5 px-1 shadow-xs border border-brand-700">
+<span class="block text-xs uppercase font-extrabold tracking-wide">Lunes</span>
+<span class="text-sm font-bold text-brand-100">24 Oct</span>
+</div>
+<!-- Day Column 2 -->
+<div class="col-span-2 bg-slate-100 text-slate-700 rounded-lg py-2.5 px-1 border border-slate-200">
+<span class="block text-xs uppercase font-bold tracking-wide">Martes</span>
+<span class="text-sm font-semibold text-slate-800">25 Oct</span>
+</div>
+<!-- Day Column 3 -->
+<div class="col-span-2 bg-slate-100 text-slate-700 rounded-lg py-2.5 px-1 border border-slate-200">
+<span class="block text-xs uppercase font-bold tracking-wide">Miércoles</span>
+<span class="text-sm font-semibold text-slate-800">26 Oct</span>
+</div>
+<!-- Day Column 4 -->
+<div class="col-span-2 bg-slate-100 text-slate-700 rounded-lg py-2.5 px-1 border border-slate-200">
+<span class="block text-xs uppercase font-bold tracking-wide">Jueves</span>
+<span class="text-sm font-semibold text-slate-800">27 Oct</span>
+</div>
+<!-- Day Column 5 -->
+<div class="col-span-2 bg-slate-100 text-slate-700 rounded-lg py-2.5 px-1 border border-slate-200">
+<span class="block text-xs uppercase font-bold tracking-wide">Viernes</span>
+<span class="text-sm font-semibold text-slate-800">28 Oct</span>
+</div>
+</div>
+<!-- Grid Rows (Hours 09:00 to 17:00) -->
+<div class="space-y-2 mt-3" data-purpose="agenda-rows-body">
+<!-- ROW 1: 09:00 AM -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700">
+<span class="">09:00 AM</span>
+<span class="text-[10px] text-slate-400 font-normal">45m</span>
+</div>
+<!-- Lunes 09:00 (Completed) -->
+<div class="col-span-2 schedule-cell p-2 bg-emerald-50/70 border border-emerald-200 rounded-lg flex flex-col justify-between hover:border-emerald-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-emerald-800">Completada</span>
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Elena Navarro V.">Elena Navarro V.</p>
+<span class="text-[10px] text-slate-500 truncate">Control Hipertensión</span>
+</div>
+<!-- Martes 09:00 (Scheduled) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Roberto Gómez B.">Roberto Gómez B.</p>
+<span class="text-[10px] text-slate-500 truncate">Primera Consulta</span>
+</div>
+<!-- Miercoles 09:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Jueves 09:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Ana María Rios">Ana María Rios</p>
+<span class="text-[10px] text-slate-500 truncate">Lectura de Rayos X</span>
+</div>
+<!-- Viernes 09:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+</div>
+<!-- ROW 2: 10:00 AM (Active highlighted row - Matches Carlos Alberto Mendoza) -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-brand-50 border border-brand-200 rounded-lg text-xs font-bold text-brand-900">
+<span class="">10:00 AM</span>
+<span class="text-[10px] text-brand-600 font-semibold">ACTUAL</span>
+</div>
+<!-- Lunes 10:00 (ACTIVE SELECTED APPOINTMENT IN LEFT PANEL) -->
+<div class="col-span-2 schedule-cell p-2.5 bg-amber-50 border-2 border-amber-500 rounded-lg flex flex-col justify-between shadow-xs ring-2 ring-amber-300/40 relative">
+<span class="absolute -top-2 right-2 bg-amber-500 text-white text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full">Turno Activo</span>
+<div class="flex items-center justify-between mt-1">
+<span class="text-[10px] uppercase font-extrabold text-amber-900">En Espera (Sala)</span>
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+</div>
+<p class="text-xs font-extrabold text-slate-900 truncate" title="Carlos A. Mendoza">Carlos A. Mendoza</p>
+<span class="text-[10px] font-medium text-amber-900 truncate">Triaje / Cita General</span>
+</div>
+<!-- Martes 10:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Miriam Valenzuela">Miriam Valenzuela</p>
+<span class="text-[10px] text-slate-500 truncate">Revisión Post-op</span>
+</div>
+<!-- Miercoles 10:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Samuel Paredes L.">Samuel Paredes L.</p>
+<span class="text-[10px] text-slate-500 truncate">Evaluación Rutina</span>
+</div>
+<!-- Jueves 10:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Viernes 10:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Lucía Fernández">Lucía Fernández</p>
+<span class="text-[10px] text-slate-500 truncate">Entrega de Exámenes</span>
+</div>
+</div>
+<!-- ROW 3: 11:00 AM -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700">
+<span class="">11:00 AM</span>
+<span class="text-[10px] text-slate-400 font-normal">45m</span>
+</div>
+<!-- Lunes 11:00 (Scheduled) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Patricia Morales">Patricia Morales</p>
+<span class="text-[10px] text-slate-500 truncate">Dolor Articular</span>
+</div>
+<!-- Martes 11:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Miercoles 11:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Jueves 11:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Joaquín Delgado">Joaquín Delgado</p>
+<span class="text-[10px] text-slate-500 truncate">Consulta Preventiva</span>
+</div>
+<!-- Viernes 11:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+</div>
+<!-- ROW 4: 12:00 PM -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700">
+<span class="">12:00 PM</span>
+<span class="text-[10px] text-slate-400 font-normal">45m</span>
+</div>
+<!-- Lunes 12:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Martes 12:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Daniela Castro E.">Daniela Castro E.</p>
+<span class="text-[10px] text-slate-500 truncate">Resultados Laboratorio</span>
+</div>
+<!-- Miercoles 12:00 (Reserved / Locked) -->
+<div class="col-span-2 schedule-cell p-2 bg-rose-50/80 border border-rose-200 rounded-lg flex flex-col justify-between cursor-not-allowed">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-rose-800">Reservado</span>
+<span class="w-2 h-2 rounded-full bg-rose-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate">Comité Clínico</p>
+<span class="text-[10px] text-rose-700 font-semibold truncate">Sesión Médica</span>
+</div>
+<!-- Jueves 12:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Viernes 12:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Guillermo Vega">Guillermo Vega</p>
+<span class="text-[10px] text-slate-500 truncate">Control Rutinario</span>
+</div>
+</div>
+<!-- ROW 5: 16:00 PM (Turno Tarde) -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700">
+<span class="">04:00 PM</span>
+<span class="text-[10px] text-slate-400 font-normal">45m</span>
+</div>
+<!-- Lunes 16:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Marcos Villalba">Marcos Villalba</p>
+<span class="text-[10px] text-slate-500 truncate">Revisión General</span>
+</div>
+<!-- Martes 16:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Beatriz Sotomayor">Beatriz Sotomayor</p>
+<span class="text-[10px] text-slate-500 truncate">Consulta Alergias</span>
+</div>
+<!-- Miercoles 16:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Jueves 16:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Viernes 16:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+</div>
+<!-- ROW 6: 17:00 PM -->
+<div class="grid grid-cols-12 gap-2 items-stretch">
+<!-- Hour label block -->
+<div class="col-span-2 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700">
+<span class="">05:00 PM</span>
+<span class="text-[10px] text-slate-400 font-normal">45m</span>
+</div>
+<!-- Lunes 17:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Martes 17:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Miercoles 17:00 (Confirmed) -->
+<div class="col-span-2 schedule-cell p-2 bg-blue-50/70 border border-blue-200 rounded-lg flex flex-col justify-between hover:border-blue-400 cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-brand-800">Confirmada</span>
+<span class="w-2 h-2 rounded-full bg-brand-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate" title="Hernán Ortiz">Hernán Ortiz</p>
+<span class="text-[10px] text-slate-500 truncate">Evaluación Médica</span>
+</div>
+<!-- Jueves 17:00 (Free Slot) -->
+<div class="col-span-2 schedule-cell p-2 bg-white border border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-brand-300 hover:text-brand-600 transition cursor-pointer group">
+<span class="text-[11px] font-medium group-hover:font-semibold">+ Disponible</span>
+</div>
+<!-- Viernes 17:00 (Reserved) -->
+<div class="col-span-2 schedule-cell p-2 bg-rose-50/80 border border-rose-200 rounded-lg flex flex-col justify-between cursor-not-allowed">
+<div class="flex items-center justify-between">
+<span class="text-[10px] uppercase font-bold text-rose-800">Cierre Semana</span>
+<span class="w-2 h-2 rounded-full bg-rose-500"></span>
+</div>
+<p class="text-xs font-bold text-slate-800 truncate">Bloque Administrativo</p>
+<span class="text-[10px] text-rose-700 font-semibold truncate">Cierre de Fichas</span>
+</div>
+</div>
+</div>
+<!-- End: Grid Rows -->
+</div>
+</div>
+<!-- Footer / Helper Toolbar inside Grid Container -->
+<div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-500">
+<div class="flex items-center space-x-4">
+<span class="font-semibold text-slate-600">Resumen del día seleccionado (Lunes 24):</span>
+<span class="inline-flex items-center"><span class="w-2 h-2 bg-emerald-500 rounded-full mr-1.5"></span> 1 Finalizada</span>
+<span class="inline-flex items-center"><span class="w-2 h-2 bg-amber-500 rounded-full mr-1.5"></span> 1 En espera</span>
+<span class="inline-flex items-center"><span class="w-2 h-2 bg-blue-500 rounded-full mr-1.5"></span> 2 Confirmadas</span>
+<span class="inline-flex items-center"><span class="w-2 h-2 bg-slate-300 rounded-full mr-1.5"></span> 2 Libres</span>
+</div>
+<div class="flex items-center space-x-2 mt-2 sm:mt-0">
+<button class="text-slate-600 hover:text-brand-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition" type="button">
+              Imprimir Agenda Diaria
+            </button>
+<span class="text-slate-300">|</span>
+<button class="text-slate-600 hover:text-brand-700 font-medium px-2 py-1 rounded hover:bg-slate-100 transition" type="button">
+              Exportar a PDF
+            </button>
+</div>
+</div>
+</section>
+<!-- END: RightWorkPanel -->
+</div>
+<!-- END: WorkspaceLayout -->
+</main>
+<!-- END: MainContainer -->
+<!-- BEGIN: DesktopFooterStatusBar -->
+<footer class="bg-white border-t border-slate-200 px-5 py-2 text-xs text-slate-500 flex items-center justify-between select-none">
+
+<div class="flex items-center space-x-3 text-slate-400">
+<span class="font-mono text-[11px]">24-OCT-2024 10:14 AM</span>
+
+
+</div>
+</footer>
+<!-- END: DesktopFooterStatusBar -->
+
+
+</body></html>

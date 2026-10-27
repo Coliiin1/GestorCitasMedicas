@@ -1,0 +1,227 @@
+<!DOCTYPE html><html lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MediDesk Pro - Administración de Asistentes</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            spartan: ['"League Spartan"', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#0284c7',
+              dark: '#0369a1',
+              light: '#e0f2fe'
+            },
+            clinical: {
+              bg: '#f8f9ff',
+              surface: '#ffffff',
+              border: '#e2e8f0',
+              textDark: '#0f172a',
+              textMuted: '#64748b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Typography Stylesheet -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'League Spartan', sans-serif;
+    }
+  </style>
+<!-- Custom Utility Styles -->
+<style data-purpose="desktop-app-styles">
+    /* Subtle scrollbar for sleek desktop feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800&amp;display=swap" data-snapdom="injected-import"></head>
+<body class="bg-slate-100 text-clinical-textDark min-h-screen flex flex-col justify-center items-center p-3 md:p-6 antialiased selection:bg-sky-200 select-none">
+<!-- BEGIN: DesktopWindowFrame -->
+<!-- Container with realistic desktop operating system frame wrapper -->
+<div class="w-full max-w-[1240px] bg-white rounded-xl shadow-2xl border border-slate-300 overflow-hidden flex flex-col min-h-[760px]" data-purpose="desktop-window-container">
+<!-- BEGIN: NativeAppHeader -->
+<!-- Native OS Titlebar with server connectivity status and window control buttons -->
+
+<!-- END: NativeAppHeader -->
+<!-- BEGIN: MainContentWrapper -->
+<!-- Full-width clean container (NO side panel as required) -->
+<main class="flex-1 bg-clinical-bg p-6 md:p-8 flex flex-col justify-between overflow-y-auto" data-purpose="main-layout-content">
+<div>
+<!-- BEGIN: SectionHeader -->
+<!-- Clean, unboxed primary section title & description -->
+<div class="mb-7 pb-4 border-b border-slate-200" data-purpose="page-title-banner">
+<h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-800 uppercase">
+            Administración de Asistentes
+          </h1>
+<p class="text-sm md:text-base text-slate-500 font-normal mt-0.5">
+            Control de usuarios, personal de enfermería, asistentes médicos y niveles de acceso al sistema clínico.
+          </p>
+</div>
+<!-- END: SectionHeader -->
+<!-- BEGIN: FilterAndSearchToolbar -->
+<!-- Search bar, quick action button, and live status metrics -->
+<section class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6" data-purpose="search-and-filters">
+<!-- Search input box -->
+<div class="flex items-center gap-2 flex-1 max-w-xl">
+<div class="relative w-full">
+<input class="w-full pl-3 pr-4 py-2 text-sm bg-white border border-slate-300 rounded-lg shadow-sm focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none text-slate-800 placeholder-slate-400 transition" id="search-assistants" name="search" placeholder="Buscar Asistente por Nombre o Usuario..." type="text">
+</div>
+<button class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs md:text-sm rounded-lg shadow-sm transition flex items-center" type="button">
+              Buscar
+            </button>
+</div>
+<!-- Counter and Status Badges -->
+<div class="flex items-center gap-3 text-xs md:text-sm">
+<div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="font-medium text-slate-600">Asistentes Activos: <strong class="text-slate-900 font-bold">3</strong></span>
+</div>
+<div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm flex items-center gap-2 text-slate-500">
+<span class="inline-block w-2 h-2 rounded-full bg-slate-300"></span>
+<span class="">Inactivos: <strong class="text-slate-700 font-medium">0</strong></span>
+</div>
+</div>
+</section>
+<!-- END: FilterAndSearchToolbar -->
+<!-- BEGIN: AssistantsList -->
+<!-- Modular structured list faithfully mapped to the wireframe layout -->
+<section class="space-y-3.5 mb-8" data-purpose="assistants-grid-list">
+<!-- Assistant Item Card 1 -->
+<article class="bg-white border border-slate-200 rounded-xl p-4 md:px-6 md:py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition duration-150 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<!-- Assistant Identity & Details -->
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+<div class="min-w-[240px]">
+<h2 class="text-base font-bold text-slate-800">Lic. Sofía Alarcón Morales</h2>
+<span class="text-xs text-slate-500 font-medium tracking-tight">Usuario: <span class="font-mono text-sky-700">@s.alarcon</span></span>
+</div>
+<div class="flex flex-wrap items-center gap-3 text-xs">
+<span class="px-2.5 py-1 rounded-md bg-sky-50 text-sky-800 border border-sky-100 font-medium">
+                  Asistente Clínico y Triaje
+                </span>
+<span class="text-slate-500 flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  Turno Matutino (07:00 - 15:00)
+                </span>
+
+</div>
+</div>
+<!-- Action Buttons for Item 1 -->
+<div class="flex items-center gap-2.5 self-end md:self-center shrink-0">
+<button class="px-4 py-1.5 text-xs font-semibold text-sky-700 bg-white border border-sky-600/40 hover:bg-sky-50 rounded-lg transition shadow-xs focus:ring-2 focus:ring-sky-400" type="button">
+                Editar
+              </button>
+<button class="px-3.5 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 rounded-lg transition shadow-xs focus:ring-2 focus:ring-rose-300" type="button">
+                Eliminar
+              </button>
+</div>
+</article>
+<!-- Assistant Item Card 2 -->
+<article class="bg-white border border-slate-200 rounded-xl p-4 md:px-6 md:py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition duration-150 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<!-- Assistant Identity & Details -->
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+<div class="min-w-[240px]">
+<h2 class="text-base font-bold text-slate-800">Enf. Mateo Delgado Ríos</h2>
+<span class="text-xs text-slate-500 font-medium tracking-tight">Usuario: <span class="font-mono text-sky-700">@m.delgado</span></span>
+</div>
+<div class="flex flex-wrap items-center gap-3 text-xs">
+<span class="px-2.5 py-1 rounded-md bg-sky-50 text-sky-800 border border-sky-100 font-medium">
+                  Enfermería y Toma de Muestras
+                </span>
+<span class="text-slate-500 flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  Turno Vespertino (14:00 - 21:30)
+                </span>
+
+</div>
+</div>
+<!-- Action Buttons for Item 2 -->
+<div class="flex items-center gap-2.5 self-end md:self-center shrink-0">
+<button class="px-4 py-1.5 text-xs font-semibold text-sky-700 bg-white border border-sky-600/40 hover:bg-sky-50 rounded-lg transition shadow-xs focus:ring-2 focus:ring-sky-400" type="button">
+                Editar
+              </button>
+<button class="px-3.5 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 rounded-lg transition shadow-xs focus:ring-2 focus:ring-rose-300" type="button">
+                Eliminar
+              </button>
+</div>
+</article>
+<!-- Assistant Item Card 3 -->
+<article class="bg-white border border-slate-200 rounded-xl p-4 md:px-6 md:py-4 shadow-sm hover:shadow-md hover:border-slate-300 transition duration-150 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<!-- Assistant Identity & Details -->
+<div class="flex-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-6">
+<div class="min-w-[240px]">
+<h2 class="text-base font-bold text-slate-800">Valeria Fuentes Domínguez</h2>
+<span class="text-xs text-slate-500 font-medium tracking-tight">Usuario: <span class="font-mono text-sky-700">@v.fuentes</span></span>
+</div>
+<div class="flex flex-wrap items-center gap-3 text-xs">
+<span class="px-2.5 py-1 rounded-md bg-sky-50 text-sky-800 border border-sky-100 font-medium">
+                  Recepción y Agendamiento Médico
+                </span>
+<span class="text-slate-500 flex items-center gap-1 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  Turno Completo (08:30 - 18:00)
+                </span>
+
+</div>
+</div>
+<!-- Action Buttons for Item 3 -->
+<div class="flex items-center gap-2.5 self-end md:self-center shrink-0">
+<button class="px-4 py-1.5 text-xs font-semibold text-sky-700 bg-white border border-sky-600/40 hover:bg-sky-50 rounded-lg transition shadow-xs focus:ring-2 focus:ring-sky-400" type="button">
+                Editar
+              </button>
+<button class="px-3.5 py-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 rounded-lg transition shadow-xs focus:ring-2 focus:ring-rose-300" type="button">
+                Eliminar
+              </button>
+</div>
+</article>
+</section>
+<!-- END: AssistantsList -->
+<!-- BEGIN: PrimaryActionRegistrationButton -->
+<!-- Wide, prominent button to create new assistant directly mapped to wireframe -->
+<section class="mt-4" data-purpose="registration-primary-action">
+<button class="w-full py-4 px-6 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white font-bold text-base md:text-lg rounded-xl shadow-md hover:shadow-lg transition duration-200 flex items-center justify-center gap-2 tracking-wide border border-sky-800 focus:ring-4 focus:ring-sky-200" type="button">
+<span class="text-xl font-black">+</span>
+<span class="">Crear Nuevo Asistente</span>
+</button>
+</section>
+<!-- END: PrimaryActionRegistrationButton -->
+</div>
+<!-- BEGIN: DesktopFooterStatusBar -->
+<!-- System status and pagination footer -->
+<footer class="mt-8 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2" data-purpose="system-status-footer">
+<div>
+
+</div>
+<div class="flex items-center gap-3">
+<span class="">Mostrando 3 de 3 registros totales</span>
+<span class="text-slate-300">|</span>
+
+</div>
+</footer>
+<!-- END: DesktopFooterStatusBar -->
+</main>
+<!-- END: MainContentWrapper -->
+</div>
+<!-- END: DesktopWindowFrame -->
+
+
+</body></html>

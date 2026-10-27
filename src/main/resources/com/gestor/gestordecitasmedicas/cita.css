@@ -1,0 +1,105 @@
+.root { -fx-background-color: #f1f5f9; -fx-font-size: 13px; }
+
+/* Sidebar */
+.sidebar { -fx-background-color: #1e293b; -fx-background-radius: 12; }
+.sidebar-header { -fx-border-color: transparent transparent #334155 transparent; }
+.clinic-name { -fx-text-fill: white; -fx-font-weight: bold; }
+.doctor-name { -fx-text-fill: #38bdf8; -fx-font-size: 11px; }
+.nav-title { -fx-text-fill: #94a3b8; -fx-font-size: 10px; -fx-font-weight: bold; }
+.nav-item { -fx-background-color: transparent; -fx-text-fill: #cbd5e1; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-alignment: CENTER_LEFT; -fx-cursor: hand; }
+.nav-item:hover { -fx-background-color: #334155; -fx-text-fill: white; }
+.nav-item-active, .nav-item-active:hover { -fx-background-color: #0284c7; -fx-text-fill: white; }
+.sidebar-footer { -fx-text-fill: #94a3b8; -fx-font-size: 10px; }
+
+/* Main workspace */
+.workspace { -fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; }
+.banner { -fx-background-color: white; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-background-radius: 12 12 0 0; }
+.badge-active { -fx-background-color: #d1fae5; -fx-text-fill: #065f46; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 8; -fx-background-radius: 4; }
+.h-title { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.h-title-accent { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0369a1; }
+.timer-box { -fx-background-color: #f1f5f9; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 16; }
+.caption { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #64748b; }
+.timer { -fx-font-family: monospace; -fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b; }
+.icon-button { -fx-background-color: transparent; -fx-text-fill: #475569; -fx-cursor: hand; -fx-background-radius: 6; }
+.icon-button:hover { -fx-background-color: white; }
+.icon-button-danger { -fx-text-fill: #f43f5e; }
+
+.scroll-pane { -fx-background-color: transparent; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
+
+.card { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-padding: 20; }
+.card-title { -fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.card-subtitle { -fx-font-size: 11px; -fx-text-fill: #64748b; }
+.chip { -fx-background-color: #f0f9ff; -fx-border-color: #bae6fd; -fx-border-radius: 4; -fx-background-radius: 4; -fx-text-fill: #0369a1; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 2 8; }
+.chip-gray { -fx-background-color: #f1f5f9; -fx-border-color: transparent; -fx-text-fill: #64748b; }
+.chip-blood { -fx-background-color: #fff1f2; -fx-border-color: #fecdd3; -fx-text-fill: #be123c; }
+.patient-name { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.info-tile { -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10; }
+.info-value { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #1e293b; }
+.separator .line { -fx-border-color: #f1f5f9; }
+
+.vital-tile { -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 12; }
+.vital-input { -fx-alignment: CENTER; -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 4; -fx-background-radius: 4; }
+.vital-input:focused { -fx-border-color: #0ea5e9; -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.8, 0, 0); }
+.unit { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b; }
+.hint { -fx-font-size: 10px; -fx-text-fill: #64748b; }
+.imc { -fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+
+.text-area { -fx-background-color: transparent; }
+.text-area .content { -fx-background-color: #f8fafc; -fx-background-radius: 8; }
+.reason-area { -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-wrap-text: true; }
+.reason-area:focused { -fx-border-color: #0ea5e9; }
+
+/* Footer */
+.footer { -fx-background-color: white; -fx-border-color: #e2e8f0 transparent transparent transparent; -fx-padding: 16 24; -fx-background-radius: 0 0 12 12; }
+.step-circle { -fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-alignment: CENTER; -fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: bold; }
+.step-circle-active { -fx-background-color: #0284c7; -fx-border-color: #bae6fd; -fx-text-fill: white; }
+.step-label { -fx-font-size: 12px; -fx-text-fill: #64748b; }
+.step-label-active { -fx-text-fill: #1e293b; -fx-font-weight: bold; }
+.btn-primary { -fx-background-color: #1e293b; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 24; -fx-cursor: hand; }
+.btn-primary:hover { -fx-background-color: #0f172a; }
+.btn-dark { -fx-background-color: #0f172a; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand; }
+.btn-dark:hover { -fx-background-color: #020617; }
+
+/* Paneles: asistentes, pacientes, consulta, agenda */
+.panel-title { -fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.search-field { -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 8 10; }
+.search-field:focused { -fx-border-color: #0ea5e9; }
+.row-card { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 14 18; }
+.row-name { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.chip-green { -fx-background-color: #ecfdf5; -fx-border-color: #a7f3d0; -fx-text-fill: #047857; }
+.chip-amber { -fx-background-color: #fffbeb; -fx-border-color: #fde68a; -fx-text-fill: #b45309; }
+.btn-edit { -fx-background-color: white; -fx-border-color: #bae6fd; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #0369a1; -fx-font-size: 11px; -fx-cursor: hand; }
+.btn-edit:hover { -fx-background-color: #f0f9ff; }
+.btn-del { -fx-background-color: white; -fx-border-color: #fecdd3; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #e11d48; -fx-font-size: 11px; -fx-cursor: hand; }
+.btn-del:hover { -fx-background-color: #fff1f2; }
+.btn-accent { -fx-background-color: linear-gradient(to right, #0284c7, #0369a1); -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24; -fx-cursor: hand; }
+.btn-primary-blue { -fx-background-color: #0369a1; -fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 18; -fx-cursor: hand; }
+.btn-primary-blue:hover { -fx-background-color: #075985; }
+.btn-page-active { -fx-background-color: #0369a1; -fx-text-fill: white; -fx-font-size: 11px; -fx-background-radius: 6; }
+.btn-dashed { -fx-background-color: #f8fafc; -fx-border-color: #7dd3fc; -fx-border-style: dashed; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #0369a1; -fx-font-weight: bold; -fx-padding: 12; -fx-cursor: hand; }
+
+.card-flat { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12; }
+.table-head { -fx-background-color: #f8fafc; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-padding: 10 16; }
+.table-row { -fx-border-color: transparent transparent #f1f5f9 transparent; -fx-padding: 10 16; }
+.avatar { -fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 14; -fx-min-width: 28; -fx-min-height: 28; -fx-alignment: CENTER; }
+
+.steps-bar { -fx-background-color: white; -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-padding: 10 24; }
+.step-circle-done { -fx-background-color: #10b981; -fx-border-color: #a7f3d0; -fx-text-fill: white; }
+.caption-blue { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #0369a1; }
+.med-row { -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10; -fx-alignment: CENTER_LEFT; }
+
+.cal-head { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #64748b; }
+.cal-day { -fx-font-size: 11px; -fx-text-fill: #1e293b; }
+.cal-other { -fx-font-size: 11px; -fx-text-fill: #cbd5e1; }
+.cal-sel { -fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-color: #0284c7; -fx-background-radius: 6; }
+.day-head { -fx-alignment: CENTER; -fx-text-alignment: CENTER; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 8; }
+.day-head-sel { -fx-background-color: #0284c7; -fx-text-fill: white; }
+.day-head-off { -fx-background-color: #f1f5f9; -fx-text-fill: #475569; }
+.slot { -fx-padding: 8; -fx-border-radius: 8; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-background-color: #f8fafc; }
+.slot-completada { -fx-background-color: #ecfdf5; -fx-border-color: #a7f3d0; }
+.slot-confirmada { -fx-background-color: #f0f9ff; -fx-border-color: #bae6fd; }
+.slot-en-espera { -fx-background-color: #fffbeb; -fx-border-color: #f59e0b; -fx-border-width: 2; }
+.slot-reservado { -fx-background-color: #fff1f2; -fx-border-color: #fecdd3; }
+.slot-cierre { -fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; }
+.slot-free { -fx-alignment: CENTER; -fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-border-color: #e2e8f0; -fx-border-style: dashed; -fx-border-radius: 8; -fx-padding: 8; }

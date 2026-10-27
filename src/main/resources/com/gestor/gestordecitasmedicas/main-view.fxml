@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!-- Escena estática: solo la barra lateral. El panel derecho (StackPane) se reemplaza con cada *-panel.fxml -->
+<HBox spacing="12.0" styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.MainController">
+    <padding>
+        <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
+    </padding>
+
+    <!-- Barra lateral -->
+    <VBox minWidth="256.0" prefWidth="256.0" styleClass="sidebar">
+        <VBox VBox.vgrow="ALWAYS">
+            <VBox styleClass="sidebar-header">
+                <padding><Insets bottom="16.0" left="16.0" right="16.0" top="16.0" /></padding>
+                <Label styleClass="clinic-name" text="Clínica San Gabriel" />
+                <Label styleClass="doctor-name" text="Dr. Ricardo Salinas M." />
+            </VBox>
+            <VBox fx:id="menu" spacing="4.0">
+                <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
+                <Label styleClass="nav-title" text="MÓDULOS" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml" />
+                <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso  ●" userData="cita-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Agenda Médica" userData="agenda-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Directorio Pacientes" userData="pacientes-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml" />
+            </VBox>
+        </VBox>
+        <Label styleClass="sidebar-footer" text="Licencia Profesional • Rev. 2024">
+            <padding><Insets bottom="12.0" left="16.0" right="12.0" top="12.0" /></padding>
+        </Label>
+    </VBox>
+
+    <!-- Panel derecho (intercambiable) -->
+    <StackPane fx:id="contenido" HBox.hgrow="ALWAYS" />
+</HBox>

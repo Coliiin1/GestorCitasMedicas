@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!-- Panel "Consulta Médica - Diagnóstico y Receta" (Stitch df3f9d15...). Referencia en docs/stitch/consulta.png -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="banner">
+        <padding><Insets bottom="16.0" left="24.0" right="24.0" top="16.0" /></padding>
+        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label styleClass="h-title" text="Roberto Gómez Fernández" />
+                <Label styleClass="badge-active" text="En Atención" />
+            </HBox>
+            <Label styleClass="card-subtitle" text="Edad: 42 años  •  Hora Inicio: 10:15 AM  •  Consultorio 3" />
+        </VBox>
+        <Label styleClass="timer" text="27:40 min" />
+        <Button styleClass="btn-dark" text="Ver Historial" />
+    </HBox>
+
+    <!-- Pasos -->
+    <HBox alignment="CENTER" spacing="8.0" styleClass="steps-bar">
+        <Label styleClass="step-circle, step-circle-done" text="✓" /><Label styleClass="step-label" text="1. Recepción y Triaje" />
+        <Separator prefWidth="32.0" />
+        <Label styleClass="step-circle, step-circle-active" text="2" /><Label styleClass="step-label, step-label-active" text="2. Diagnóstico y Receta" />
+        <Separator prefWidth="32.0" />
+        <Label styleClass="step-circle" text="3" /><Label styleClass="step-label" text="3. Finalización y Firma" />
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox spacing="20.0">
+            <padding><Insets bottom="24.0" left="24.0" right="24.0" top="24.0" /></padding>
+
+            <VBox spacing="4.0">
+                <Label styleClass="panel-title" text="Receta Médica y Prescripción Farmacológica" />
+                <Label styleClass="card-subtitle" text="Llene el diagnóstico principal y agregue los medicamentos que integrarán el informe final para el paciente." />
+                <Label styleClass="hint" text="Fecha de emisión: 24 Octubre 2024" />
+            </VBox>
+
+            <VBox spacing="10.0" styleClass="card">
+                <Label styleClass="card-title" text="DIAGNÓSTICO CLÍNICO" />
+                <Separator />
+                <Label styleClass="caption" text="DIAGNÓSTICO PRINCIPAL / IMPRESIÓN DIAGNÓSTICA" />
+                <TextField promptText="Ej. Faringoamigdalitis aguda" styleClass="search-field" />
+                <Label styleClass="caption" text="EVOLUCIÓN CLÍNICA Y JUSTIFICACIÓN TERAPÉUTICA" />
+                <TextArea prefRowCount="4" styleClass="reason-area" text="Paciente masculino que acude refiriendo odinofagia de 72 hrs de evolución, febrícula cuantificada en 37.8°C y congestión nasal. A la exploración física: orofaringe hiperémica sin exudados purulentos, adenopatías cervicales leves bilaterales no dolorosas. Sin compromiso pulmonar." wrapText="true" />
+            </VBox>
+
+            <VBox spacing="10.0" styleClass="card">
+                <HBox alignment="CENTER_LEFT">
+                    <Label styleClass="card-title" text="MEDICAMENTOS A RECETAR" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    <Label styleClass="hint" text="3 fármacos añadidos" />
+                </HBox>
+                <Separator />
+                <VBox spacing="10.0">
+                    <HBox spacing="12.0" styleClass="med-row">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 1" /><TextField styleClass="search-field" text="Paracetamol 500 mg (Comprimidos)" /></VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 comprimido (500 mg) cada 8 horas por 5 días con alimentos." /></VBox>
+                        <Button styleClass="icon-button, icon-button-danger" text="🗑" />
+                    </HBox>
+                    <HBox spacing="12.0" styleClass="med-row">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 2" /><TextField styleClass="search-field" text="Ibuprofeno 400 mg (Cápsulas blandas)" /></VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 cápsula cada 8 horas durante 2 días en caso de dolor persistente." /></VBox>
+                        <Button styleClass="icon-button, icon-button-danger" text="🗑" />
+                    </HBox>
+                    <HBox spacing="12.0" styleClass="med-row">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 3" /><TextField styleClass="search-field" text="Loratadina 10 mg (Tabletas)" /></VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 tableta cada 24 horas por la noche durante 5 días." /></VBox>
+                        <Button styleClass="icon-button, icon-button-danger" text="🗑" />
+                    </HBox>
+                    <HBox spacing="12.0" styleClass="med-row">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 4" /><TextField promptText="Nombre genérico / comercial / presentación..." styleClass="search-field" /></VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField promptText="Dosis, frecuencia y duración..." styleClass="search-field" /></VBox>
+                        <Button styleClass="icon-button, icon-button-danger" text="🗑" />
+                    </HBox>
+                    <HBox spacing="12.0" styleClass="med-row">
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 5" /><TextField promptText="Nombre genérico / comercial / presentación..." styleClass="search-field" /></VBox>
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField promptText="Dosis, frecuencia y duración..." styleClass="search-field" /></VBox>
+                        <Button styleClass="icon-button, icon-button-danger" text="🗑" />
+                    </HBox>
+                </VBox>
+                <Button maxWidth="Infinity" styleClass="btn-dashed" text="+  Añadir un medicamento a la prescripción" />
+            </VBox>
+
+            <VBox spacing="8.0" styleClass="card">
+                <Label styleClass="card-title" text="Medidas Generales, Cuidados y Signos de Alarma" />
+                <TextArea prefRowCount="3" styleClass="reason-area" text="Abundante ingesta de líquidos tibios. Guardar reposo relativo por 48 horas. Evitar cambios bruscos de temperatura. En caso de presentar fiebre persistente &gt;38.5°C resistente a antipiréticos o dificultad respiratoria, acudir a urgencias de inmediato." wrapText="true" />
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+    <HBox alignment="CENTER" spacing="12.0" styleClass="footer">
+        <Button styleClass="btn-edit, nav-link" text="←  Volver a Signos Vitales" userData="cita-panel.fxml" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button styleClass="btn-edit" text="Guardar y Exportar Como PDF" />
+        <Button styleClass="btn-primary-blue, nav-link" text="✓  Finalizar Consulta" userData="agenda-panel.fxml" />
+    </HBox>
+</VBox>

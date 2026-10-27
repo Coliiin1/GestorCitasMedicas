@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!-- Panel "Administración de Asistentes" (Stitch f7d7a26f...). Referencia en docs/stitch/asistentes.png -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox spacing="16.0">
+            <padding><Insets bottom="24.0" left="24.0" right="24.0" top="24.0" /></padding>
+
+            <VBox spacing="4.0">
+                <Label styleClass="panel-title" text="ADMINISTRACIÓN DE ASISTENTES" />
+                <Label styleClass="card-subtitle" text="Control de usuarios, personal de enfermería, asistentes médicos y niveles de acceso al sistema clínico." />
+            </VBox>
+            <Separator />
+
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <TextField promptText="Buscar Asistente por Nombre o Usuario..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                <Button styleClass="btn-dark" text="Buscar" />
+                <Label styleClass="chip, chip-green" text="●  Asistentes Activos: 3" />
+                <Label styleClass="chip, chip-gray" text="●  Inactivos: 0" />
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="row-card">
+                <VBox minWidth="200.0" spacing="2.0"><Label styleClass="row-name" text="Lic. Sofía Alarcón Morales" /><Label styleClass="hint" text="Usuario: @s.alarcon" /></VBox>
+                <Label styleClass="chip" text="Asistente Clínico y Triaje" />
+                <Label styleClass="hint" text="●  Turno Matutino (07:00 - 15:00)" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="row-card">
+                <VBox minWidth="200.0" spacing="2.0"><Label styleClass="row-name" text="Enf. Mateo Delgado Ríos" /><Label styleClass="hint" text="Usuario: @m.delgado" /></VBox>
+                <Label styleClass="chip" text="Enfermería y Toma de Muestras" />
+                <Label styleClass="hint" text="●  Turno Vespertino (14:00 - 21:30)" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" />
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="row-card">
+                <VBox minWidth="200.0" spacing="2.0"><Label styleClass="row-name" text="Valeria Fuentes Domínguez" /><Label styleClass="hint" text="Usuario: @v.fuentes" /></VBox>
+                <Label styleClass="chip" text="Recepción y Agendamiento Médico" />
+                <Label styleClass="hint" text="●  Turno Completo (08:30 - 18:00)" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" />
+            </HBox>
+
+            <Button maxWidth="Infinity" styleClass="btn-accent" text="+  Crear Nuevo Asistente" />
+        </VBox>
+    </ScrollPane>
+</VBox>
