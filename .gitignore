@@ -31,3 +31,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Credenciales de correo ###
+correo.properties
