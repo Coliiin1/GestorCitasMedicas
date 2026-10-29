@@ -24,7 +24,7 @@
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml" />
                 <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso  ●" userData="cita-panel.fxml" />
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Agenda Médica" userData="agenda-panel.fxml" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Directorio Pacientes" userData="pacientes-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administración de Pacientes" userData="pacientes-panel.fxml" />
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml" />
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml" />
             </VBox>

@@ -20,6 +20,8 @@ public class MainController {
 
     // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
     private final Map<String, Node> paneles = new HashMap<>();
+    // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
+    private Button ultimoActivo;
 
     @FXML
     private void initialize() {
@@ -39,7 +41,10 @@ public class MainController {
             // Dashboard y Agenda comparten destino: gana el último, Agenda.
             if (n instanceof Button && fxml.equals(n.getUserData())) activo = (Button) n;
         }
-        activo.getStyleClass().add("nav-item-active");
+        // Los paneles fuera del menú (p. ej. edición de paciente) mantienen el resaltado anterior.
+        if (activo == null) activo = ultimoActivo;
+        ultimoActivo = activo;
+        if (activo != null) activo.getStyleClass().add("nav-item-active");
     }
 
     private Node cargar(String fxml) {

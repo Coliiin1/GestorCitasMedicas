@@ -103,3 +103,48 @@
 .slot-reservado { -fx-background-color: #fff1f2; -fx-border-color: #fecdd3; }
 .slot-cierre { -fx-background-color: #f1f5f9; -fx-border-color: #cbd5e1; }
 .slot-free { -fx-alignment: CENTER; -fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-border-color: #e2e8f0; -fx-border-style: dashed; -fx-border-radius: 8; -fx-padding: 8; }
+
+/* Panel: edición de paciente (Stitch a5654516...) */
+.edit-card { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12; }
+.edit-header { -fx-padding: 30 32 22 32; -fx-border-color: transparent transparent #f1f5f9 transparent; }
+.form-body { -fx-padding: 28 32 28 32; }
+.field-label { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #334155; }
+.required { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #f43f5e; }
+.form-field { -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 12; -fx-font-size: 13px; -fx-text-fill: #1e293b; -fx-prompt-text-fill: #94a3b8; }
+.form-field:focused { -fx-border-color: #0ea5e9; -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.6, 0, 0); }
+.form-field-mono { -fx-font-family: "Consolas", "Courier New", monospace; }
+.combo-field .list-cell { -fx-background-color: transparent; -fx-padding: 0 0 0 12; -fx-font-size: 13px; -fx-text-fill: #1e293b; }
+.combo-field .arrow-button { -fx-background-color: transparent; }
+.combo-field .arrow { -fx-background-color: #64748b; }
+.date-field .text-field { -fx-background-color: transparent; -fx-padding: 0 0 0 12; -fx-font-size: 13px; -fx-text-fill: #1e293b; -fx-prompt-text-fill: #94a3b8; }
+.date-field .arrow-button { -fx-background-color: transparent; }
+.date-field .arrow { -fx-background-color: #94a3b8; }
+.form-section { -fx-border-color: #f1f5f9 transparent transparent transparent; -fx-padding: 20 0 0 0; }
+.section-label { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #94a3b8; }
+.notice-box { -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 14; }
+.notice-icon { -fx-background-color: #0284c7; -fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold; -fx-background-radius: 9; -fx-min-width: 18; -fx-min-height: 18; -fx-max-width: 18; -fx-max-height: 18; -fx-alignment: CENTER; }
+.notice-text { -fx-font-size: 12px; -fx-text-fill: #475569; }
+.form-actions { -fx-border-color: #f1f5f9 transparent transparent transparent; -fx-padding: 20 0 0 0; }
+.btn-outline { -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: #475569; -fx-font-size: 13px; -fx-padding: 11 24; -fx-cursor: hand; }
+.btn-outline:hover { -fx-background-color: #f8fafc; -fx-text-fill: #1e293b; }
+.btn-save { -fx-background-color: #0284c7; -fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 11 24; -fx-cursor: hand; }
+.btn-save:hover { -fx-background-color: #0369a1; }
+
+/* Panel: administración de pacientes */
+.panel-header { -fx-border-color: transparent transparent #e2e8f0 transparent; -fx-padding: 0 0 16 0; }
+.list-caption { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #64748b; }
+.patient-card { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 16; }
+.patient-card:hover { -fx-border-color: #cbd5e1; }
+.patient-card-name { -fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0f172a; }
+.patient-meta { -fx-font-size: 11px; -fx-text-fill: #64748b; }
+.meta-value { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #334155; }
+.meta-mono { -fx-font-family: "Consolas", "Courier New", monospace; -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #334155; }
+.avatar-lg { -fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-font-size: 12px; -fx-font-weight: bold; -fx-background-radius: 22; -fx-min-width: 44; -fx-min-height: 44; -fx-max-width: 44; -fx-max-height: 44; -fx-alignment: CENTER; }
+.avatar-amber { -fx-background-color: #fef3c7; -fx-text-fill: #b45309; }
+.pager-card { -fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 16; }
+.pager-btn { -fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: #475569; -fx-font-size: 11px; -fx-padding: 4 10; -fx-cursor: hand; }
+.pager-btn:hover { -fx-background-color: #f8fafc; }
+.pager-btn-muted { -fx-text-fill: #94a3b8; }
+.pager-btn-active { -fx-background-color: #0284c7; -fx-border-color: #0284c7; -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: white; -fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 10; }
+.btn-create { -fx-background-color: #0369a1; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-background-radius: 12; -fx-padding: 14 24; -fx-cursor: hand; }
+.btn-create:hover { -fx-background-color: #075985; }

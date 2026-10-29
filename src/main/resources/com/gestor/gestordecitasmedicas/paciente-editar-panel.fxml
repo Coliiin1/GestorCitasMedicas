@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!-- Panel "Actualizar Datos del Paciente" (Stitch a5654516...). Referencia en docs/stitch/code.html y docs/stitch/screen.png. Solo interfaz. -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox alignment="TOP_CENTER">
+            <padding><Insets bottom="32.0" left="32.0" right="32.0" top="32.0" /></padding>
+
+            <VBox maxWidth="896.0" styleClass="edit-card">
+                <!-- Encabezado -->
+                <VBox spacing="4.0" styleClass="edit-header">
+                    <Label styleClass="panel-title" text="ACTUALIZAR DATOS DEL PACIENTE" />
+                    <Label styleClass="card-subtitle" text="Modificación de expediente clínico, datos demográficos y registro oficial" />
+                </VBox>
+
+                <VBox spacing="24.0" styleClass="form-body">
+                    <!-- Nombre(s), Apellido Paterno, Apellido Materno -->
+                    <GridPane hgap="24.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                        </columnConstraints>
+
+                        <VBox spacing="6.0" GridPane.columnIndex="0">
+                            <HBox spacing="3.0">
+                                <Label styleClass="field-label" text="NOMBRE (S)" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" text="Carlos Alberto" />
+                        </VBox>
+
+                        <VBox spacing="6.0" GridPane.columnIndex="1">
+                            <HBox spacing="3.0">
+                                <Label styleClass="field-label" text="APELLIDO PATERNO" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" text="Mendoza" />
+                        </VBox>
+
+                        <VBox spacing="6.0" GridPane.columnIndex="2">
+                            <HBox spacing="3.0">
+                                <Label styleClass="field-label" text="APELLIDO MATERNO" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" text="Ruiz" />
+                        </VBox>
+                    </GridPane>
+
+                    <!-- CURP y Fecha de Nacimiento -->
+                    <GridPane hgap="24.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="66.66" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                        </columnConstraints>
+
+                        <VBox spacing="6.0" GridPane.columnIndex="0">
+                            <HBox spacing="3.0">
+                                <Label styleClass="field-label" text="CURP" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="CURP" styleClass="form-field, form-field-mono" text="MERC840912HDFNR03" />
+                        </VBox>
+
+                        <VBox spacing="6.0" GridPane.columnIndex="1">
+                            <HBox spacing="3.0">
+                                <Label styleClass="field-label" text="FECHA DE NACIMIENTO" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <DatePicker maxWidth="Infinity" prefHeight="40.0" promptText="dd/mm/aaaa" styleClass="form-field, date-field" />
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Información de contacto y perfil clínico -->
+                    <VBox spacing="12.0" styleClass="form-section">
+                        <Label styleClass="section-label" text="INFORMACIÓN DE CONTACTO Y PERFIL CLÍNICO" />
+
+                        <GridPane hgap="24.0">
+                            <columnConstraints>
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                                <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                            </columnConstraints>
+
+                            <VBox spacing="6.0" GridPane.columnIndex="0">
+                                <Label styleClass="field-label" text="TELÉFONO DE CONTACTO" />
+                                <TextField prefHeight="40.0" promptText="+52 55 0000 0000" styleClass="form-field" text="+52 55 4192 8831" />
+                            </VBox>
+
+                            <VBox spacing="6.0" GridPane.columnIndex="1">
+                                <Label styleClass="field-label" text="SEXO BIOLÓGICO" />
+                                <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Masculino">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="Masculino" />
+                                            <String fx:value="Femenino" />
+                                            <String fx:value="Otro / No especificado" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </VBox>
+
+                            <VBox spacing="6.0" GridPane.columnIndex="2">
+                                <Label styleClass="field-label" text="ESTADO DEL PACIENTE" />
+                                <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Activo (Con Expediente Vigente)">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="Activo (Con Expediente Vigente)" />
+                                            <String fx:value="Inactivo / Baja Temporal" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </VBox>
+                        </GridPane>
+                    </VBox>
+
+                    <!-- Aviso -->
+                    <HBox alignment="TOP_LEFT" spacing="12.0" styleClass="notice-box">
+                        <Label styleClass="notice-icon" text="i" />
+                        <Label maxWidth="Infinity" styleClass="notice-text" text="Los cambios reflejados en el expediente actualizarán automáticamente la carátula en Consultas Externas, Triage e historial farmacológico." wrapText="true" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <!-- Acciones -->
+                    <HBox alignment="CENTER" spacing="16.0" styleClass="form-actions">
+                        <Button styleClass="btn-outline, nav-link" text="Cancelar / Volver a Expediente" userData="pacientes-panel.fxml" />
+                        <Button prefWidth="260.0" styleClass="btn-save" text="✓  Guardar Cambios" />
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>
