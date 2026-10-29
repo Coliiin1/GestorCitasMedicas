@@ -4,104 +4,185 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!-- Panel "Administración de Pacientes" (Stitch 78af5aaa...). Referencia en docs/stitch/pacientes.png -->
+<!-- Panel "Administración de Pacientes" (Stitch medical_appointments_design_system). Referencia en docs/stitch/. Solo interfaz. -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <VBox spacing="16.0">
-            <padding><Insets bottom="24.0" left="24.0" right="24.0" top="24.0" /></padding>
+        <VBox alignment="TOP_CENTER">
+            <padding><Insets bottom="32.0" left="32.0" right="32.0" top="28.0" /></padding>
 
-            <VBox spacing="4.0">
-                <Label styleClass="panel-title" text="ADMINISTRACIÓN DE PACIENTES" />
-                <Label styleClass="card-subtitle" text="Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida." />
+            <VBox maxWidth="1152.0" spacing="20.0">
+                <!-- Encabezado -->
+                <VBox spacing="4.0" styleClass="panel-header">
+                    <Label styleClass="panel-title" text="ADMINISTRACIÓN DE PACIENTES" />
+                    <Label styleClass="card-subtitle" text="Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida." />
+                </VBox>
+
+                <!-- Búsqueda -->
+                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card">
+                    <TextField maxWidth="Infinity" prefHeight="42.0" promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <Button prefHeight="42.0" prefWidth="104.0" styleClass="btn-primary-blue" text="Buscar" />
+                </HBox>
+
+                <!-- Listado -->
+                <VBox spacing="12.0">
+                    <HBox alignment="CENTER_LEFT" spacing="8.0">
+                        <Label maxWidth="Infinity" styleClass="list-caption" text="LISTADO DE PACIENTES REGISTRADOS" HBox.hgrow="ALWAYS" />
+                        <Label styleClass="list-caption" text="5 REGISTROS MOSTRADOS" />
+                    </HBox>
+
+                    <!-- Carlos Alberto Mendoza Ruiz -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="patient-card">
+                        <Label minHeight="44.0" minWidth="44.0" styleClass="avatar-lg" text="CM" />
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="patient-card-name" text="Carlos Alberto Mendoza Ruiz" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Expediente: " />
+                                <Label styleClass="meta-value" text="#EXP-0982" />
+                                <Label styleClass="patient-meta" text="   •   CURP: " />
+                                <Label styleClass="meta-mono" text="MERC840912HDFNR03" />
+                                <Label styleClass="patient-meta" text="   •   Tel: " />
+                                <Label styleClass="meta-value" text="+52 55 4192 8831" />
+                            </HBox>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Última consulta: " />
+                                <Label styleClass="meta-value" text="14 Oct 2024" />
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-del" text="Eliminar" />
+                            </HBox>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Elena Navarro Velázquez -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="patient-card">
+                        <Label minHeight="44.0" minWidth="44.0" styleClass="avatar-lg" text="EN" />
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="patient-card-name" text="Elena Navarro Velázquez" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Expediente: " />
+                                <Label styleClass="meta-value" text="#EXP-1045" />
+                                <Label styleClass="patient-meta" text="   •   CURP: " />
+                                <Label styleClass="meta-mono" text="NAVE910405MDFLL02" />
+                                <Label styleClass="patient-meta" text="   •   Tel: " />
+                                <Label styleClass="meta-value" text="+52 55 7823 4901" />
+                            </HBox>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Última consulta: " />
+                                <Label styleClass="meta-value" text="02 Nov 2024" />
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-del" text="Eliminar" />
+                            </HBox>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Roberto Gómez Fernández -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="patient-card">
+                        <Label minHeight="44.0" minWidth="44.0" styleClass="avatar-lg, avatar-amber" text="RG" />
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="patient-card-name" text="Roberto Gómez Fernández" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Expediente: " />
+                                <Label styleClass="meta-value" text="#EXP-0872" />
+                                <Label styleClass="patient-meta" text="   •   CURP: " />
+                                <Label styleClass="meta-mono" text="GOFR751218HJCR01" />
+                                <Label styleClass="patient-meta" text="   •   Tel: " />
+                                <Label styleClass="meta-value" text="+52 33 1290 8472" />
+                            </HBox>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Última consulta: " />
+                                <Label styleClass="meta-value" text="22 Ene 2024" />
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-del" text="Eliminar" />
+                            </HBox>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Miriam Valenzuela Castro -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="patient-card">
+                        <Label minHeight="44.0" minWidth="44.0" styleClass="avatar-lg" text="MV" />
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="patient-card-name" text="Miriam Valenzuela Castro" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Expediente: " />
+                                <Label styleClass="meta-value" text="#EXP-1120" />
+                                <Label styleClass="patient-meta" text="   •   CURP: " />
+                                <Label styleClass="meta-mono" text="VACM980614MDFSM08" />
+                                <Label styleClass="patient-meta" text="   •   Tel: " />
+                                <Label styleClass="meta-value" text="+52 55 6012 3499" />
+                            </HBox>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Última consulta: " />
+                                <Label styleClass="meta-value" text="Hoy, 10:30 AM" />
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-del" text="Eliminar" />
+                            </HBox>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Jorge Antonio Aguilar Ríos -->
+                    <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="patient-card">
+                        <Label minHeight="44.0" minWidth="44.0" styleClass="avatar-lg" text="JA" />
+                        <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="patient-card-name" text="Jorge Antonio Aguilar Ríos" />
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Expediente: " />
+                                <Label styleClass="meta-value" text="#EXP-1134" />
+                                <Label styleClass="patient-meta" text="   •   CURP: " />
+                                <Label styleClass="meta-mono" text="AIRJ890102HDFNR09" />
+                                <Label styleClass="patient-meta" text="   •   Tel: " />
+                                <Label styleClass="meta-value" text="+52 55 9012 8765" />
+                            </HBox>
+                        </VBox>
+                        <HBox alignment="CENTER_RIGHT" spacing="14.0">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label styleClass="patient-meta" text="Última consulta: " />
+                                <Label styleClass="meta-value" text="28 Oct 2024" />
+                            </HBox>
+                            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+                                <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-del" text="Eliminar" />
+                            </HBox>
+                        </HBox>
+                    </HBox>
+
+                    <!-- Paginación -->
+                    <HBox alignment="CENTER_LEFT" spacing="6.0" styleClass="pager-card">
+                        <HBox alignment="CENTER_LEFT">
+                            <Label styleClass="patient-meta" text="Mostrando " />
+                            <Label styleClass="meta-value" text="5" />
+                            <Label styleClass="patient-meta" text=" de " />
+                            <Label styleClass="meta-value" text="142" />
+                            <Label styleClass="patient-meta" text=" pacientes registrados" />
+                        </HBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button styleClass="pager-btn, pager-btn-muted" text="Anterior" />
+                        <Button styleClass="pager-btn-active" text="1" />
+                        <Button styleClass="pager-btn" text="2" />
+                        <Button styleClass="pager-btn" text="3" />
+                        <Label styleClass="patient-meta" text="…" />
+                        <Button styleClass="pager-btn" text="29" />
+                        <Button styleClass="pager-btn" text="Siguiente" />
+                    </HBox>
+                </VBox>
+
+                <!-- Acción principal -->
+                <Button maxWidth="Infinity" styleClass="btn-create" text="+   Crear Nuevo Paciente" />
             </VBox>
-
-            <!-- Búsqueda y filtros -->
-            <VBox spacing="10.0" styleClass="card">
-                <HBox spacing="8.0">
-                    <TextField promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
-                    <Button styleClass="btn-primary-blue" text="Buscar" />
-                </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="hint" text="Filtros:" />
-                    <Label styleClass="chip" text="Todos (142)" />
-                    <Label styleClass="chip, chip-gray" text="Activos (128)" />
-                    <Label styleClass="chip, chip-gray" text="Con cita hoy (8)" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="hint" text="Búsqueda por coincidencia fonética y alfanumérica" />
-                </HBox>
-            </VBox>
-
-            <!-- Tabla -->
-            <VBox styleClass="card-flat">
-                <HBox alignment="CENTER_LEFT" styleClass="table-head">
-                    <Label minWidth="260.0" styleClass="caption" text="NOMBRE DEL PACIENTE" />
-                    <Label minWidth="170.0" styleClass="caption" text="CURP" />
-                    <Label minWidth="140.0" styleClass="caption" text="TELÉFONO / CONTACTO" />
-                    <Label minWidth="120.0" styleClass="caption" text="ÚLTIMA CONSULTA" />
-                    <Label minWidth="80.0" styleClass="caption" text="ESTADO" />
-                    <Label alignment="CENTER_RIGHT" maxWidth="Infinity" styleClass="caption" text="ACCIONES" HBox.hgrow="ALWAYS" />
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" styleClass="table-row">
-                    <HBox alignment="CENTER_LEFT" minWidth="260.0" spacing="10.0"><Label styleClass="avatar" text="CM" /><VBox><Label styleClass="row-name" text="Carlos Alberto Mendoza Ruiz" /><Label styleClass="hint" text="Expediente: #EXP-0982" /></VBox></HBox>
-                    <Label minWidth="170.0" styleClass="hint" text="MERC840912HDFNR03" />
-                    <Label minWidth="140.0" styleClass="hint" text="+52 55 4192 8831" />
-                    <Label minWidth="120.0" styleClass="hint" text="14 Oct 2024" />
-                    <HBox minWidth="80.0"><Label styleClass="chip, chip-green" text="Activo" /></HBox>
-                    <HBox alignment="CENTER_RIGHT" spacing="6.0" HBox.hgrow="ALWAYS"><Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" /></HBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" styleClass="table-row">
-                    <HBox alignment="CENTER_LEFT" minWidth="260.0" spacing="10.0"><Label styleClass="avatar" text="EN" /><VBox><Label styleClass="row-name" text="Elena Navarro Velázquez" /><Label styleClass="hint" text="Expediente: #EXP-1045" /></VBox></HBox>
-                    <Label minWidth="170.0" styleClass="hint" text="NAVE910405MDFLL02" />
-                    <Label minWidth="140.0" styleClass="hint" text="+52 55 7823 4901" />
-                    <Label minWidth="120.0" styleClass="hint" text="02 Nov 2024" />
-                    <HBox minWidth="80.0"><Label styleClass="chip, chip-green" text="Activo" /></HBox>
-                    <HBox alignment="CENTER_RIGHT" spacing="6.0" HBox.hgrow="ALWAYS"><Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" /></HBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" styleClass="table-row">
-                    <HBox alignment="CENTER_LEFT" minWidth="260.0" spacing="10.0"><Label styleClass="avatar" text="RG" /><VBox><Label styleClass="row-name" text="Roberto Gómez Fernández" /><Label styleClass="hint" text="Expediente: #EXP-0872" /></VBox></HBox>
-                    <Label minWidth="170.0" styleClass="hint" text="GOFR751218HJCR01" />
-                    <Label minWidth="140.0" styleClass="hint" text="+52 33 1290 8472" />
-                    <Label minWidth="120.0" styleClass="hint" text="22 Ene 2024" />
-                    <HBox minWidth="80.0"><Label styleClass="chip, chip-amber" text="Inactivo" /></HBox>
-                    <HBox alignment="CENTER_RIGHT" spacing="6.0" HBox.hgrow="ALWAYS"><Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" /></HBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" styleClass="table-row">
-                    <HBox alignment="CENTER_LEFT" minWidth="260.0" spacing="10.0"><Label styleClass="avatar" text="MV" /><VBox><Label styleClass="row-name" text="Miriam Valenzuela Castro" /><Label styleClass="hint" text="Expediente: #EXP-1120" /></VBox></HBox>
-                    <Label minWidth="170.0" styleClass="hint" text="VACM980614MDFSM08" />
-                    <Label minWidth="140.0" styleClass="hint" text="+52 55 6012 3499" />
-                    <Label minWidth="120.0" styleClass="hint" text="Hoy, 10:30 AM" />
-                    <HBox minWidth="80.0"><Label styleClass="chip, chip-green" text="Activo" /></HBox>
-                    <HBox alignment="CENTER_RIGHT" spacing="6.0" HBox.hgrow="ALWAYS"><Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" /></HBox>
-                </HBox>
-                <HBox alignment="CENTER_LEFT" styleClass="table-row">
-                    <HBox alignment="CENTER_LEFT" minWidth="260.0" spacing="10.0"><Label styleClass="avatar" text="JA" /><VBox><Label styleClass="row-name" text="Jorge Antonio Aguilar Ríos" /><Label styleClass="hint" text="Expediente: #EXP-1134" /></VBox></HBox>
-                    <Label minWidth="170.0" styleClass="hint" text="AIRJ890102HDFNR09" />
-                    <Label minWidth="140.0" styleClass="hint" text="+52 55 9012 8765" />
-                    <Label minWidth="120.0" styleClass="hint" text="28 Oct 2024" />
-                    <HBox minWidth="80.0"><Label styleClass="chip, chip-green" text="Activo" /></HBox>
-                    <HBox alignment="CENTER_RIGHT" spacing="6.0" HBox.hgrow="ALWAYS"><Button styleClass="btn-edit" text="Editar" /><Button styleClass="btn-del" text="Eliminar" /></HBox>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" spacing="6.0" styleClass="table-head">
-                    <Label styleClass="hint" text="Mostrando 5 de 142 pacientes registrados" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Button styleClass="btn-edit" text="Anterior" />
-                    <Button styleClass="btn-page-active" text="1" /><Button styleClass="btn-edit" text="2" /><Button styleClass="btn-edit" text="3" />
-                    <Label styleClass="hint" text="..." />
-                    <Button styleClass="btn-edit" text="29" /><Button styleClass="btn-edit" text="Siguiente" />
-                    <Region minWidth="16.0" />
-                    <Button styleClass="btn-edit" text="Exportar Excel" /><Button styleClass="btn-edit" text="PDF" />
-                </HBox>
-            </VBox>
-
-            <Button maxWidth="Infinity" styleClass="btn-accent" text="+  Crear Nuevo Paciente" />
-            <HBox alignment="CENTER" spacing="16.0">
-                <Label styleClass="hint" text="Sistema: En Línea" />
-                <Label styleClass="hint" text="Base de datos: SQL Server MediDesk" />
-                <Label styleClass="hint" text="Cifrado: AES-256 Activo" />
-                <Label styleClass="hint" text="Última sincronización: Hoy, hace 2 min" />
-            </HBox>
         </VBox>
     </ScrollPane>
 </VBox>
