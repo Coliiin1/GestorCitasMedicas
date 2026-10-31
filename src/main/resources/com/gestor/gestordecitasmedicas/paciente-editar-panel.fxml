@@ -2,17 +2,15 @@
 
 <?import java.lang.String?>
 <?import javafx.collections.FXCollections?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Actualizar Datos del Paciente" (Stitch a5654516...). Referencia en docs/stitch/code.html y docs/stitch/screen.png. Solo interfaz. -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <VBox alignment="TOP_CENTER">
-            <padding><Insets bottom="32.0" left="32.0" right="32.0" top="32.0" /></padding>
-
-            <VBox maxWidth="896.0" styleClass="edit-card">
+        <VBox styleClass="page-body">
+            <VBox styleClass="edit-card, page-form">
                 <!-- Encabezado -->
                 <VBox spacing="4.0" styleClass="edit-header">
                     <Label styleClass="panel-title" text="ACTUALIZAR DATOS DEL PACIENTE" />
@@ -28,24 +26,24 @@
                             <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
                         </columnConstraints>
 
-                        <VBox spacing="6.0" GridPane.columnIndex="0">
-                            <HBox spacing="3.0">
+                        <VBox spacing="8.0" GridPane.columnIndex="0">
+                            <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="NOMBRE (S)" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
                             <TextField prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" text="Carlos Alberto" />
                         </VBox>
 
-                        <VBox spacing="6.0" GridPane.columnIndex="1">
-                            <HBox spacing="3.0">
+                        <VBox spacing="8.0" GridPane.columnIndex="1">
+                            <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="APELLIDO PATERNO" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
                             <TextField prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" text="Mendoza" />
                         </VBox>
 
-                        <VBox spacing="6.0" GridPane.columnIndex="2">
-                            <HBox spacing="3.0">
+                        <VBox spacing="8.0" GridPane.columnIndex="2">
+                            <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="APELLIDO MATERNO" />
                             </HBox>
                             <TextField prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" text="Ruiz" />
@@ -59,16 +57,16 @@
                             <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
                         </columnConstraints>
 
-                        <VBox spacing="6.0" GridPane.columnIndex="0">
-                            <HBox spacing="3.0">
+                        <VBox spacing="8.0" GridPane.columnIndex="0">
+                            <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="CURP" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
                             <TextField prefHeight="40.0" promptText="CURP" styleClass="form-field, form-field-mono" text="MERC840912HDFNR03" />
                         </VBox>
 
-                        <VBox spacing="6.0" GridPane.columnIndex="1">
-                            <HBox spacing="3.0">
+                        <VBox spacing="8.0" GridPane.columnIndex="1">
+                            <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="FECHA DE NACIMIENTO" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
@@ -77,7 +75,7 @@
                     </GridPane>
 
                     <!-- Información de contacto y perfil clínico -->
-                    <VBox spacing="12.0" styleClass="form-section">
+                    <VBox spacing="16.0" styleClass="form-section">
                         <Label styleClass="section-label" text="INFORMACIÓN DE CONTACTO Y PERFIL CLÍNICO" />
 
                         <GridPane hgap="24.0">
@@ -87,12 +85,12 @@
                                 <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
                             </columnConstraints>
 
-                            <VBox spacing="6.0" GridPane.columnIndex="0">
+                            <VBox spacing="8.0" GridPane.columnIndex="0">
                                 <Label styleClass="field-label" text="TELÉFONO DE CONTACTO" />
                                 <TextField prefHeight="40.0" promptText="+52 55 0000 0000" styleClass="form-field" text="+52 55 4192 8831" />
                             </VBox>
 
-                            <VBox spacing="6.0" GridPane.columnIndex="1">
+                            <VBox spacing="8.0" GridPane.columnIndex="1">
                                 <Label styleClass="field-label" text="SEXO BIOLÓGICO" />
                                 <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Masculino">
                                     <items>
@@ -105,7 +103,7 @@
                                 </ComboBox>
                             </VBox>
 
-                            <VBox spacing="6.0" GridPane.columnIndex="2">
+                            <VBox spacing="8.0" GridPane.columnIndex="2">
                                 <Label styleClass="field-label" text="ESTADO DEL PACIENTE" />
                                 <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Activo (Con Expediente Vigente)">
                                     <items>
@@ -126,9 +124,13 @@
                     </HBox>
 
                     <!-- Acciones -->
-                    <HBox alignment="CENTER" spacing="16.0" styleClass="form-actions">
-                        <Button styleClass="btn-outline, nav-link" text="Cancelar / Volver a Expediente" userData="pacientes-panel.fxml" />
-                        <Button prefWidth="260.0" styleClass="btn-save" text="✓  Guardar Cambios" />
+                    <HBox alignment="CENTER" spacing="12.0" styleClass="form-actions">
+                        <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Expediente" userData="pacientes-panel.fxml">
+                            <graphic><FontIcon iconLiteral="fas-arrow-left" /></graphic>
+                        </Button>
+                        <Button prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
+                            <graphic><FontIcon iconLiteral="fas-check" /></graphic>
+                        </Button>
                     </HBox>
                 </VBox>
             </VBox>

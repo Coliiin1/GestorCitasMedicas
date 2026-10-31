@@ -57,6 +57,11 @@
             <version>12.3.1</version>
         </dependency>
         <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-fontawesome5-pack</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
             <groupId>eu.hansolo</groupId>
             <artifactId>tilesfx</artifactId>
             <version>21.0.9</version>
@@ -116,7 +121,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                com.gestor.gestordecitasmedicas/com.gestor.gestordecitasmedicas.HelloApplication
+                                com.gestor.gestordecitasmedicas.Launcher
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>

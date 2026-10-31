@@ -57,7 +57,7 @@ public class AgendaController {
         Label l = new Label(texto);
         l.getStyleClass().add(estilo);
         l.setAlignment(Pos.CENTER);
-        l.setMinSize(30, 26);
+        l.setMinSize(28, 26);
         return l;
     }
 

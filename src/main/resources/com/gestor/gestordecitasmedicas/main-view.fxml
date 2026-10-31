@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Escena estática: solo la barra lateral. El panel derecho (StackPane) se reemplaza con cada *-panel.fxml -->
 <HBox spacing="12.0" styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.MainController">
@@ -21,12 +22,24 @@
             <VBox fx:id="menu" spacing="4.0">
                 <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
                 <Label styleClass="nav-title" text="MÓDULOS" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml" />
-                <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso  ●" userData="cita-panel.fxml" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Agenda Médica" userData="agenda-panel.fxml" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administración de Pacientes" userData="pacientes-panel.fxml" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml" />
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-home" /></graphic>
+                </Button>
+                <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso" userData="cita-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-stethoscope" /></graphic>
+                </Button>
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Agenda Médica" userData="agenda-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-calendar-alt" /></graphic>
+                </Button>
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administración de Pacientes" userData="pacientes-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-users" /></graphic>
+                </Button>
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-notes-medical" /></graphic>
+                </Button>
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml">
+                    <graphic><FontIcon iconLiteral="fas-user-md" /></graphic>
+                </Button>
             </VBox>
         </VBox>
         <Label styleClass="sidebar-footer" text="Licencia Profesional • Rev. 2024">

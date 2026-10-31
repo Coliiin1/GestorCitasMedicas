@@ -3,15 +3,16 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Cita en curso" (Stitch 13443177082917861773 / c391534a...). Referencia en docs/stitch. Se inserta en main-view.fxml -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.CitaController">
-        <!-- Encabezado de la cita -->
-        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="banner">
-            <padding><Insets bottom="16.0" left="24.0" right="24.0" top="16.0" /></padding>
+    <!-- Encabezado de la cita -->
+    <HBox alignment="CENTER" styleClass="banner">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <Label styleClass="badge-active" text="En Consulta Activa" />
-                <HBox spacing="6.0">
+                <HBox spacing="8.0">
                     <Label styleClass="h-title" text="Cita Actual:" />
                     <Label fx:id="lblPacienteBanner" styleClass="h-title-accent" text="Carlos Alberto Mendoza Ruiz" />
                 </HBox>
@@ -22,21 +23,36 @@
                     <Label fx:id="lblTimer" styleClass="timer" text="00:00" />
                 </VBox>
                 <Separator orientation="VERTICAL" />
-                <Button onAction="#onPausar" styleClass="icon-button" text="⏸">
+                <Button onAction="#onPausar" styleClass="btn-icon">
+                    <graphic><FontIcon iconLiteral="fas-pause" /></graphic>
                     <tooltip><Tooltip text="Pausar consulta" /></tooltip>
                 </Button>
-                <Button onAction="#onCancelar" styleClass="icon-button, icon-button-danger" text="✕">
+                <Button onAction="#onCancelar" styleClass="btn-icon, btn-icon-danger">
+                    <graphic><FontIcon iconLiteral="fas-times" /></graphic>
                     <tooltip><Tooltip text="Cancelar consulta" /></tooltip>
                 </Button>
             </HBox>
         </HBox>
+    </HBox>
 
-        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-            <VBox spacing="24.0">
-                <padding><Insets bottom="24.0" left="24.0" right="24.0" top="24.0" /></padding>
+    <!-- Pasos -->
+    <HBox alignment="CENTER" spacing="8.0" styleClass="steps-bar">
+        <Label styleClass="step-circle, step-circle-active" text="1" />
+        <Label styleClass="step-label, step-label-active" text="1. Recepción y Triaje" />
+        <Separator prefWidth="32.0" />
+        <Label styleClass="step-circle" text="2" />
+        <Label styleClass="step-label" text="2. Diagnóstico y Receta" />
+        <Separator prefWidth="32.0" />
+        <Label styleClass="step-circle" text="3" />
+        <Label styleClass="step-label" text="3. Finalización y Firma" />
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="24.0">
 
                 <!-- Identificación del paciente -->
-                <VBox spacing="14.0" styleClass="card">
+                <VBox spacing="12.0" styleClass="card">
                     <HBox alignment="CENTER_LEFT">
                         <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                             <HBox spacing="8.0">
@@ -45,24 +61,31 @@
                             </HBox>
                             <Label fx:id="lblPaciente" styleClass="patient-name" text="Carlos Alberto Mendoza Ruiz" />
                         </VBox>
-                        <Button onAction="#onVerExpediente" styleClass="btn-dark" text="Consultar Expediente Clínico Completo" />
+                        <Button onAction="#onVerExpediente" styleClass="btn-secondary" text="Consultar Expediente Clínico Completo">
+                            <graphic><FontIcon iconLiteral="fas-folder-open" /></graphic>
+                        </Button>
                     </HBox>
                     <Separator />
-                    <HBox spacing="12.0">
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="EDAD" /><Label fx:id="lblEdad" styleClass="info-value" text="38 años (Adulto)" /></VBox>
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="FEC. NACIMIENTO" /><Label fx:id="lblNacimiento" styleClass="info-value" text="12/04/1985" /></VBox>
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="CURP" /><Label fx:id="lblCurp" styleClass="info-value" text="MERC850412HDFNR03" /></VBox>
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="SEXO / GÉNERO" /><Label fx:id="lblSexo" styleClass="info-value" text="Masculino" /></VBox>
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="TIPO DE SANGRE" /><Label fx:id="lblSangre" styleClass="chip, chip-blood" text="O+ (Positivo)" /></VBox>
-                        <VBox spacing="4.0" styleClass="info-tile" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="ALERGIAS CONOCIDAS" /><Label fx:id="lblAlergias" styleClass="info-value" text="Ninguna reportada" /></VBox>
-                    </HBox>
+                    <GridPane hgap="12.0" vgap="12.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                        </columnConstraints>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="0" GridPane.rowIndex="0"><Label styleClass="caption" text="EDAD" /><Label fx:id="lblEdad" styleClass="info-value" text="38 años (Adulto)" /></VBox>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="1" GridPane.rowIndex="0"><Label styleClass="caption" text="FEC. NACIMIENTO" /><Label fx:id="lblNacimiento" styleClass="info-value" text="12/04/1985" /></VBox>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="2" GridPane.rowIndex="0"><Label styleClass="caption" text="CURP" /><Label fx:id="lblCurp" styleClass="info-value" text="MERC850412HDFNR03" /></VBox>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="0" GridPane.rowIndex="1"><Label styleClass="caption" text="SEXO / GÉNERO" /><Label fx:id="lblSexo" styleClass="info-value" text="Masculino" /></VBox>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="1" GridPane.rowIndex="1"><Label styleClass="caption" text="TIPO DE SANGRE" /><Label fx:id="lblSangre" styleClass="chip, chip-blood" text="O+ (Positivo)" /></VBox>
+                        <VBox spacing="4.0" styleClass="info-tile" GridPane.columnIndex="2" GridPane.rowIndex="1"><Label styleClass="caption" text="ALERGIAS CONOCIDAS" /><Label fx:id="lblAlergias" styleClass="info-value" text="Ninguna reportada" /></VBox>
+                    </GridPane>
                 </VBox>
 
                 <!-- Signos vitales -->
-                <VBox spacing="14.0" styleClass="card">
+                <VBox spacing="12.0" styleClass="card">
                     <Label styleClass="card-title" text="SIGNOS VITALES" />
                     <Separator />
-                    <GridPane hgap="14.0" vgap="14.0">
+                    <GridPane hgap="12.0" vgap="12.0">
                         <columnConstraints>
                             <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
                             <ColumnConstraints hgrow="ALWAYS" percentWidth="25.0" />
@@ -118,26 +141,22 @@
                 </VBox>
 
                 <!-- Motivo de consulta -->
-                <VBox spacing="10.0" styleClass="card">
+                <VBox spacing="12.0" styleClass="card">
                     <Label styleClass="card-title" text="MOTIVO PRINCIPAL DE LA CONSULTA / SÍNTOMAS REFERIDOS" />
                     <Label styleClass="card-subtitle" text="Anamnesis inicial y notas clínicas de ingreso" />
                     <Separator />
                     <TextArea fx:id="txtMotivo" prefRowCount="5" promptText="Describa el cuadro clínico presentado por el paciente, tiempo de evolución, antecedentes pertinentes y síntomas de alarma..." styleClass="reason-area" wrapText="true" />
                 </VBox>
             </VBox>
-        </ScrollPane>
+        </VBox>
+    </ScrollPane>
 
-        <!-- Pie con pasos -->
-        <HBox alignment="CENTER" spacing="12.0" styleClass="footer">
-            <Region HBox.hgrow="ALWAYS" />
-            <HBox alignment="CENTER" spacing="8.0">
-                <Label styleClass="step-circle, step-circle-active" text="1" /><Label styleClass="step-label, step-label-active" text="Recepción y Triaje" />
-                <Separator prefWidth="32.0" />
-                <Label styleClass="step-circle" text="2" /><Label styleClass="step-label" text="Diagnóstico y Receta" />
-                <Separator prefWidth="32.0" />
-                <Label styleClass="step-circle" text="3" /><Label styleClass="step-label" text="Finalización y Firma" />
-            </HBox>
-            <Region HBox.hgrow="ALWAYS" />
-            <Button styleClass="btn-primary, nav-link" text="Siguiente  →" userData="consulta-panel.fxml" />
+    <!-- Pie con acción principal -->
+    <HBox alignment="CENTER" styleClass="page-footer">
+        <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <Button styleClass="btn-primary, nav-link" text="Siguiente" userData="consulta-panel.fxml">
+                <graphic><FontIcon iconLiteral="fas-arrow-right" /></graphic>
+            </Button>
         </HBox>
+    </HBox>
 </VBox>

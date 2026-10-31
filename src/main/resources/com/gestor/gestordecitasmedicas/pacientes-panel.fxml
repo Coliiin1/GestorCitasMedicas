@@ -1,26 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Administración de Pacientes" (Stitch medical_appointments_design_system). Referencia en docs/stitch/. Solo interfaz. -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <VBox alignment="TOP_CENTER">
-            <padding><Insets bottom="32.0" left="32.0" right="32.0" top="28.0" /></padding>
+    <HBox alignment="CENTER" styleClass="page-header">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="panel-title" text="ADMINISTRACIÓN DE PACIENTES" />
+                <Label styleClass="card-subtitle" text="Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida." />
+            </VBox>
+            <Button styleClass="btn-primary" text="Nuevo Paciente">
+                <graphic><FontIcon iconLiteral="fas-user-plus" /></graphic>
+            </Button>
+        </HBox>
+    </HBox>
 
-            <VBox maxWidth="1152.0" spacing="20.0">
-                <!-- Encabezado -->
-                <VBox spacing="4.0" styleClass="panel-header">
-                    <Label styleClass="panel-title" text="ADMINISTRACIÓN DE PACIENTES" />
-                    <Label styleClass="card-subtitle" text="Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida." />
-                </VBox>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="24.0">
 
                 <!-- Búsqueda -->
                 <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card">
-                    <TextField maxWidth="Infinity" prefHeight="42.0" promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
-                    <Button prefHeight="42.0" prefWidth="104.0" styleClass="btn-primary-blue" text="Buscar" />
+                    <TextField maxWidth="Infinity" promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <Button prefWidth="104.0" styleClass="btn-primary" text="Buscar">
+                        <graphic><FontIcon iconLiteral="fas-search" /></graphic>
+                    </Button>
                 </HBox>
 
                 <!-- Listado -->
@@ -179,9 +186,6 @@
                         <Button styleClass="pager-btn" text="Siguiente" />
                     </HBox>
                 </VBox>
-
-                <!-- Acción principal -->
-                <Button maxWidth="Infinity" styleClass="btn-create" text="+   Crear Nuevo Paciente" />
             </VBox>
         </VBox>
     </ScrollPane>

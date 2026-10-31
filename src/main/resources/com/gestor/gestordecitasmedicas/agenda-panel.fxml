@@ -3,91 +3,111 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Gestión de Citas" (Stitch e2ec849f...). Referencia en docs/stitch/citas.png. Calendario y agenda los llena AgendaController -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.AgendaController">
+    <HBox alignment="CENTER" styleClass="page-header">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" />
+                <Label styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" />
+            </VBox>
+            <Button styleClass="btn-primary" text="Agendar Nueva Cita">
+                <graphic><FontIcon iconLiteral="fas-plus" /></graphic>
+            </Button>
+        </HBox>
+    </HBox>
+
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <VBox spacing="16.0">
-            <padding><Insets bottom="24.0" left="24.0" right="24.0" top="24.0" /></padding>
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="24.0">
 
-            <HBox alignment="CENTER_LEFT" spacing="12.0">
-                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                    <Label styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" />
-                    <Label styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" />
-                </VBox>
-                <Button styleClass="btn-primary-blue" text="+  Agendar Nueva Cita" />
-            </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-flat">
+                    <Button styleClass="btn-icon">
+                        <graphic><FontIcon iconLiteral="fas-chevron-left" /></graphic>
+                        <tooltip><Tooltip text="Semana anterior" /></tooltip>
+                    </Button>
+                    <Label styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
+                    <Button styleClass="btn-icon">
+                        <graphic><FontIcon iconLiteral="fas-chevron-right" /></graphic>
+                        <tooltip><Tooltip text="Semana siguiente" /></tooltip>
+                    </Button>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label styleClass="caption" text="SEMÁFORO:" />
+                    <Label styleClass="chip, chip-green" text="Disponible">
+                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                    </Label>
+                    <Label styleClass="chip, chip-amber" text="En Sala">
+                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                    </Label>
+                    <Label styleClass="chip, chip-blood" text="Ocupado">
+                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                    </Label>
+                </HBox>
 
-            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="card-flat">
-                <padding><Insets bottom="8.0" left="12.0" right="12.0" top="8.0" /></padding>
-                <Button styleClass="btn-edit" text="←" />
-                <Label styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
-                <Button styleClass="btn-edit" text="→" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Label styleClass="caption" text="SEMÁFORO:" />
-                <Label styleClass="chip, chip-green" text="●  Disponible" />
-                <Label styleClass="chip, chip-amber" text="●  En Sala" />
-                <Label styleClass="chip, chip-blood" text="●  Ocupado" />
-            </HBox>
+                <HBox alignment="TOP_LEFT" spacing="24.0">
+                    <!-- Columna izquierda -->
+                    <VBox minWidth="260.0" prefWidth="260.0" spacing="24.0">
+                        <VBox spacing="12.0" styleClass="card">
+                            <HBox alignment="CENTER_LEFT">
+                                <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" HBox.hgrow="ALWAYS" />
+                                <Label styleClass="row-name" text="Octubre 2024" />
+                            </HBox>
+                            <GridPane fx:id="calendario" hgap="4.0" vgap="4.0" />
+                        </VBox>
 
-            <HBox alignment="TOP_LEFT" spacing="16.0">
-                <!-- Columna izquierda -->
-                <VBox minWidth="260.0" prefWidth="260.0" spacing="16.0">
-                    <VBox spacing="10.0" styleClass="card">
-                        <HBox alignment="CENTER_LEFT">
-                            <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" HBox.hgrow="ALWAYS" />
-                            <Label styleClass="row-name" text="Octubre 2024" />
-                        </HBox>
-                        <GridPane fx:id="calendario" hgap="2.0" vgap="2.0" />
+                        <VBox spacing="12.0" styleClass="card">
+                            <Label styleClass="caption" text="FICHA DE CITA SELECCIONADA" />
+                            <Label styleClass="hint" text="Turno en curso / Próximo a atender" />
+                            <Separator />
+                            <Label styleClass="caption" text="NOMBRE DEL PACIENTE:" />
+                            <TextField editable="false" styleClass="search-field" text="Carlos Alberto Mendoza Ruiz" />
+                            <Label styleClass="hint" text="Edad: 42 años" />
+                            <Label styleClass="caption" text="DATOS DE LA CITA:" />
+                            <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="info-value" text="Lun, 24 Oct 2024" /></HBox>
+                            <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="chip" text="10:00 AM (45 min)" /></HBox>
+                            <Button maxWidth="Infinity" styleClass="btn-primary, nav-link" text="Iniciar Cita Clínica" userData="cita-panel.fxml">
+                                <graphic><FontIcon iconLiteral="fas-play" /></graphic>
+                            </Button>
+                            <Label styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" />
+                        </VBox>
+
+                        <VBox spacing="8.0" styleClass="card">
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="8 pacientes" /></HBox>
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="2 de 8 (25%)" /></HBox>
+                        </VBox>
                     </VBox>
 
-                    <VBox spacing="10.0" styleClass="card">
-                        <Label styleClass="caption" text="FICHA DE CITA SELECCIONADA" />
-                        <Label styleClass="hint" text="Turno en curso / Próximo a atender" />
+                    <!-- Agenda semanal -->
+                    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                        <Label styleClass="card-title" text="Agenda Semanal de Turnos Médicos" />
+                        <Label styleClass="card-subtitle" text="Haz clic en cualquier celda para ver la ficha o crear un turno rápido" />
+                        <GridPane fx:id="semana" hgap="4.0" vgap="4.0">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="64.0" prefWidth="64.0" maxWidth="64.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" prefWidth="0.0" minWidth="0.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" prefWidth="0.0" minWidth="0.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" prefWidth="0.0" minWidth="0.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" prefWidth="0.0" minWidth="0.0" />
+                                <ColumnConstraints hgrow="ALWAYS" maxWidth="Infinity" prefWidth="0.0" minWidth="0.0" />
+                            </columnConstraints>
+                        </GridPane>
                         <Separator />
-                        <Label styleClass="caption" text="NOMBRE DEL PACIENTE:" />
-                        <TextField editable="false" styleClass="search-field" text="Carlos Alberto Mendoza Ruiz" />
-                        <Label styleClass="hint" text="Edad: 42 años" />
-                        <Label styleClass="caption" text="DATOS DE LA CITA:" />
-                        <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="info-value" text="Lunes, 24 Octubre 2024" /></HBox>
-                        <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="chip" text="10:00 AM (45 min)" /></HBox>
-                        <Button maxWidth="Infinity" styleClass="btn-primary, nav-link" text="▶  Iniciar Cita Clínica" userData="cita-panel.fxml" />
-                        <Label styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" />
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <Label styleClass="hint" text="Resumen Lun 24: 1 finalizada · 1 en espera · 2 confirmadas · 2 libres" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button styleClass="btn-edit" text="Imprimir">
+                                <graphic><FontIcon iconLiteral="fas-print" /></graphic>
+                                <tooltip><Tooltip text="Imprimir agenda diaria" /></tooltip>
+                            </Button>
+                            <Button styleClass="btn-edit" text="Exportar PDF">
+                                <graphic><FontIcon iconLiteral="fas-file-pdf" /></graphic>
+                            </Button>
+                        </HBox>
                     </VBox>
-
-                    <VBox spacing="6.0" styleClass="card">
-                        <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="8 pacientes" /></HBox>
-                        <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="2 de 8 (25%)" /></HBox>
-                    </VBox>
-                </VBox>
-
-                <!-- Agenda semanal -->
-                <VBox spacing="10.0" styleClass="card" HBox.hgrow="ALWAYS">
-                    <Label styleClass="card-title" text="Agenda Semanal de Turnos Médicos" />
-                    <Label styleClass="card-subtitle" text="Haz clic en cualquier celda para ver la ficha o crear un turno rápido" />
-                    <GridPane fx:id="semana" hgap="6.0" vgap="6.0">
-                        <columnConstraints>
-                            <ColumnConstraints minWidth="70.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="19.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="19.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="19.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="19.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="19.0" />
-                        </columnConstraints>
-                    </GridPane>
-                    <Separator />
-                    <HBox alignment="CENTER_LEFT" spacing="12.0">
-                        <Label styleClass="hint" text="Resumen del día seleccionado (Lunes 24):" />
-                        <Label styleClass="hint" text="1 Finalizada" />
-                        <Label styleClass="hint" text="1 En espera" />
-                        <Label styleClass="hint" text="2 Confirmadas" />
-                        <Label styleClass="hint" text="2 Libres" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Button styleClass="btn-edit" text="Imprimir Agenda Diaria" />
-                        <Button styleClass="btn-edit" text="Exportar a PDF" />
-                    </HBox>
-                </VBox>
-            </HBox>
+                </HBox>
+            </VBox>
         </VBox>
     </ScrollPane>
 </VBox>
