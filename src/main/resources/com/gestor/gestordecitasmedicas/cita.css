@@ -115,14 +115,6 @@
     -fx-alignment: TOP_CENTER;
 }
 
-.page-content {
-    -fx-max-width: 1120;
-}
-
-.page-form {
-    -fx-max-width: 896;
-}
-
 .page-footer,
 .footer {
     -fx-background-color: white;
@@ -257,7 +249,6 @@
     -fx-text-fill: #64748b;
     -fx-min-width: 40;
     -fx-pref-width: 40;
-    -fx-max-width: 40;
     -fx-alignment: CENTER_LEFT;
 }
 
@@ -684,7 +675,6 @@
     -fx-padding: 0 8;
     -fx-min-height: 44;
     -fx-pref-height: 44;
-    -fx-pref-width: 120;
 }
 
 .vital-input:focused {

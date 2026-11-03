@@ -11,11 +11,12 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1280, 800);
+        Scene scene = new Scene(fxmlLoader.load(), 1368, 768);
         stage.setTitle("Gestor de Citas Medicas");
         stage.setMinWidth(1280);
         stage.setMinHeight(720);
         stage.setScene(scene);
+        stage.centerOnScreen();
         stage.show();
     }
 }
