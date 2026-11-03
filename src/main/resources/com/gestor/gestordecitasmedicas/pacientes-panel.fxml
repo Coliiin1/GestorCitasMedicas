@@ -13,7 +13,7 @@
                 <Label styleClass="card-subtitle" text="Padrón general de pacientes registrados, expedientes médicos y búsqueda rápida." />
             </VBox>
             <Button styleClass="btn-primary" text="Nuevo Paciente">
-                <graphic><FontIcon iconLiteral="fas-user-plus" /></graphic>
+                <graphic><FontIcon iconLiteral="fi-rr-user-add" /></graphic>
             </Button>
         </HBox>
     </HBox>
@@ -26,7 +26,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card">
                     <TextField maxWidth="Infinity" promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
                     <Button prefWidth="104.0" styleClass="btn-primary" text="Buscar">
-                        <graphic><FontIcon iconLiteral="fas-search" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-search" /></graphic>
                     </Button>
                 </HBox>
 

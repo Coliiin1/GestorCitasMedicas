@@ -14,7 +14,7 @@
                 <Label styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" />
             </VBox>
             <Button styleClass="btn-primary" text="Agendar Nueva Cita">
-                <graphic><FontIcon iconLiteral="fas-plus" /></graphic>
+                <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
             </Button>
         </HBox>
     </HBox>
@@ -25,30 +25,34 @@
 
                 <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-flat">
                     <Button styleClass="btn-icon">
-                        <graphic><FontIcon iconLiteral="fas-chevron-left" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
                         <tooltip><Tooltip text="Semana anterior" /></tooltip>
                     </Button>
                     <Label styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
                     <Button styleClass="btn-icon">
-                        <graphic><FontIcon iconLiteral="fas-chevron-right" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                         <tooltip><Tooltip text="Semana siguiente" /></tooltip>
                     </Button>
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="caption" text="SEMÁFORO:" />
                     <Label styleClass="chip, chip-green" text="Disponible">
-                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                     </Label>
                     <Label styleClass="chip, chip-amber" text="En Sala">
-                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                     </Label>
                     <Label styleClass="chip, chip-blood" text="Ocupado">
-                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                     </Label>
                 </HBox>
 
-                <HBox alignment="TOP_LEFT" spacing="24.0">
+                <GridPane alignment="TOP_LEFT" hgap="24.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="220.0" percentWidth="24.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="76.0" />
+                    </columnConstraints>
                     <!-- Columna izquierda -->
-                    <VBox minWidth="260.0" prefWidth="260.0" spacing="24.0">
+                    <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="24.0">
                         <VBox spacing="12.0" styleClass="card">
                             <HBox alignment="CENTER_LEFT">
                                 <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" HBox.hgrow="ALWAYS" />
@@ -68,7 +72,7 @@
                             <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="info-value" text="Lun, 24 Oct 2024" /></HBox>
                             <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="chip" text="10:00 AM (45 min)" /></HBox>
                             <Button maxWidth="Infinity" styleClass="btn-primary, nav-link" text="Iniciar Cita Clínica" userData="cita-panel.fxml">
-                                <graphic><FontIcon iconLiteral="fas-play" /></graphic>
+                                <graphic><FontIcon iconLiteral="fi-rr-play" /></graphic>
                             </Button>
                             <Label styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" />
                         </VBox>
@@ -80,7 +84,7 @@
                     </VBox>
 
                     <!-- Agenda semanal -->
-                    <VBox spacing="12.0" styleClass="card" HBox.hgrow="ALWAYS">
+                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" spacing="12.0" styleClass="card">
                         <Label styleClass="card-title" text="Agenda Semanal de Turnos Médicos" />
                         <Label styleClass="card-subtitle" text="Haz clic en cualquier celda para ver la ficha o crear un turno rápido" />
                         <GridPane fx:id="semana" hgap="4.0" vgap="4.0">
@@ -98,15 +102,15 @@
                             <Label styleClass="hint" text="Resumen Lun 24: 1 finalizada · 1 en espera · 2 confirmadas · 2 libres" />
                             <Region HBox.hgrow="ALWAYS" />
                             <Button styleClass="btn-edit" text="Imprimir">
-                                <graphic><FontIcon iconLiteral="fas-print" /></graphic>
+                                <graphic><FontIcon iconLiteral="fi-rr-print" /></graphic>
                                 <tooltip><Tooltip text="Imprimir agenda diaria" /></tooltip>
                             </Button>
                             <Button styleClass="btn-edit" text="Exportar PDF">
-                                <graphic><FontIcon iconLiteral="fas-file-pdf" /></graphic>
+                                <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
                             </Button>
                         </HBox>
                     </VBox>
-                </HBox>
+                </GridPane>
             </VBox>
         </VBox>
     </ScrollPane>
