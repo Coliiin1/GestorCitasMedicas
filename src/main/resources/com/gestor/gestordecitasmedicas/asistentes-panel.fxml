@@ -13,7 +13,7 @@
                 <Label styleClass="card-subtitle" text="Control de usuarios, personal de enfermería, asistentes médicos y niveles de acceso al sistema clínico." />
             </VBox>
             <Button styleClass="btn-primary" text="Nuevo Asistente">
-                <graphic><FontIcon iconLiteral="fas-user-plus" /></graphic>
+                <graphic><FontIcon iconLiteral="fi-rr-user-add" /></graphic>
             </Button>
         </HBox>
     </HBox>
@@ -25,13 +25,13 @@
                 <HBox alignment="CENTER_LEFT" spacing="12.0">
                     <TextField maxWidth="Infinity" promptText="Buscar Asistente por Nombre o Usuario..." styleClass="search-field" HBox.hgrow="ALWAYS" />
                     <Button styleClass="btn-primary" text="Buscar">
-                        <graphic><FontIcon iconLiteral="fas-search" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-search" /></graphic>
                     </Button>
                     <Label styleClass="chip, chip-green" text="Asistentes Activos: 3">
-                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                     </Label>
                     <Label styleClass="chip, chip-gray" text="Inactivos: 0">
-                        <graphic><FontIcon iconLiteral="fas-circle" iconSize="8" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                     </Label>
                 </HBox>
 

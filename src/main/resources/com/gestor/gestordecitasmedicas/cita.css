@@ -58,8 +58,8 @@
     -fx-cursor: hand;
 }
 
-.nav-item .font-icon {
-    -fx-icon-color: #cbd5e1;
+.nav-item .ikonli-font-icon {
+    -fx-icon-color: white;
     -fx-icon-size: 14;
 }
 
@@ -68,7 +68,7 @@
     -fx-text-fill: white;
 }
 
-.nav-item:hover .font-icon {
+.nav-item:hover .ikonli-font-icon {
     -fx-icon-color: white;
 }
 
@@ -78,7 +78,7 @@
     -fx-text-fill: white;
 }
 
-.nav-item-active .font-icon {
+.nav-item-active .ikonli-font-icon {
     -fx-icon-color: white;
 }
 
@@ -402,23 +402,23 @@
     -fx-text-fill: #be123c;
 }
 
-.chip .font-icon {
+.chip .ikonli-font-icon {
     -fx-icon-color: #0369a1;
 }
 
-.chip-gray .font-icon {
+.chip-gray .ikonli-font-icon {
     -fx-icon-color: #64748b;
 }
 
-.chip-green .font-icon {
+.chip-green .ikonli-font-icon {
     -fx-icon-color: #047857;
 }
 
-.chip-amber .font-icon {
+.chip-amber .ikonli-font-icon {
     -fx-icon-color: #b45309;
 }
 
-.chip-blood .font-icon {
+.chip-blood .ikonli-font-icon {
     -fx-icon-color: #be123c;
 }
 
@@ -450,6 +450,14 @@
     -fx-background-color: #075985;
 }
 
+.btn-primary .ikonli-font-icon,
+.btn-primary-blue .ikonli-font-icon,
+.btn-accent .ikonli-font-icon,
+.btn-create .ikonli-font-icon,
+.btn-save .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
 .btn-secondary,
 .btn-outline,
 .btn-dark {
@@ -471,6 +479,12 @@
 .btn-dark:hover {
     -fx-background-color: #f8fafc;
     -fx-text-fill: #1e293b;
+}
+
+.btn-secondary .ikonli-font-icon,
+.btn-outline .ikonli-font-icon,
+.btn-dark .ikonli-font-icon {
+    -fx-icon-color: #475569;
 }
 
 .btn-edit,
@@ -505,6 +519,14 @@
     -fx-background-color: #fff1f2;
 }
 
+.btn-edit .ikonli-font-icon {
+    -fx-icon-color: #475569;
+}
+
+.btn-del .ikonli-font-icon {
+    -fx-icon-color: #e11d48;
+}
+
 .btn-dashed {
     -fx-background-color: #f8fafc;
     -fx-border-color: #7dd3fc;
@@ -523,6 +545,10 @@
 
 .btn-dashed:hover {
     -fx-background-color: #f0f9ff;
+}
+
+.btn-dashed .ikonli-font-icon {
+    -fx-icon-color: #0369a1;
 }
 
 /* Iconos: 36 x 36, sin fondo hasta hover */
@@ -548,8 +574,8 @@
     -fx-background-color: #f1f5f9;
 }
 
-.btn-icon .font-icon,
-.icon-button .font-icon {
+.btn-icon .ikonli-font-icon,
+.icon-button .ikonli-font-icon {
     -fx-icon-color: #475569;
 }
 
@@ -558,8 +584,8 @@
     -fx-text-fill: #e11d48;
 }
 
-.btn-icon-danger .font-icon,
-.icon-button-danger .font-icon {
+.btn-icon-danger .ikonli-font-icon,
+.icon-button-danger .ikonli-font-icon {
     -fx-icon-color: #e11d48;
 }
 
@@ -738,8 +764,8 @@
     -fx-text-fill: white;
 }
 
-.step-circle-active .font-icon,
-.step-circle-done .font-icon {
+.step-circle-active .ikonli-font-icon,
+.step-circle-done .ikonli-font-icon {
     -fx-icon-color: white;
 }
 

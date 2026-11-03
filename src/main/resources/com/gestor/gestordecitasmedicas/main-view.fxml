@@ -27,22 +27,22 @@
                 <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
                 <Label styleClass="nav-title" text="MÓDULOS" />
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-home" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-home" /></graphic>
                 </Button>
                 <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso" userData="cita-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-stethoscope" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-clock" /></graphic>
                 </Button>
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Agenda Médica" userData="agenda-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-calendar-alt" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-calendar" /></graphic>
                 </Button>
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administración de Pacientes" userData="pacientes-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-users" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-users" /></graphic>
                 </Button>
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-notes-medical" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-notes-medical" /></graphic>
                 </Button>
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fas-user-md" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-user-md" /></graphic>
                 </Button>
             </VBox>
         </VBox>

@@ -24,11 +24,11 @@
                 </VBox>
                 <Separator orientation="VERTICAL" />
                 <Button onAction="#onPausar" styleClass="btn-icon">
-                    <graphic><FontIcon iconLiteral="fas-pause" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-pause" /></graphic>
                     <tooltip><Tooltip text="Pausar consulta" /></tooltip>
                 </Button>
                 <Button onAction="#onCancelar" styleClass="btn-icon, btn-icon-danger">
-                    <graphic><FontIcon iconLiteral="fas-times" /></graphic>
+                    <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                     <tooltip><Tooltip text="Cancelar consulta" /></tooltip>
                 </Button>
             </HBox>
@@ -62,7 +62,7 @@
                             <Label fx:id="lblPaciente" styleClass="patient-name" text="Carlos Alberto Mendoza Ruiz" />
                         </VBox>
                         <Button onAction="#onVerExpediente" styleClass="btn-secondary" text="Consultar Expediente Clínico Completo">
-                            <graphic><FontIcon iconLiteral="fas-folder-open" /></graphic>
+                            <graphic><FontIcon iconLiteral="fi-rr-folder-open" /></graphic>
                         </Button>
                     </HBox>
                     <Separator />
@@ -155,7 +155,7 @@
     <HBox alignment="CENTER" styleClass="page-footer">
         <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <Button styleClass="btn-primary, nav-link" text="Siguiente" userData="consulta-panel.fxml">
-                <graphic><FontIcon iconLiteral="fas-arrow-right" /></graphic>
+                <graphic><FontIcon iconLiteral="fi-rr-arrow-right" /></graphic>
             </Button>
         </HBox>
     </HBox>
