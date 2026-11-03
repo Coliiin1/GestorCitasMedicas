@@ -826,6 +826,12 @@
     -fx-border-color: #e2e8f0;
     -fx-background-color: #f8fafc;
     -fx-max-width: 9999;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.slot:hover {
+    -fx-border-color: #0284c7;
 }
 
 .slot .info-value {
@@ -861,11 +867,20 @@
 .slot-free {
     -fx-alignment: CENTER;
     -fx-font-size: 11px;
-    -fx-text-fill: #94a3b8;
-    -fx-border-color: #e2e8f0;
-    -fx-border-style: dashed;
+    -fx-font-weight: bold;
+    -fx-text-fill: #047857;
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: #a7f3d0;
     -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-padding: 8;
+    -fx-cursor: hand;
+}
+
+.slot-free:hover {
+    -fx-background-color: #d1fae5;
+    -fx-border-color: #6ee7b7;
+    -fx-text-fill: #065f46;
 }
 
 /* ---------------------------------------------------------------------

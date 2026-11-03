@@ -3,7 +3,10 @@ package com.gestor.gestordecitasmedicas;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
@@ -12,18 +15,37 @@ import java.time.YearMonth;
 
 public class AgendaController {
     @FXML private GridPane calendario, semana;
+    @FXML private TextField fichaNombre;
+    @FXML private Label fichaEdad, fichaFecha, fichaHora;
 
     private static final String[] DIAS = {"Lunes\n24 Oct", "Martes\n25 Oct", "Miércoles\n26 Oct", "Jueves\n27 Oct", "Viernes\n28 Oct"};
+    private static final String[] FECHAS = {"Lun, 24 Oct 2024", "Mar, 25 Oct 2024", "Mié, 26 Oct 2024", "Jue, 27 Oct 2024", "Vie, 28 Oct 2024"};
     private static final String[] HORAS = {"09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "04:00 PM", "05:00 PM"};
-    // TODO: reemplazar por las citas del modelo (Cita) cuando exista el flujo de citas.
-    // Una fila por hora, una columna por día. Formato "estado|paciente|motivo"; null = disponible.
-    private static final String[][] CITAS = {
-            {"Completada|Elena Navarro V.|Control Hipertensión", "Confirmada|Roberto Gómez B.|Primera Consulta", null, "Confirmada|Ana María Rios|Lectura de Rayos X", null},
-            {"En espera|Carlos A. Mendoza|Triaje / Cita General", "Confirmada|Miriam Valenzuela|Revisión Post-op", "Confirmada|Samuel Paredes L.|Evaluación Rutina", null, "Confirmada|Lucía Fernández|Entrega de Exámenes"},
-            {"Confirmada|Patricia Morales|Dolor Articular", null, null, "Confirmada|Joaquín Delgado|Consulta Preventiva", null},
-            {null, "Confirmada|Daniela Castro E.|Resultados Laboratorio", "Reservado|Comité Clínico|Sesión Médica", null, "Confirmada|Guillermo Vega|Control Rutinario"},
-            {"Confirmada|Marcos Villalba|Revisión General", "Confirmada|Beatriz Sotomayor|Consulta Alergias", null, null, null},
-            {null, null, "Confirmada|Hernán Ortiz|Evaluación Médica", null, "Cierre|Bloque Administrativo|Cierre de Fichas"},
+
+    // TODO: reemplazar por las citas del modelo (Cita/Paciente) cuando exista el flujo de citas.
+    // Una fila por hora, una columna por día. null = disponible.
+    private static final class Turno {
+        final String estado, paciente, motivo, edad;
+
+        Turno(String estado, String paciente, String motivo, String edad) {
+            this.estado = estado;
+            this.paciente = paciente;
+            this.motivo = motivo;
+            this.edad = edad;
+        }
+    }
+
+    private static Turno t(String estado, String paciente, String motivo, String edad) {
+        return new Turno(estado, paciente, motivo, edad);
+    }
+
+    private static final Turno[][] CITAS = {
+            {t("Completada", "Elena Navarro V.", "Control Hipertensión", "57"), t("Confirmada", "Roberto Gómez B.", "Primera Consulta", "34"), null, t("Confirmada", "Ana María Rios", "Lectura de Rayos X", "29"), null},
+            {t("En espera", "Carlos A. Mendoza", "Triaje / Cita General", "42"), t("Confirmada", "Miriam Valenzuela", "Revisión Post-op", "61"), t("Confirmada", "Samuel Paredes L.", "Evaluación Rutina", "38"), null, t("Confirmada", "Lucía Fernández", "Entrega de Exámenes", "45")},
+            {t("Confirmada", "Patricia Morales", "Dolor Articular", "50"), null, null, t("Confirmada", "Joaquín Delgado", "Consulta Preventiva", "33"), null},
+            {null, t("Confirmada", "Daniela Castro E.", "Resultados Laboratorio", "27"), t("Reservado", "Comité Clínico", "Sesión Médica", "--"), null, t("Confirmada", "Guillermo Vega", "Control Rutinario", "68")},
+            {t("Confirmada", "Marcos Villalba", "Revisión General", "41"), t("Confirmada", "Beatriz Sotomayor", "Consulta Alergias", "36"), null, null, null},
+            {null, null, t("Confirmada", "Hernán Ortiz", "Evaluación Médica", "52"), null, t("Cierre", "Bloque Administrativo", "Cierre de Fichas", "--")},
     };
 
     @FXML
@@ -49,8 +71,11 @@ public class AgendaController {
             Label hora = new Label(HORAS[h]);
             hora.getStyleClass().add("info-value");
             semana.add(hora, 0, h + 1);
-            for (int c = 0; c < DIAS.length; c++) semana.add(celdaCita(CITAS[h][c]), c + 1, h + 1);
+            for (int c = 0; c < DIAS.length; c++) semana.add(celdaCita(CITAS[h][c], FECHAS[c], HORAS[h]), c + 1, h + 1);
         }
+
+        // Turno en curso por defecto: Carlos A. Mendoza (Lun 24, 10:00 AM).
+        mostrarCita(CITAS[1][0], FECHAS[0], HORAS[1]);
     }
 
     private Label celdaCalendario(String texto, String estilo) {
@@ -61,22 +86,40 @@ public class AgendaController {
         return l;
     }
 
-    private Node celdaCita(String cita) {
-        if (cita == null) {
-            Label libre = new Label("+ Disponible");
+    private Node celdaCita(Turno turno, String fecha, String hora) {
+        if (turno == null) {
+            Button libre = new Button("+ Disponible");
             libre.getStyleClass().add("slot-free");
             libre.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            libre.setOnAction(e -> crearCita());
             return libre;
         }
-        String[] p = cita.split("\\|");
-        Label estado = new Label(p[0].toUpperCase());
+        Label estado = new Label(turno.estado.toUpperCase());
         estado.getStyleClass().add("caption");
-        Label paciente = new Label(p[1]);
+        Label paciente = new Label(turno.paciente);
         paciente.getStyleClass().add("info-value");
-        Label motivo = new Label(p[2]);
+        Label motivo = new Label(turno.motivo);
         motivo.getStyleClass().add("hint");
-        VBox v = new VBox(2, estado, paciente, motivo);
-        v.getStyleClass().addAll("slot", "slot-" + p[0].toLowerCase().replace(' ', '-'));
-        return v;
+        VBox contenido = new VBox(2, estado, paciente, motivo);
+        contenido.setMaxWidth(Double.MAX_VALUE);
+
+        Button celda = new Button();
+        celda.setGraphic(contenido);
+        celda.getStyleClass().addAll("slot", "slot-" + turno.estado.toLowerCase().replace(' ', '-'));
+        celda.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        celda.setOnAction(e -> mostrarCita(turno, fecha, hora));
+        return celda;
+    }
+
+    private void mostrarCita(Turno turno, String fecha, String hora) {
+        fichaNombre.setText(turno.paciente);
+        fichaEdad.setText("Edad: " + turno.edad + " años");
+        fichaFecha.setText(fecha);
+        fichaHora.setText(hora + " (45 min)");
+    }
+
+    // TODO: redirigir a la ventana de crear cita cuando esté implementada.
+    private void crearCita() {
+        new Alert(Alert.AlertType.INFORMATION, "Crear cita: falta implementación.").show();
     }
 }

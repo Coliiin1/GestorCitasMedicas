@@ -66,11 +66,11 @@
                             <Label styleClass="hint" text="Turno en curso / Próximo a atender" />
                             <Separator />
                             <Label styleClass="caption" text="NOMBRE DEL PACIENTE:" />
-                            <TextField editable="false" styleClass="search-field" text="Carlos Alberto Mendoza Ruiz" />
-                            <Label styleClass="hint" text="Edad: 42 años" />
+                            <TextField fx:id="fichaNombre" editable="false" styleClass="search-field" text="Carlos Alberto Mendoza Ruiz" />
+                            <Label fx:id="fichaEdad" styleClass="hint" text="Edad: 42 años" />
                             <Label styleClass="caption" text="DATOS DE LA CITA:" />
-                            <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="info-value" text="Lun, 24 Oct 2024" /></HBox>
-                            <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label styleClass="chip" text="10:00 AM (45 min)" /></HBox>
+                            <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaFecha" styleClass="info-value" text="Lun, 24 Oct 2024" /></HBox>
+                            <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaHora" styleClass="chip" text="10:00 AM (45 min)" /></HBox>
                             <Button maxWidth="Infinity" styleClass="btn-primary, nav-link" text="Iniciar Cita Clínica" userData="cita-panel.fxml">
                                 <graphic><FontIcon iconLiteral="fi-rr-play" /></graphic>
                             </Button>
