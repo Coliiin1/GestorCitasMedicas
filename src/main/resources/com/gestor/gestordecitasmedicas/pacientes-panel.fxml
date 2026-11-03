@@ -58,6 +58,7 @@
                             </HBox>
                             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                                 <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-edit, expediente-link" text="Expediente" userData="Carlos Alberto Mendoza Ruiz|#EXP-0982|MERC840912HDFNR03|+52 55 4192 8831" />
                                 <Button styleClass="btn-del" text="Eliminar" />
                             </HBox>
                         </HBox>
@@ -84,6 +85,7 @@
                             </HBox>
                             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                                 <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-edit, expediente-link" text="Expediente" userData="Elena Navarro Velázquez|#EXP-1045|NAVE910405MDFLL02|+52 55 7823 4901" />
                                 <Button styleClass="btn-del" text="Eliminar" />
                             </HBox>
                         </HBox>
@@ -110,6 +112,7 @@
                             </HBox>
                             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                                 <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-edit, expediente-link" text="Expediente" userData="Roberto Gómez Fernández|#EXP-0872|GOFR751218HJCR01|+52 33 1290 8472" />
                                 <Button styleClass="btn-del" text="Eliminar" />
                             </HBox>
                         </HBox>
@@ -136,6 +139,7 @@
                             </HBox>
                             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                                 <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-edit, expediente-link" text="Expediente" userData="Miriam Valenzuela Castro|#EXP-1120|VACM980614MDFSM08|+52 55 6012 3499" />
                                 <Button styleClass="btn-del" text="Eliminar" />
                             </HBox>
                         </HBox>
@@ -162,6 +166,7 @@
                             </HBox>
                             <HBox alignment="CENTER_RIGHT" spacing="8.0">
                                 <Button styleClass="btn-edit, nav-link" text="Editar" userData="paciente-editar-panel.fxml" />
+                                <Button styleClass="btn-edit, expediente-link" text="Expediente" userData="Jorge Antonio Aguilar Ríos|#EXP-1134|AIRJ890102HDFNR09|+52 55 9012 8765" />
                                 <Button styleClass="btn-del" text="Eliminar" />
                             </HBox>
                         </HBox>
@@ -190,3 +195,4 @@
         </VBox>
     </ScrollPane>
 </VBox>
+

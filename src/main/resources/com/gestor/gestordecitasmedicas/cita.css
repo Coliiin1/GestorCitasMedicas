@@ -935,3 +935,51 @@
     -fx-background-color: #fef3c7;
     -fx-text-fill: #b45309;
 }
+
+/* Pestañas del expediente */
+.expediente-tabs > .tab-header-area {
+    -fx-padding: 0 0 12 0;
+}
+.expediente-tabs > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+    -fx-effect: null;
+}
+.expediente-tabs > .tab-header-area .tab {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-padding: 10 16;
+    -fx-cursor: hand;
+}
+.expediente-tabs > .tab-header-area .tab:hover {
+    -fx-background-color: #f8fafc;
+}
+.expediente-tabs > .tab-header-area .tab:selected {
+    -fx-background-color: #0369a1;
+    -fx-border-color: #0369a1;
+}
+.expediente-tabs > .tab-header-area .tab .tab-label {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.expediente-tabs > .tab-header-area .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+.expediente-tabs > .tab-header-area .tab:focused .focus-indicator {
+    -fx-border-color: transparent;
+}
+.expediente-tabs > .tab-content-area {
+    -fx-background-color: transparent;
+}
+
+.expediente-tabs:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-effect: null;
+}
+.expediente-identidad {
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: #bae6fd;
+}

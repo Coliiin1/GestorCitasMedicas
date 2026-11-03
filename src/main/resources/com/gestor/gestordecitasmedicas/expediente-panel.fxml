@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ExpedienteController">
+    <HBox alignment="CENTER" styleClass="page-header">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="panel-title" text="EXPEDIENTE DEL PACIENTE" />
+                <Label styleClass="card-subtitle" text="Información de identidad e historial clínico" />
+            </VBox>
+            <Button styleClass="btn-primary, nav-link" text="Volver a pacientes" userData="pacientes-panel.fxml"><graphic><FontIcon iconLiteral="fas-arrow-left" /></graphic></Button>
+        </HBox>
+    </HBox>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="20.0">
+                <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="card, expediente-identidad">
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                        <Label fx:id="folio" styleClass="section-label" />
+                        <Label fx:id="nombre" styleClass="panel-title" wrapText="true" />
+                        <HBox spacing="5.0"><Label styleClass="patient-meta" text="CURP:" /><Label fx:id="curp" styleClass="meta-mono" /></HBox>
+                    </VBox>
+                    <Button styleClass="btn-secondary" text="Exportar expediente PDF" onAction="#exportarPdf">
+                        <graphic><FontIcon iconLiteral="fas-file-pdf" /></graphic>
+                    </Button>
+                </HBox>
+                <HBox alignment="TOP_LEFT" spacing="20.0">
+                    <VBox spacing="20.0" prefWidth="270.0" minWidth="230.0">
+                        <VBox spacing="12.0" styleClass="card">
+                            <Label styleClass="section-label" text="FICHA DE IDENTIDAD" />
+                            <VBox spacing="4.0"><Label styleClass="field-label" text="NOMBRE COMPLETO" /><Label fx:id="nombreFicha" wrapText="true" styleClass="meta-value" /></VBox>
+                            <VBox spacing="4.0"><Label styleClass="field-label" text="TELÉFONO DE CONTACTO" /><Label fx:id="telefono" styleClass="meta-value" /></VBox>
+                            <VBox spacing="4.0"><Label styleClass="field-label" text="FECHA DE NACIMIENTO, SEXO Y DOMICILIO" wrapText="true" /><Label text="No disponibles" styleClass="patient-meta" /></VBox>
+                        </VBox>
+                        <VBox spacing="12.0" styleClass="card">
+                            <Label styleClass="section-label" text="ALERGIAS Y ADVERTENCIAS" wrapText="true" />
+                            <Label styleClass="patient-meta" text="Sin información disponible." wrapText="true" />
+                        </VBox>
+                    </VBox>
+                    <TabPane styleClass="expediente-tabs" fx:id="secciones" tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS" maxWidth="Infinity">
+                        <tabs>
+                            <Tab text="Historial de consultas">
+                                <VBox spacing="12.0" styleClass="card">
+                                    <Label styleClass="section-label" text="CRONOLOGÍA Y REGISTRO DE CONSULTAS MÉDICAS" wrapText="true" />
+                                    <Label styleClass="card-subtitle" text="Aquí se mostrarán las consultas y su detalle clínico." wrapText="true" />
+                                    <Label styleClass="patient-meta" text="No hay consultas disponibles para este paciente." wrapText="true" />
+                                </VBox>
+                            </Tab>
+                            <Tab text="Recetas y farmacología">
+                                <VBox spacing="12.0" styleClass="card">
+                                    <Label styleClass="section-label" text="REGISTRO HISTÓRICO DE PRESCRIPCIONES" wrapText="true" />
+                                    <Label styleClass="card-subtitle" text="Medicamentos y recetas vinculados a las consultas." wrapText="true" />
+                                    <Label styleClass="patient-meta" text="No hay recetas disponibles para este paciente." wrapText="true" />
+                                </VBox>
+                            </Tab>
+                            <Tab text="Antecedentes y evolución vital">
+                                <VBox spacing="12.0" styleClass="card">
+                                    <Label styleClass="section-label" text="ANTECEDENTES Y EVOLUCIÓN DE SIGNOS VITALES" wrapText="true" />
+                                    <Label styleClass="card-subtitle" text="Seguimiento de antecedentes y mediciones registradas en las consultas." wrapText="true" />
+                                    <Label styleClass="patient-meta" text="No hay antecedentes ni signos vitales disponibles para este paciente." wrapText="true" />
+                                </VBox>
+                            </Tab>
+                        </tabs>
+                    </TabPane>
+                </HBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>
+
+

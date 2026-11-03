@@ -22,6 +22,7 @@ public class MainController {
     private final Map<String, Node> paneles = new HashMap<>();
     // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
     private Button ultimoActivo;
+    private ExpedienteController expedienteController;
 
     @FXML
     private void initialize() {
@@ -49,11 +50,22 @@ public class MainController {
 
     private Node cargar(String fxml) {
         try {
-            Node panel = FXMLLoader.load(MainController.class.getResource(fxml));
+            FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxml));
+            Node panel = loader.load();
+            if ("expediente-panel.fxml".equals(fxml)) expedienteController = loader.getController();
             // Botones de panel con styleClass "nav-link" y userData = destino. Se escucha el ActionEvent que sube
             // al panel porque lookupAll no ve dentro de un ScrollPane sin skin.
             panel.addEventHandler(ActionEvent.ACTION, e -> {
-                if (e.getTarget() instanceof Button && ((Node) e.getTarget()).getStyleClass().contains("nav-link")) ir((String) ((Node) e.getTarget()).getUserData());
+                if (e.getTarget() instanceof Button) {
+                    Button boton = (Button) e.getTarget();
+                    if (boton.getStyleClass().contains("expediente-link")) {
+                        String[] datos = ((String) boton.getUserData()).split("\\|", -1);
+                        ir("expediente-panel.fxml");
+                        expedienteController.mostrarPaciente(datos);
+                    } else if (boton.getStyleClass().contains("nav-link")) {
+                        ir((String) boton.getUserData());
+                    }
+                }
             });
             return panel;
         } catch (IOException ex) {
@@ -61,3 +73,4 @@ public class MainController {
         }
     }
 }
+

@@ -92,6 +92,38 @@ public class ControladorPDF {
         return generado && archivo.exists() && archivo.length() > 0;
     }
 
+    public void generarExpediente(File archivo, String nombre, String folio, String curp, String telefono)
+            throws IOException, DocumentException {
+        Document documento = new Document(PageSize.A4, 40, 40, 40, 40);
+        try (FileOutputStream salida = new FileOutputStream(archivo)) {
+            PdfWriter.getInstance(documento, salida);
+            documento.open();
+            try {
+                documento.add(new Paragraph("Expediente del paciente", FUENTE_TITULO));
+                documento.add(new Paragraph("Información disponible en el sistema", FUENTE_SUBTITULO));
+                agregarSeccion(documento, "Ficha de identidad");
+                PdfPTable datos = new PdfPTable(2);
+                datos.setWidthPercentage(100);
+                datos.setWidths(new float[]{1f, 2f});
+                agregarFila(datos, "Nombre", texto(nombre));
+                agregarFila(datos, "Expediente", texto(folio));
+                agregarFila(datos, "CURP", texto(curp));
+                agregarFila(datos, "Teléfono", texto(telefono));
+                agregarFila(datos, "Fecha de nacimiento, sexo y domicilio", "No disponibles");
+                documento.add(datos);
+                agregarSeccion(documento, "Alergias y advertencias");
+                documento.add(new Paragraph("Sin información disponible.", FUENTE_DATO));
+                agregarSeccion(documento, "Historial de consultas");
+                documento.add(new Paragraph("No hay consultas disponibles para este paciente.", FUENTE_DATO));
+                agregarSeccion(documento, "Recetas y farmacología");
+                documento.add(new Paragraph("No hay recetas disponibles para este paciente.", FUENTE_DATO));
+                agregarSeccion(documento, "Antecedentes y evolución vital");
+                documento.add(new Paragraph("No hay antecedentes ni signos vitales disponibles para este paciente.", FUENTE_DATO));
+            } finally {
+                documento.close();
+            }
+        }
+    }
     private void agregarSeccion(Document documento, String titulo) throws DocumentException {
         Paragraph seccion = new Paragraph(titulo, FUENTE_SECCION);
         seccion.setSpacingBefore(14);
@@ -234,3 +266,4 @@ public class ControladorPDF {
         }
     }
 }
+
