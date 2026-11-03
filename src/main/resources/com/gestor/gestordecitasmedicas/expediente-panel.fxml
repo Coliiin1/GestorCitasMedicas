@@ -9,7 +9,7 @@
                 <Label styleClass="panel-title" text="EXPEDIENTE DEL PACIENTE" />
                 <Label styleClass="card-subtitle" text="Información de identidad e historial clínico" />
             </VBox>
-            <Button styleClass="btn-primary, nav-link" text="Volver a pacientes" userData="pacientes-panel.fxml"><graphic><FontIcon iconLiteral="fas-arrow-left" /></graphic></Button>
+            <Button styleClass="btn-primary, nav-link" text="Volver a pacientes" userData="pacientes-panel.fxml"><graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic></Button>
         </HBox>
     </HBox>
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
@@ -22,7 +22,7 @@
                         <HBox spacing="5.0"><Label styleClass="patient-meta" text="CURP:" /><Label fx:id="curp" styleClass="meta-mono" /></HBox>
                     </VBox>
                     <Button styleClass="btn-secondary" text="Exportar expediente PDF" onAction="#exportarPdf">
-                        <graphic><FontIcon iconLiteral="fas-file-pdf" /></graphic>
+                        <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
                     </Button>
                 </HBox>
                 <HBox alignment="TOP_LEFT" spacing="20.0">
@@ -68,5 +68,6 @@
         </VBox>
     </ScrollPane>
 </VBox>
+
 
 
