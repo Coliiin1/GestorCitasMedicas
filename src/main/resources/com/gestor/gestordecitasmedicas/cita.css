@@ -16,6 +16,58 @@
     -fx-font-size: 13px;
 }
 
+/* Editor clínico: misma tipografía, colores y controles que los demás formularios. */
+.dialog-pane.expediente-editor {
+    -fx-background-color: white;
+    -fx-padding: 0;
+}
+
+.expediente-editor .expediente-editor-header {
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-padding: 20 24;
+}
+
+.expediente-editor > .header-panel {
+    -fx-background-color: #f0f9ff;
+    -fx-padding: 0;
+}
+
+.expediente-editor .expediente-editor-fields {
+    -fx-padding: 16 24 20 24;
+}
+
+.expediente-editor-fields > .field-label {
+    -fx-padding: 8 0 0 0;
+}
+
+.expediente-editor .expediente-editor-input {
+    -fx-font-size: 13px;
+    -fx-text-fill: #1e293b;
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+}
+
+.expediente-editor-input .content {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12;
+}
+
+.expediente-editor-input:focused {
+    -fx-border-color: #0ea5e9;
+    -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
+}
+
+.expediente-editor > .button-bar {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #e2e8f0 transparent transparent transparent;
+    -fx-padding: 16 24 20 24;
+}
+
 /* ---------------------------------------------------------------------
    Sidebar
    --------------------------------------------------------------------- */

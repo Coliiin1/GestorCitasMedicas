@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class BaseDatos {
     private String contraseña;
-    private static final String URL = "jdbc:sqlite:citas_medicas.db";
+    private static final String URL = System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
     private static Connection conexion = null;
 
     public static Connection getConexion() {
@@ -344,17 +344,33 @@ public class BaseDatos {
     }
 
     public HashMap<String, Paciente> cargarPacientes() {
+        try {
+            return cargarPacientesFiltrados(null);
+        } catch (IllegalStateException e) {
+            System.err.println(e.getMessage());
+            return new HashMap<>();
+        }
+    }
+
+    public Paciente cargarPacientePorCurp(String curp) {
+        if (curp == null || curp.trim().isEmpty()) return null;
+        return cargarPacientesFiltrados(curp).get(curp);
+    }
+
+    private HashMap<String, Paciente> cargarPacientesFiltrados(String curp) {
         HashMap<String, Paciente> pacientes = new HashMap<>();
         Connection con = getConexion();
         if (con == null) {
-            return pacientes;
+            throw new IllegalStateException("No hay conexión para cargar los pacientes.");
         }
 
         String sql = "SELECT CURP, nombre, apellido_paterno, apellido_materno, fecha_nacimiento, sexo, " +
-                "domicilio, telefono, correo FROM Paciente ORDER BY apellido_paterno, apellido_materno, nombre";
+                "domicilio, telefono, correo FROM Paciente " + (curp == null ? "" : "WHERE CURP = ? ") +
+                "ORDER BY apellido_paterno, apellido_materno, nombre";
 
-        try (PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            if (curp != null) ps.setString(1, curp);
+            try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Paciente paciente = new Paciente(
                         rs.getString("CURP"),
@@ -368,8 +384,9 @@ public class BaseDatos {
                 paciente.setApellidoMaterno(rs.getString("apellido_materno"));
                 pacientes.put(paciente.getCurp(), paciente);
             }
+            }
         } catch (SQLException e) {
-            System.err.println("Error al cargar pacientes: " + e.getMessage());
+            throw new IllegalStateException("No se pudieron cargar los pacientes.", e);
         }
         return pacientes;
     }
@@ -570,7 +587,7 @@ public class BaseDatos {
 
         Connection con = getConexion();
         if (con == null) {
-            return null;
+            throw new IllegalStateException("No hay conexión para cargar el expediente.");
         }
 
         String sql = "SELECT id_expediente, CURP, fecha_apertura, antecedentes_familiares, " +
@@ -588,13 +605,56 @@ public class BaseDatos {
                     expediente.setAntecedentesPersonales(rs.getString("antecedentes_personales"));
                     expediente.setAlergias(rs.getString("alergias"));
                     expediente.setObservaciones(rs.getString("observaciones"));
+                    expediente.setDatosPaciente(cargarPacientePorCurp(curp));
+                    expediente.setConsultas(cargarConsultasPorExpediente(expediente.getIdExpediente()));
+                    expediente.setRecetas(cargarRecetasPorCurp(curp));
                     return expediente;
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error al cargar el expediente: " + e.getMessage());
+            throw new IllegalStateException("No se pudo cargar el expediente.", e);
         }
         return null;
+    }
+
+    public ArrayList<Consulta> cargarConsultasPorExpediente(int idExpediente) {
+        ArrayList<Consulta> consultas = new ArrayList<>();
+        Connection con = getConexion();
+        if (con == null) {
+            throw new IllegalStateException("No hay conexión para cargar las consultas.");
+        }
+        String sql = "SELECT id_consulta, id_cita, fecha, padecimiento, motivo, observaciones "
+                + "FROM Consulta WHERE id_expediente = ? ORDER BY fecha DESC, id_consulta DESC";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idExpediente);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Consulta consulta = new Consulta();
+                    consulta.setIdConsulta(rs.getInt("id_consulta"));
+                    consulta.setIdExpediente(idExpediente);
+                    consulta.setIdCita(rs.getInt("id_cita"));
+                    Object fecha = rs.getObject("fecha");
+                    if (fecha instanceof Number) {
+                        consulta.setFechaConsulta(new java.sql.Timestamp(((Number) fecha).longValue()).toLocalDateTime());
+                    } else if (fecha != null) {
+                        String textoFecha = fecha.toString().trim().replace(' ', 'T');
+                        consulta.setFechaConsulta(textoFecha.length() == 10
+                                ? java.time.LocalDate.parse(textoFecha).atStartOfDay()
+                                : java.time.LocalDateTime.parse(textoFecha));
+                    }
+                    consulta.setPadecimiento(rs.getString("padecimiento"));
+                    consulta.setMotivo(rs.getString("motivo"));
+                    consulta.setObservaciones(rs.getString("observaciones"));
+                    consultas.add(consulta);
+                }
+            }
+        } catch (SQLException | java.time.format.DateTimeParseException e) {
+            throw new IllegalStateException("No se pudo cargar el historial de consultas.", e);
+        }
+        consultas.sort(java.util.Comparator.comparing(Consulta::getFechaConsulta,
+                java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder()))
+                .thenComparing(java.util.Comparator.comparingInt(Consulta::getIdConsulta).reversed()));
+        return consultas;
     }
 
     public boolean insertarReceta(Receta receta) {
@@ -679,17 +739,32 @@ public class BaseDatos {
     }
 
     public HashMap<Integer, Receta> cargarRecetas() {
+        return cargarRecetasFiltradas(null);
+    }
+
+    public HashMap<Integer, Receta> cargarRecetasPorCurp(String curp) {
+        if (curp == null || curp.trim().isEmpty()) {
+            throw new IllegalArgumentException("La CURP es obligatoria.");
+        }
+        return cargarRecetasFiltradas(curp);
+    }
+
+    private HashMap<Integer, Receta> cargarRecetasFiltradas(String curp) {
         HashMap<Integer, Receta> recetas = new HashMap<>();
         Connection con = getConexion();
         if (con == null) {
-            return recetas;
+            throw new IllegalStateException("No hay conexión para cargar las recetas.");
         }
 
         String sql = "SELECT r.id_receta, r.id_administrador, r.id_cita, r.fecha, r.diagnostico, c.CURP " +
-                "FROM Receta r JOIN Cita c ON c.id_cita = r.id_cita ORDER BY r.id_receta";
+                "FROM Receta r JOIN Cita c ON c.id_cita = r.id_cita " +
+                (curp == null ? "" : "WHERE c.CURP = ? ") + "ORDER BY r.id_receta";
 
-        try (PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            if (curp != null) {
+                ps.setString(1, curp);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Receta receta = new Receta();
                 receta.setIdReceta(rs.getInt("id_receta"));
@@ -700,8 +775,9 @@ public class BaseDatos {
                 receta.setCurp(rs.getString("CURP"));
                 recetas.put(receta.getIdReceta(), receta);
             }
+            }
         } catch (SQLException e) {
-            System.err.println("Error al cargar recetas: " + e.getMessage());
+            throw new IllegalStateException("No se pudieron cargar las recetas.", e);
         }
 
         for (Receta receta : recetas.values()) {
@@ -709,7 +785,7 @@ public class BaseDatos {
                 receta.setMedicamentos(cargarMedicamentosPorReceta(con, receta.getIdReceta()));
                 receta.setSignosVitales(cargarSignosVitalesPorReceta(con, receta.getIdReceta()));
             } catch (SQLException e) {
-                System.err.println("Error al cargar el detalle de la receta " + receta.getIdReceta() + ": " + e.getMessage());
+                throw new IllegalStateException("No se pudo cargar el detalle de la receta " + receta.getIdReceta(), e);
             }
         }
         return recetas;

@@ -21,7 +21,8 @@
                         <Label fx:id="nombre" styleClass="panel-title" wrapText="true" />
                         <HBox spacing="5.0"><Label styleClass="patient-meta" text="CURP:" /><Label fx:id="curp" styleClass="meta-mono" /></HBox>
                     </VBox>
-                    <Button styleClass="btn-secondary" text="Exportar expediente PDF" onAction="#exportarPdf">
+                    <Button fx:id="btnEditar" disable="true" styleClass="btn-primary" text="Editar expediente" onAction="#editarExpediente" />
+                    <Button fx:id="btnExportar" disable="true" styleClass="btn-secondary" text="Exportar expediente PDF" onAction="#exportarPdf">
                         <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
                     </Button>
                 </HBox>
@@ -44,14 +45,14 @@
                                 <VBox spacing="12.0" styleClass="card">
                                     <Label styleClass="section-label" text="CRONOLOGÍA Y REGISTRO DE CONSULTAS MÉDICAS" wrapText="true" />
                                     <Label styleClass="card-subtitle" text="Aquí se mostrarán las consultas y su detalle clínico." wrapText="true" />
-                                    <Label styleClass="patient-meta" text="No hay consultas disponibles para este paciente." wrapText="true" />
+                                    <Label fx:id="historialConsultas" styleClass="patient-meta" wrapText="true" />
                                 </VBox>
                             </Tab>
                             <Tab text="Recetas y farmacología">
                                 <VBox spacing="12.0" styleClass="card">
                                     <Label styleClass="section-label" text="REGISTRO HISTÓRICO DE PRESCRIPCIONES" wrapText="true" />
                                     <Label styleClass="card-subtitle" text="Medicamentos y recetas vinculados a las consultas." wrapText="true" />
-                                    <Label styleClass="patient-meta" text="No hay recetas disponibles para este paciente." wrapText="true" />
+                                    <Label fx:id="historialRecetas" styleClass="patient-meta" wrapText="true" />
                                 </VBox>
                             </Tab>
                             <Tab text="Antecedentes y evolución vital">
@@ -59,6 +60,8 @@
                                     <Label styleClass="section-label" text="ANTECEDENTES Y EVOLUCIÓN DE SIGNOS VITALES" wrapText="true" />
                                     <Label styleClass="card-subtitle" text="Seguimiento de antecedentes y mediciones registradas en las consultas." wrapText="true" />
                                     <Label fx:id="antecedentes" styleClass="patient-meta" text="No hay antecedentes ni signos vitales disponibles para este paciente." wrapText="true" />
+                                    <Label styleClass="section-label" text="EVOLUCIÓN DE SIGNOS VITALES" />
+                                    <Label fx:id="historialSignos" styleClass="patient-meta" wrapText="true" />
                                 </VBox>
                             </Tab>
                         </tabs>

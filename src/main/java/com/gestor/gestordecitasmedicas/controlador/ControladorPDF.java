@@ -1,9 +1,12 @@
 package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Medicamento;
+import com.gestor.gestordecitasmedicas.modelo.Expediente;
+import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
 import com.gestor.gestordecitasmedicas.modelo.SignosVitales;
 import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -92,8 +95,12 @@ public class ControladorPDF {
         return generado && archivo.exists() && archivo.length() > 0;
     }
 
-    public void generarExpediente(File archivo, String nombre, String folio, String curp, String telefono)
+    public void generarExpediente(File archivo, Expediente expediente)
             throws IOException, DocumentException {
+        if (expediente == null || expediente.getDatosPaciente() == null) {
+            throw new IllegalArgumentException("El expediente debe incluir los datos del paciente.");
+        }
+        Paciente paciente = expediente.getDatosPaciente();
         Document documento = new Document(PageSize.A4, 40, 40, 40, 40);
         try (FileOutputStream salida = new FileOutputStream(archivo)) {
             PdfWriter.getInstance(documento, salida);
@@ -105,25 +112,41 @@ public class ControladorPDF {
                 PdfPTable datos = new PdfPTable(2);
                 datos.setWidthPercentage(100);
                 datos.setWidths(new float[]{1f, 2f});
-                agregarFila(datos, "Nombre", texto(nombre));
-                agregarFila(datos, "Expediente", texto(folio));
-                agregarFila(datos, "CURP", texto(curp));
-                agregarFila(datos, "Teléfono", texto(telefono));
-                agregarFila(datos, "Fecha de nacimiento, sexo y domicilio", "No disponibles");
+                agregarFila(datos, "Nombre", TextoExpediente.nombre(paciente));
+                agregarFila(datos, "Expediente", expediente.getIdExpediente() > 0
+                        ? String.valueOf(expediente.getIdExpediente()) : "Sin expediente registrado");
+                agregarFila(datos, "Fecha de apertura", TextoExpediente.fecha(expediente.getFechaApertura()));
+                agregarFila(datos, "CURP", texto(paciente.getCurp()));
+                agregarFila(datos, "Teléfono", texto(paciente.getTelefono()));
+                agregarFila(datos, "Fecha de nacimiento", TextoExpediente.fecha(paciente.getFechaNacimiento()));
+                agregarFila(datos, "Sexo", texto(paciente.getSexo()));
+                agregarFila(datos, "Domicilio", texto(paciente.getDomicilio()));
+                agregarFila(datos, "Correo", texto(paciente.getCorreo()));
+                for (com.itextpdf.text.pdf.PdfPRow fila : datos.getRows()) {
+                    for (PdfPCell celda : fila.getCells()) {
+                        if (celda != null) celda.setPadding(5);
+                    }
+                }
                 documento.add(datos);
-                agregarSeccion(documento, "Alergias y advertencias");
-                documento.add(new Paragraph("Sin información disponible.", FUENTE_DATO));
-                agregarSeccion(documento, "Historial de consultas");
-                documento.add(new Paragraph("No hay consultas disponibles para este paciente.", FUENTE_DATO));
-                agregarSeccion(documento, "Recetas y farmacología");
-                documento.add(new Paragraph("No hay recetas disponibles para este paciente.", FUENTE_DATO));
-                agregarSeccion(documento, "Antecedentes y evolución vital");
-                documento.add(new Paragraph("No hay antecedentes ni signos vitales disponibles para este paciente.", FUENTE_DATO));
+                agregarBloqueClinico(documento, "Alergias y advertencias", TextoExpediente.valor(expediente.getAlergias()));
+                agregarBloqueClinico(documento, "Historial de consultas", TextoExpediente.consultas(expediente));
+                agregarBloqueClinico(documento, "Recetas y farmacología", TextoExpediente.recetas(expediente));
+                agregarBloqueClinico(documento, "Antecedentes", TextoExpediente.antecedentes(expediente));
+                agregarBloqueClinico(documento, "Evolución de signos vitales", TextoExpediente.signos(expediente));
             } finally {
                 documento.close();
             }
         }
     }
+    private void agregarBloqueClinico(Document documento, String titulo, String contenido) throws DocumentException {
+        Paragraph bloque = new Paragraph();
+        bloque.setSpacingBefore(14);
+        bloque.setKeepTogether(true);
+        bloque.add(new Chunk(titulo + "\n", FUENTE_SECCION));
+        bloque.add(new Chunk(contenido, FUENTE_DATO));
+        documento.add(bloque);
+    }
+
     private void agregarSeccion(Document documento, String titulo) throws DocumentException {
         Paragraph seccion = new Paragraph(titulo, FUENTE_SECCION);
         seccion.setSpacingBefore(14);

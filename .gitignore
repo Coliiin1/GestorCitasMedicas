@@ -35,5 +35,12 @@ build/
 ### Credenciales de correo ###
 correo.properties
 
-### Base de datos
-citas_medicas.db
+### Bases de datos locales y archivos auxiliares de SQLite ###
+*.db
+*.sqlite
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm

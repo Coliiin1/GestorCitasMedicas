@@ -1,6 +1,7 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Expediente {
@@ -13,6 +14,15 @@ public class Expediente {
     private String alergias;
     private String observaciones;
     private HashMap<Integer, Receta> recetas = new HashMap<>();
+    private ArrayList<Consulta> consultas = new ArrayList<>();
+
+    public ArrayList<Consulta> getConsultas() {
+        return consultas;
+    }
+
+    public void setConsultas(ArrayList<Consulta> consultas) {
+        this.consultas = consultas;
+    }
 
     public int getIdExpediente() {
         return idExpediente;

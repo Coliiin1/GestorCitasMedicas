@@ -2,7 +2,7 @@
 
 Documento de seguimiento de las funcionalidades de conexión a la base de datos que ya están implementadas y las que permanecen pendientes. Debe actualizarse cada vez que se conecte un nuevo módulo a SQLite.
 
-- **Última actualización:** 2026-11-03
+- **Última actualización:** 2026-11-04
 - **Base de datos:** `citas_medicas.db` (SQLite)
 - **Acceso:** `com.gestor.gestordecitasmedicas.modelo.BaseDatos`
 
@@ -53,6 +53,11 @@ Interfaz conectada: `PacientesController`, `PacienteEditarController`.
 - `[x]` Mostrar datos reales del paciente en el expediente.
 - `[x]` Mostrar alergias, antecedentes y observaciones registradas.
 - `[x]` Crear el expediente automáticamente al dar de alta al paciente.
+- `[x]` Editar y guardar alergias, antecedentes familiares/personales y observaciones.
+- `[x]` Crear el expediente al guardar datos clínicos si el paciente aún no tiene uno.
+- `[x]` Leer el historial de consultas del expediente y las recetas del paciente, con medicamentos y signos vitales.
+- `[x]` Exportar los datos reales del expediente y su historial en PDF.
+- `[x]` Refrescar el expediente al volver al panel y distinguir errores de lectura de historiales vacíos.
 
 Interfaz conectada: `ExpedienteController`.
 
@@ -75,7 +80,7 @@ Métodos existentes sin uso en la interfaz: `insertarCita`, `actualizarCita`, `e
 - `[ ]` Implementar métodos CRUD de consultas en `BaseDatos`.
 - `[ ]` Registrar la consulta al finalizar la atención.
 - `[ ]` Asociar la consulta con la cita y el expediente correspondientes.
-- `[ ]` Mostrar el historial de consultas en el expediente.
+- `[x]` Mostrar el historial de consultas en el expediente.
 
 ### Receta
 
@@ -100,16 +105,16 @@ Métodos existentes sin uso en la interfaz: `insertarMedicamento`, `cargarMedica
 - `[~]` Se guardan y cargan únicamente como parte de una receta.
 - `[ ]` Implementar métodos CRUD independientes para signos vitales.
 - `[ ]` Guardar los signos vitales capturados en “Cita en curso”.
-- `[ ]` Mostrar la evolución de signos vitales en el expediente.
+- `[x]` Mostrar la evolución de signos vitales en el expediente (mediciones vinculadas a recetas).
 
 ### Expediente completo
 
-- `[~]` La base de datos ya permite actualizar y eliminar expedientes.
-- `[ ]` Conectar la edición del expediente desde la interfaz.
+- `[x]` Conectar la edición del expediente desde la interfaz.
+- `[~]` La eliminación de expedientes existe en la base de datos; falta interfaz.
 - `[ ]` Conectar la eliminación del expediente desde la interfaz.
-- `[ ]` Mostrar en el expediente las consultas, recetas y signos vitales del paciente.
+- `[x]` Mostrar en el expediente las consultas, recetas y signos vitales del paciente.
 
-Métodos existentes sin uso en la interfaz: `actualizarExpediente`, `eliminarExpediente`.
+Método existente sin uso en la interfaz: `eliminarExpediente`.
 
 ### Administrador
 
@@ -136,10 +141,19 @@ Métodos existentes sin uso en la interfaz: `actualizarExpediente`, `eliminarExp
 | Fase 3 | Agenda y citas | Pendiente |
 | Fase 4 | Cita en curso y signos vitales | Pendiente |
 | Fase 5 | Consulta, receta y medicamentos | Pendiente |
-| Fase 6 | Expediente completo | Pendiente |
+| Fase 6 | Expediente completo | Parcial: edición, historial y PDF conectados; eliminación independiente pendiente |
 | Fase 7 | Administrador y horarios | Pendiente |
 
 ## Registro de cambios
+
+### 2026-11-04
+
+- Se integró `main` en `shuha` y se completó la edición clínica del expediente.
+- Se agregó la lectura de consultas por expediente y recetas por CURP, sin mezclar pacientes.
+- El PDF ahora incluye identidad, alergias, antecedentes, consultas, medicamentos y signos vitales reales.
+- Se agregaron pruebas de persistencia tras reabrir SQLite, aislamiento de pacientes, expediente vacío/faltante, fechas SQLite, editor JavaFX y contenido del PDF.
+- Ejecutar `./mvnw.cmd test` con `JAVA_HOME` apuntando a un JDK compatible. Las pruebas usan una base temporal mediante `gestor.db.url`; no modifican `citas_medicas.db`.
+- La captura de consultas y recetas desde la atención médica sigue pendiente; el expediente muestra los registros que ya existan en SQLite.
 
 ### 2026-11-03
 
