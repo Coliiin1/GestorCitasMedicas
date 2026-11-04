@@ -644,6 +644,11 @@
     -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
 }
 
+/* Espacio a la derecha para el botón de mostrar/ocultar contraseña */
+.password-field {
+    -fx-padding: 0 44 0 12;
+}
+
 .form-field-mono {
     -fx-font-family: "Consolas", "Courier New", monospace;
 }
@@ -801,22 +806,30 @@
     -fx-text-fill: #475569;
 }
 
+.cal-day,
+.cal-other,
+.cal-sel {
+    -fx-font-size: 12px;
+    -fx-padding: 6;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-alignment: CENTER;
+}
+
 .cal-day {
-    -fx-font-size: 11px;
+    -fx-background-color: #f1f5f9;
     -fx-text-fill: #1e293b;
 }
 
 .cal-other {
-    -fx-font-size: 11px;
+    -fx-background-color: #f8fafc;
     -fx-text-fill: #cbd5e1;
 }
 
 .cal-sel {
-    -fx-font-size: 11px;
+    -fx-background-color: #0284c7;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-color: #0284c7;
-    -fx-background-radius: 4;
 }
 
 .slot {

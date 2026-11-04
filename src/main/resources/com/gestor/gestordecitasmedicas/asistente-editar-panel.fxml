@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!-- Panel "Editar Asistente". Accesible solo desde asistentes-panel.fxml. Solo interfaz. -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.AsistenteEditarController">
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="page-body">
+            <VBox styleClass="edit-card, page-form">
+                <!-- Encabezado -->
+                <VBox spacing="4.0" styleClass="edit-header">
+                    <Label styleClass="panel-title" text="EDITAR ASISTENTE" />
+                    <Label styleClass="card-subtitle" text="Modificación de los datos personales y credenciales del asistente" />
+                </VBox>
+
+                <VBox spacing="24.0" styleClass="form-body">
+                    <!-- Nombre(s), Apellido Paterno, Apellido Materno -->
+                    <GridPane hgap="24.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.33" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                        </columnConstraints>
+
+                        <VBox spacing="8.0" GridPane.columnIndex="0">
+                            <HBox spacing="4.0">
+                                <Label styleClass="field-label" text="NOMBRE (S)" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" text="Sofía" />
+                        </VBox>
+
+                        <VBox spacing="8.0" GridPane.columnIndex="1">
+                            <HBox spacing="4.0">
+                                <Label styleClass="field-label" text="APELLIDO PATERNO" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" text="Alarcón" />
+                        </VBox>
+
+                        <VBox spacing="8.0" GridPane.columnIndex="2">
+                            <HBox spacing="4.0">
+                                <Label styleClass="field-label" text="APELLIDO MATERNO" />
+                            </HBox>
+                            <TextField prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" text="Morales" />
+                        </VBox>
+                    </GridPane>
+
+                    <!-- ID de asistente y contraseña -->
+                    <GridPane hgap="24.0">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="66.66" />
+                            <ColumnConstraints hgrow="ALWAYS" percentWidth="33.34" />
+                        </columnConstraints>
+
+                        <VBox spacing="8.0" GridPane.columnIndex="0">
+                            <HBox spacing="4.0">
+                                <Label styleClass="field-label" text="ID ASISTENTE" />
+                            </HBox>
+                            <TextField editable="false" prefHeight="40.0" promptText="ID" styleClass="form-field, form-field-mono" text="1" />
+                        </VBox>
+
+                        <VBox spacing="8.0" GridPane.columnIndex="1">
+                            <HBox spacing="4.0">
+                                <Label styleClass="field-label" text="CONTRASEÑA" />
+                                <Label styleClass="required" text="*" />
+                            </HBox>
+                            <StackPane>
+                                <PasswordField fx:id="password" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" />
+                                <TextField fx:id="passwordVisible" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" visible="false" />
+                                <Button fx:id="btnTogglePassword" onAction="#onTogglePassword" styleClass="btn-icon" StackPane.alignment="CENTER_RIGHT">
+                                    <graphic><FontIcon iconLiteral="fi-rr-eye" /></graphic>
+                                </Button>
+                            </StackPane>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- Aviso -->
+                    <HBox alignment="TOP_LEFT" spacing="12.0" styleClass="notice-box">
+                        <Label styleClass="notice-icon" text="i" />
+                        <Label maxWidth="Infinity" styleClass="notice-text" text="Los cambios en los datos personales y la contraseña se guardarán en el registro del asistente dentro del sistema clínico." wrapText="true" HBox.hgrow="ALWAYS" />
+                    </HBox>
+
+                    <!-- Acciones -->
+                    <HBox alignment="CENTER" spacing="12.0" styleClass="form-actions">
+                        <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Asistentes" userData="asistentes-panel.fxml">
+                            <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
+                        </Button>
+                        <Button prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
+                            <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>
