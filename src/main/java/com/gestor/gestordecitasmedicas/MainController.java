@@ -20,9 +20,9 @@ public class MainController {
 
     // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
     private final Map<String, Node> paneles = new HashMap<>();
+    private final Map<String, Object> controladores = new HashMap<>();
     // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
     private Button ultimoActivo;
-    private ExpedienteController expedienteController;
 
     @FXML
     private void initialize() {
@@ -34,8 +34,15 @@ public class MainController {
         ir((String) ((Button) e.getSource()).getUserData());
     }
 
-    private void ir(String fxml) {
-        contenido.getChildren().setAll(paneles.computeIfAbsent(fxml, this::cargar));
+    public void ir(String fxml) {
+        Node panel = obtenerPanel(fxml);
+        contenido.getChildren().setAll(panel);
+
+        Object controlador = controladores.get(fxml);
+        if (controlador instanceof PanelRefrescable) {
+            ((PanelRefrescable) controlador).refrescar();
+        }
+
         Button activo = null;
         for (Node n : menu.getChildren()) {
             n.getStyleClass().remove("nav-item-active");
@@ -48,21 +55,35 @@ public class MainController {
         if (activo != null) activo.getStyleClass().add("nav-item-active");
     }
 
+    public Node obtenerPanel(String fxml) {
+        return paneles.computeIfAbsent(fxml, this::cargar);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T controlador(String fxml) {
+        obtenerPanel(fxml);
+        return (T) controladores.get(fxml);
+    }
+
     private Node cargar(String fxml) {
         try {
             FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxml));
             Node panel = loader.load();
-            if ("expediente-panel.fxml".equals(fxml)) expedienteController = loader.getController();
+
+            Object controlador = loader.getController();
+            if (controlador != null) {
+                controladores.put(fxml, controlador);
+                if (controlador instanceof PanelControlado) {
+                    ((PanelControlado) controlador).setMainController(this);
+                }
+            }
+
             // Botones de panel con styleClass "nav-link" y userData = destino. Se escucha el ActionEvent que sube
             // al panel porque lookupAll no ve dentro de un ScrollPane sin skin.
             panel.addEventHandler(ActionEvent.ACTION, e -> {
                 if (e.getTarget() instanceof Button) {
                     Button boton = (Button) e.getTarget();
-                    if (boton.getStyleClass().contains("expediente-link")) {
-                        String[] datos = ((String) boton.getUserData()).split("\\|", -1);
-                        ir("expediente-panel.fxml");
-                        expedienteController.mostrarPaciente(datos);
-                    } else if (boton.getStyleClass().contains("nav-link")) {
+                    if (boton.getStyleClass().contains("nav-link")) {
                         ir((String) boton.getUserData());
                     }
                 }
@@ -73,4 +94,3 @@ public class MainController {
         }
     }
 }
-

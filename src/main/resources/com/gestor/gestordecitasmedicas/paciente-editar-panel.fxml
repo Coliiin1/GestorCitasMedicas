@@ -6,14 +6,14 @@
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<!-- Panel "Actualizar Datos del Paciente" (Stitch a5654516...). Referencia en docs/stitch/code.html y docs/stitch/screen.png. Solo interfaz. -->
-<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+<!-- Panel "Alta / Actualización de Datos del Paciente". Se reutiliza para registrar y editar. -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.PacienteEditarController">
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox styleClass="page-body">
             <VBox styleClass="edit-card, page-form">
                 <!-- Encabezado -->
                 <VBox spacing="4.0" styleClass="edit-header">
-                    <Label styleClass="panel-title" text="ACTUALIZAR DATOS DEL PACIENTE" />
+                    <Label fx:id="lblTitulo" styleClass="panel-title" text="ACTUALIZAR DATOS DEL PACIENTE" />
                     <Label styleClass="card-subtitle" text="Modificación de expediente clínico, datos demográficos y registro oficial" />
                 </VBox>
 
@@ -31,7 +31,7 @@
                                 <Label styleClass="field-label" text="NOMBRE (S)" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" text="Carlos Alberto" />
+                            <TextField fx:id="txtNombre" prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="1">
@@ -39,14 +39,14 @@
                                 <Label styleClass="field-label" text="APELLIDO PATERNO" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" text="Mendoza" />
+                            <TextField fx:id="txtApellidoPaterno" prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="2">
                             <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="APELLIDO MATERNO" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" text="Ruiz" />
+                            <TextField fx:id="txtApellidoMaterno" prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" />
                         </VBox>
                     </GridPane>
 
@@ -62,7 +62,7 @@
                                 <Label styleClass="field-label" text="CURP" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="CURP" styleClass="form-field, form-field-mono" text="MERC840912HDFNR03" />
+                            <TextField fx:id="txtCurp" prefHeight="40.0" promptText="CURP (18 caracteres)" styleClass="form-field, form-field-mono" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="1">
@@ -70,7 +70,7 @@
                                 <Label styleClass="field-label" text="FECHA DE NACIMIENTO" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <DatePicker maxWidth="Infinity" prefHeight="40.0" promptText="dd/mm/aaaa" styleClass="form-field, date-field" />
+                            <DatePicker fx:id="dpFechaNacimiento" maxWidth="Infinity" prefHeight="40.0" promptText="dd/mm/aaaa" styleClass="form-field, date-field" />
                         </VBox>
                     </GridPane>
 
@@ -87,12 +87,12 @@
 
                             <VBox spacing="8.0" GridPane.columnIndex="0">
                                 <Label styleClass="field-label" text="TELÉFONO DE CONTACTO" />
-                                <TextField prefHeight="40.0" promptText="+52 55 0000 0000" styleClass="form-field" text="+52 55 4192 8831" />
+                                <TextField fx:id="txtTelefono" prefHeight="40.0" promptText="Teléfono" styleClass="form-field" />
                             </VBox>
 
                             <VBox spacing="8.0" GridPane.columnIndex="1">
                                 <Label styleClass="field-label" text="SEXO BIOLÓGICO" />
-                                <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Masculino">
+                                <ComboBox fx:id="cbSexo" maxWidth="Infinity" prefHeight="40.0" promptText="Seleccionar" styleClass="form-field, combo-field">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
                                             <String fx:value="Masculino" />
@@ -104,17 +104,15 @@
                             </VBox>
 
                             <VBox spacing="8.0" GridPane.columnIndex="2">
-                                <Label styleClass="field-label" text="ESTADO DEL PACIENTE" />
-                                <ComboBox maxWidth="Infinity" prefHeight="40.0" styleClass="form-field, combo-field" value="Activo (Con Expediente Vigente)">
-                                    <items>
-                                        <FXCollections fx:factory="observableArrayList">
-                                            <String fx:value="Activo (Con Expediente Vigente)" />
-                                            <String fx:value="Inactivo / Baja Temporal" />
-                                        </FXCollections>
-                                    </items>
-                                </ComboBox>
+                                <Label styleClass="field-label" text="CORREO ELECTRÓNICO" />
+                                <TextField fx:id="txtCorreo" prefHeight="40.0" promptText="correo@ejemplo.com" styleClass="form-field" />
                             </VBox>
                         </GridPane>
+
+                        <VBox spacing="8.0">
+                            <Label styleClass="field-label" text="DOMICILIO" />
+                            <TextField fx:id="txtDomicilio" prefHeight="40.0" promptText="Calle, número, colonia, ciudad" styleClass="form-field" />
+                        </VBox>
                     </VBox>
 
                     <!-- Aviso -->
@@ -125,10 +123,10 @@
 
                     <!-- Acciones -->
                     <HBox alignment="CENTER" spacing="12.0" styleClass="form-actions">
-                        <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Expediente" userData="pacientes-panel.fxml">
+                        <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Pacientes" userData="pacientes-panel.fxml">
                             <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
                         </Button>
-                        <Button prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
+                        <Button onAction="#onGuardar" prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
                             <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
                         </Button>
                     </HBox>

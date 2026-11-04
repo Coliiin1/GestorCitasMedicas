@@ -563,6 +563,40 @@ public class BaseDatos {
         return false;
     }
 
+    public Expediente cargarExpedientePorCurp(String curp) {
+        if (curp == null || curp.trim().isEmpty()) {
+            return null;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return null;
+        }
+
+        String sql = "SELECT id_expediente, CURP, fecha_apertura, antecedentes_familiares, " +
+                "antecedentes_personales, alergias, observaciones FROM Expediente " +
+                "WHERE CURP = ? ORDER BY id_expediente DESC LIMIT 1";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, curp);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Expediente expediente = new Expediente();
+                    expediente.setIdExpediente(rs.getInt("id_expediente"));
+                    expediente.setFechaApertura(toUtilDate(rs.getDate("fecha_apertura")));
+                    expediente.setAntecedentesFamiliares(rs.getString("antecedentes_familiares"));
+                    expediente.setAntecedentesPersonales(rs.getString("antecedentes_personales"));
+                    expediente.setAlergias(rs.getString("alergias"));
+                    expediente.setObservaciones(rs.getString("observaciones"));
+                    return expediente;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al cargar el expediente: " + e.getMessage());
+        }
+        return null;
+    }
+
     public boolean insertarReceta(Receta receta) {
         if (receta == null || receta.getIdCita() <= 0) {
             return false;

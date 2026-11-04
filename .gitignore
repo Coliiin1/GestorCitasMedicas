@@ -34,3 +34,6 @@ build/
 
 ### Credenciales de correo ###
 correo.properties
+
+### Base de datos
+citas_medicas.db

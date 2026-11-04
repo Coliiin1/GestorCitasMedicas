@@ -12,6 +12,13 @@ public class Asistente extends Personal {
         this.idAsistente = idAsistente;
     }
 
+    public Asistente(String nombre, String apellidoPaterno, String apellidoMaterno, String contrasena) {
+        setNombre(nombre);
+        setApellidoPaterno(apellidoPaterno);
+        setApellidoMaterno(apellidoMaterno);
+        this.contrasena = contrasena;
+    }
+
     public int getIdAsistente() {
         return idAsistente;
     }

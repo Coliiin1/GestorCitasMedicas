@@ -11,7 +11,7 @@
             <VBox styleClass="edit-card, page-form">
                 <!-- Encabezado -->
                 <VBox spacing="4.0" styleClass="edit-header">
-                    <Label styleClass="panel-title" text="EDITAR ASISTENTE" />
+                    <Label fx:id="lblTitulo" styleClass="panel-title" text="EDITAR ASISTENTE" />
                     <Label styleClass="card-subtitle" text="Modificación de los datos personales y credenciales del asistente" />
                 </VBox>
 
@@ -29,7 +29,7 @@
                                 <Label styleClass="field-label" text="NOMBRE (S)" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" text="Sofía" />
+                            <TextField fx:id="txtNombre" prefHeight="40.0" promptText="Nombre (s)" styleClass="form-field" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="1">
@@ -37,14 +37,14 @@
                                 <Label styleClass="field-label" text="APELLIDO PATERNO" />
                                 <Label styleClass="required" text="*" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" text="Alarcón" />
+                            <TextField fx:id="txtApellidoPaterno" prefHeight="40.0" promptText="Apellido Paterno" styleClass="form-field" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="2">
                             <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="APELLIDO MATERNO" />
                             </HBox>
-                            <TextField prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" text="Morales" />
+                            <TextField fx:id="txtApellidoMaterno" prefHeight="40.0" promptText="Apellido Materno" styleClass="form-field" />
                         </VBox>
                     </GridPane>
 
@@ -59,7 +59,7 @@
                             <HBox spacing="4.0">
                                 <Label styleClass="field-label" text="ID ASISTENTE" />
                             </HBox>
-                            <TextField editable="false" prefHeight="40.0" promptText="ID" styleClass="form-field, form-field-mono" text="1" />
+                            <TextField fx:id="txtId" editable="false" prefHeight="40.0" promptText="ID" styleClass="form-field, form-field-mono" />
                         </VBox>
 
                         <VBox spacing="8.0" GridPane.columnIndex="1">
@@ -88,7 +88,7 @@
                         <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Asistentes" userData="asistentes-panel.fxml">
                             <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
                         </Button>
-                        <Button prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
+                        <Button onAction="#onGuardar" prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
                             <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
                         </Button>
                     </HBox>
