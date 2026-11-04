@@ -29,7 +29,9 @@ public enum FlaticonIcons implements Ikon {
     TIME_PAST("fi-rr-time-past", 0xEFCA),
     CHECK("fi-rr-check", 0xE35F),
     TRASH("fi-rr-trash", 0xF026),
-    ARROW_LEFT("fi-rr-arrow-left", 0xE0C6);
+    ARROW_LEFT("fi-rr-arrow-left", 0xE0C6),
+    EYE("fi-rr-eye", 0xE62C),
+    EYE_CROSSED("fi-rr-eye-crossed", 0xE62F);
 
     private final String description;
     private final int code;

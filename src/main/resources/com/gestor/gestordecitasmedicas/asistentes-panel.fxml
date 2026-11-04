@@ -41,7 +41,7 @@
                         <Label styleClass="chip" text="Asistente Clínico y Triaje" />
                         <Label styleClass="hint" text="Turno Matutino (07:00 - 15:00)" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button styleClass="btn-edit" text="Editar" />
+                        <Button styleClass="btn-edit, nav-link" text="Editar" userData="asistente-editar-panel.fxml" />
                         <Button styleClass="btn-del" text="Eliminar" />
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="row-card">
@@ -49,7 +49,7 @@
                         <Label styleClass="chip" text="Enfermería y Toma de Muestras" />
                         <Label styleClass="hint" text="Turno Vespertino (14:00 - 21:30)" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button styleClass="btn-edit" text="Editar" />
+                        <Button styleClass="btn-edit, nav-link" text="Editar" userData="asistente-editar-panel.fxml" />
                         <Button styleClass="btn-del" text="Eliminar" />
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="row-card">
@@ -57,7 +57,7 @@
                         <Label styleClass="chip" text="Recepción y Agendamiento Médico" />
                         <Label styleClass="hint" text="Turno Completo (08:30 - 18:00)" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Button styleClass="btn-edit" text="Editar" />
+                        <Button styleClass="btn-edit, nav-link" text="Editar" userData="asistente-editar-panel.fxml" />
                         <Button styleClass="btn-del" text="Eliminar" />
                     </HBox>
                 </VBox>

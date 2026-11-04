@@ -20,8 +20,8 @@
         <VBox VBox.vgrow="ALWAYS">
             <VBox styleClass="sidebar-header">
                 <padding><Insets bottom="16.0" left="16.0" right="16.0" top="16.0" /></padding>
-                <Label styleClass="clinic-name" text="Clínica San Gabriel" />
-                <Label styleClass="doctor-name" text="Dr. Ricardo Salinas M." />
+                <Label styleClass="clinic-name" text="Consultorio Medico" />
+                <Label styleClass="doctor-name" text="Dr. Jorge Hernandez." />
             </VBox>
             <VBox fx:id="menu" spacing="4.0">
                 <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
@@ -41,7 +41,7 @@
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Recetas e Indicaciones" userData="consulta-panel.fxml">
                     <graphic><FontIcon iconLiteral="fi-rr-notes-medical" /></graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Personal Clínico" userData="asistentes-panel.fxml">
+                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administracion de Asistentes" userData="asistentes-panel.fxml">
                     <graphic><FontIcon iconLiteral="fi-rr-user-md" /></graphic>
                 </Button>
             </VBox>

@@ -2,6 +2,7 @@ package com.gestor.gestordecitasmedicas;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -16,11 +17,20 @@ import java.time.YearMonth;
 public class AgendaController {
     @FXML private GridPane calendario, semana;
     @FXML private TextField fichaNombre;
-    @FXML private Label fichaEdad, fichaFecha, fichaHora;
+    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel;
 
-    private static final String[] DIAS = {"Lunes\n24 Oct", "Martes\n25 Oct", "Miércoles\n26 Oct", "Jueves\n27 Oct", "Viernes\n28 Oct"};
-    private static final String[] FECHAS = {"Lun, 24 Oct 2024", "Mar, 25 Oct 2024", "Mié, 26 Oct 2024", "Jue, 27 Oct 2024", "Vie, 28 Oct 2024"};
+    private static final String[] DIAS_CAL = {"L", "M", "X", "J", "V", "S", "D"};
+    private static final String[] NOMBRES_DIA = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"};
+    private static final String[] NOMBRES_DIA_CORTO = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
+    private static final String[] MESES = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+    private static final String[] MESES_CORTO = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"};
     private static final String[] HORAS = {"09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "04:00 PM", "05:00 PM"};
+
+    // Semana con los turnos de ejemplo (lunes). El resto de semanas se muestran vacías.
+    private static final LocalDate SEMANA_DEMO = LocalDate.of(2024, 10, 21);
+
+    private YearMonth mes = YearMonth.of(2024, 10);
+    private LocalDate seleccion = LocalDate.of(2024, 10, 24);
 
     // TODO: reemplazar por las citas del modelo (Cita/Paciente) cuando exista el flujo de citas.
     // Una fila por hora, una columna por día. null = disponible.
@@ -50,20 +60,51 @@ public class AgendaController {
 
     @FXML
     private void initialize() {
-        LocalDate dia = YearMonth.of(2024, 10).atDay(1);
-        dia = dia.minusDays(dia.getDayOfWeek().getValue() - 1);
-        for (String d : "L M X J V S D".split(" ")) calendario.add(celdaCalendario(d, "cal-head"), calendario.getChildren().size() % 7, 0);
-        for (int i = 0; i < 42; i++, dia = dia.plusDays(1)) {
-            String estilo = dia.getMonthValue() != 10 ? "cal-other" : dia.getDayOfMonth() == 24 ? "cal-sel" : "cal-day";
-            calendario.add(celdaCalendario(String.valueOf(dia.getDayOfMonth()), estilo), i % 7, 1 + i / 7);
-        }
+        renderCalendario();
+        renderSemana();
+        // Turno en curso por defecto: Carlos A. Mendoza (Lun, 10:00 AM).
+        mostrarCita(CITAS[1][0], fechaLarga(lunesSemana(seleccion)), HORAS[1]);
+    }
 
+    private void renderCalendario() {
+        calendario.getChildren().clear();
+        mesLabel.setText(MESES[mes.getMonthValue() - 1] + " " + mes.getYear());
+        for (int c = 0; c < DIAS_CAL.length; c++) calendario.add(celdaCalendario(DIAS_CAL[c], "cal-head"), c, 0);
+
+        LocalDate dia = mes.atDay(1).minusDays(mes.atDay(1).getDayOfWeek().getValue() - 1);
+        for (int i = 0; i < 42; i++, dia = dia.plusDays(1)) {
+            LocalDate fecha = dia;
+            String estilo = fecha.equals(seleccion) ? "cal-sel"
+                    : fecha.getMonthValue() != mes.getMonthValue() ? "cal-other" : "cal-day";
+            Label celda = celdaCalendario(String.valueOf(fecha.getDayOfMonth()), estilo);
+            celda.setCursor(Cursor.HAND);
+            celda.setOnMouseClicked(e -> {
+                seleccion = fecha;
+                mes = YearMonth.from(fecha);
+                renderCalendario();
+                renderSemana();
+            });
+            calendario.add(celda, i % 7, 1 + i / 7);
+        }
+    }
+
+    private void renderSemana() {
+        LocalDate lunes = lunesSemana(seleccion);
+        rangoLabel.setText("Semana del " + lunes.getDayOfMonth() + " al " + lunes.plusDays(4).getDayOfMonth()
+                + " de " + MESES[lunes.getMonthValue() - 1] + ", " + lunes.getYear());
+
+        semana.getChildren().clear();
         Label horario = new Label("HORARIO");
         horario.getStyleClass().add("caption");
         semana.add(horario, 0, 0);
-        for (int c = 0; c < DIAS.length; c++) {
-            Label l = new Label(DIAS[c]);
-            l.getStyleClass().addAll("day-head", c == 0 ? "day-head-sel" : "day-head-off");
+
+        Turno[][] datos = esSemanaDemo(lunes) ? CITAS : new Turno[HORAS.length][5];
+
+        for (int c = 0; c < 5; c++) {
+            LocalDate dia = lunes.plusDays(c);
+            Label l = new Label(NOMBRES_DIA[dia.getDayOfWeek().getValue() - 1] + "\n"
+                    + dia.getDayOfMonth() + " " + MESES_CORTO[dia.getMonthValue() - 1]);
+            l.getStyleClass().addAll("day-head", dia.equals(seleccion) ? "day-head-sel" : "day-head-off");
             l.setMaxWidth(Double.MAX_VALUE);
             semana.add(l, c + 1, 0);
         }
@@ -71,18 +112,74 @@ public class AgendaController {
             Label hora = new Label(HORAS[h]);
             hora.getStyleClass().add("info-value");
             semana.add(hora, 0, h + 1);
-            for (int c = 0; c < DIAS.length; c++) semana.add(celdaCita(CITAS[h][c], FECHAS[c], HORAS[h]), c + 1, h + 1);
+            for (int c = 0; c < 5; c++) {
+                semana.add(celdaCita(datos[h][c], fechaLarga(lunes.plusDays(c)), HORAS[h]), c + 1, h + 1);
+            }
         }
+        resumenLabel.setText(resumen(datos, lunes));
+    }
 
-        // Turno en curso por defecto: Carlos A. Mendoza (Lun 24, 10:00 AM).
-        mostrarCita(CITAS[1][0], FECHAS[0], HORAS[1]);
+    private String resumen(Turno[][] datos, LocalDate lunes) {
+        int finalizadas = 0, espera = 0, confirmadas = 0, libres = 0;
+        for (Turno[] fila : datos) {
+            Turno t = fila[0];
+            if (t == null) libres++;
+            else if ("Completada".equals(t.estado)) finalizadas++;
+            else if ("En espera".equals(t.estado)) espera++;
+            else confirmadas++;
+        }
+        return "Resumen " + NOMBRES_DIA_CORTO[lunes.getDayOfWeek().getValue() - 1] + " " + lunes.getDayOfMonth()
+                + ": " + finalizadas + " finalizada · " + espera + " en espera · " + confirmadas
+                + " confirmadas · " + libres + " libres";
+    }
+
+    @FXML
+    private void onMesAnterior() {
+        mes = mes.minusMonths(1);
+        renderCalendario();
+    }
+
+    @FXML
+    private void onMesSiguiente() {
+        mes = mes.plusMonths(1);
+        renderCalendario();
+    }
+
+    @FXML
+    private void onSemanaAnterior() {
+        moverSemana(-1);
+    }
+
+    @FXML
+    private void onSemanaSiguiente() {
+        moverSemana(1);
+    }
+
+    private void moverSemana(int semanas) {
+        seleccion = seleccion.plusWeeks(semanas);
+        mes = YearMonth.from(seleccion);
+        renderCalendario();
+        renderSemana();
+    }
+
+    private static LocalDate lunesSemana(LocalDate d) {
+        return d.minusDays(d.getDayOfWeek().getValue() - 1);
+    }
+
+    private static boolean esSemanaDemo(LocalDate lunes) {
+        return lunes.equals(SEMANA_DEMO);
+    }
+
+    private static String fechaLarga(LocalDate d) {
+        return NOMBRES_DIA_CORTO[d.getDayOfWeek().getValue() - 1] + ", " + d.getDayOfMonth() + " "
+                + MESES_CORTO[d.getMonthValue() - 1] + " " + d.getYear();
     }
 
     private Label celdaCalendario(String texto, String estilo) {
         Label l = new Label(texto);
         l.getStyleClass().add(estilo);
         l.setAlignment(Pos.CENTER);
-        l.setMinSize(28, 26);
+        l.setMinSize(32, 32);
         return l;
     }
 

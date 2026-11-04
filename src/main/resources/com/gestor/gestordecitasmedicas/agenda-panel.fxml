@@ -24,12 +24,12 @@
             <VBox styleClass="page-content" spacing="24.0">
 
                 <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-flat">
-                    <Button styleClass="btn-icon">
+                    <Button onAction="#onSemanaAnterior" styleClass="btn-icon">
                         <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
                         <tooltip><Tooltip text="Semana anterior" /></tooltip>
                     </Button>
-                    <Label styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
-                    <Button styleClass="btn-icon">
+                    <Label fx:id="rangoLabel" styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
+                    <Button onAction="#onSemanaSiguiente" styleClass="btn-icon">
                         <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                         <tooltip><Tooltip text="Semana siguiente" /></tooltip>
                     </Button>
@@ -54,11 +54,19 @@
                     <!-- Columna izquierda -->
                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="24.0">
                         <VBox spacing="12.0" styleClass="card">
-                            <HBox alignment="CENTER_LEFT">
+                            <HBox alignment="CENTER_LEFT" spacing="4.0">
                                 <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" HBox.hgrow="ALWAYS" />
-                                <Label styleClass="row-name" text="Octubre 2024" />
+                                <Button onAction="#onMesAnterior" styleClass="btn-icon">
+                                    <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
+                                    <tooltip><Tooltip text="Mes anterior" /></tooltip>
+                                </Button>
+                                <Label fx:id="mesLabel" styleClass="row-name" text="Octubre 2024" />
+                                <Button onAction="#onMesSiguiente" styleClass="btn-icon">
+                                    <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
+                                    <tooltip><Tooltip text="Mes siguiente" /></tooltip>
+                                </Button>
                             </HBox>
-                            <GridPane fx:id="calendario" hgap="4.0" vgap="4.0" />
+                            <GridPane fx:id="calendario" alignment="CENTER" hgap="6.0" vgap="6.0" />
                         </VBox>
 
                         <VBox spacing="12.0" styleClass="card">
@@ -99,7 +107,7 @@
                         </GridPane>
                         <Separator />
                         <HBox alignment="CENTER_LEFT" spacing="12.0">
-                            <Label styleClass="hint" text="Resumen Lun 24: 1 finalizada · 1 en espera · 2 confirmadas · 2 libres" />
+                            <Label fx:id="resumenLabel" styleClass="hint" text="Resumen Lun 24: 1 finalizada · 1 en espera · 2 confirmadas · 2 libres" />
                             <Region HBox.hgrow="ALWAYS" />
                             <Button styleClass="btn-edit" text="Imprimir">
                                 <graphic><FontIcon iconLiteral="fi-rr-print" /></graphic>
