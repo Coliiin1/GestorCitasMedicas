@@ -3,6 +3,10 @@ package com.gestor.gestordecitasmedicas.modelo;
 public class Asistente extends Personal {
 
     private int idAsistente;
+    private String contrasena;
+
+    public Asistente() {
+    }
 
     public Asistente(int idAsistente) {
         this.idAsistente = idAsistente;
@@ -14,6 +18,14 @@ public class Asistente extends Personal {
 
     public void setIdAsistente(int idAsistente) {
         this.idAsistente = idAsistente;
+    }
+
+    public String getContrasena() {
+        return contrasena;
+    }
+
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
     }
 
     @Override

@@ -2,11 +2,29 @@ package com.gestor.gestordecitasmedicas.modelo;
 
 public class Medicamento {
 
+    private int idDetalleReceta;
+    private int idReceta;
     private String nombreMedicamento;
     private String dosis;
     private String concentracion;
     private String frecuencia;
     private String duradcion;
+
+    public int getIdDetalleReceta() {
+        return idDetalleReceta;
+    }
+
+    public void setIdDetalleReceta(int idDetalleReceta) {
+        this.idDetalleReceta = idDetalleReceta;
+    }
+
+    public int getIdReceta() {
+        return idReceta;
+    }
+
+    public void setIdReceta(int idReceta) {
+        this.idReceta = idReceta;
+    }
 
     public String getNombreMedicamento() {
         return nombreMedicamento;
