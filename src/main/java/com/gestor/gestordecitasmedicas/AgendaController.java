@@ -1,9 +1,11 @@
 package com.gestor.gestordecitasmedicas;
 
+import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
 import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -455,6 +457,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             Date fechaCita = Date.from(LocalDateTime.of(fecha, hora)
                     .atZone(ZoneId.systemDefault()).toInstant());
 
+            Cita citaGuardada;
             boolean guardado;
             if (existente == null) {
                 Cita nueva = new Cita();
@@ -462,17 +465,24 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 nueva.setFechaCita(fechaCita);
                 nueva.setEstado(Estado.AGENDADA);
                 guardado = baseDatos.insertarCita(nueva);
+                citaGuardada = nueva;
             } else {
                 existente.setFechaCita(fechaCita);
                 existente.setEstado(Estado.AGENDADA);
                 guardado = baseDatos.actualizarCita(existente);
+                citaGuardada = existente;
             }
 
             if (!guardado) {
                 event.consume();
                 aviso(Alert.AlertType.ERROR, "No se pudo guardar",
                         "La cita no se guardó. Puedes volver a intentarlo.");
+                return;
             }
+
+            Paciente pacienteCita = existente == null
+                    ? paciente : pacientesMapa.get(existente.getCurp());
+            enviarConfirmacionAsync(pacienteCita, citaGuardada);
         });
 
         if (dialogo.showAndWait().orElse(ButtonType.CANCEL).getButtonData()
@@ -486,6 +496,44 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                     existente == null ? "Cita agendada" : "Cita reprogramada",
                     "La agenda se actualizó correctamente.");
         }
+    }
+
+    private void enviarConfirmacionAsync(Paciente paciente, Cita cita) {
+        if (paciente == null || cita == null) {
+            aviso(Alert.AlertType.WARNING, "Correo no enviado",
+                    "No se encontró el paciente de la cita, así que no se envió la confirmación.");
+            return;
+        }
+        if (paciente.getCorreo() == null || paciente.getCorreo().trim().isEmpty()) {
+            aviso(Alert.AlertType.INFORMATION, "Correo no enviado",
+                    "El paciente no tiene un correo registrado; no se envió la confirmación.");
+            return;
+        }
+
+        ControladorCorreo controlador = new ControladorCorreo();
+        if (!controlador.estaConfigurado()) {
+            aviso(Alert.AlertType.WARNING, "Correo no enviado",
+                    "La cita se guardó, pero la configuración SMTP está incompleta. "
+                            + "Crea correo.properties o define SMTP_USER, SMTP_PASSWORD y SMTP_FROM.");
+            return;
+        }
+
+        String destinatario = paciente.getCorreo().trim();
+        Thread hilo = new Thread(() -> {
+            boolean enviado = controlador.enviarConfirmacionCita(paciente, cita);
+            Platform.runLater(() -> {
+                if (enviado) {
+                    aviso(Alert.AlertType.INFORMATION, "Confirmación enviada",
+                            "Se envió la confirmación de la cita a " + destinatario + ".");
+                } else {
+                    aviso(Alert.AlertType.WARNING, "Correo no enviado",
+                            "La cita se guardó, pero no se pudo enviar el correo a "
+                                    + destinatario + ". Revisa la configuración SMTP.");
+                }
+            });
+        }, "correo-confirmacion");
+        hilo.setDaemon(true);
+        hilo.start();
     }
 
     private Cita buscarOcupada(LocalDate fecha, LocalTime hora, int idExcluir) {

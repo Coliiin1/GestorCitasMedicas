@@ -128,10 +128,11 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 
 ### RF-15 Confirmación de cita por correo
 
-- **Estado:** Parcial (`ControladorCorreo`).
+- **Estado:** Implementado (`ControladorCorreo` + `AgendaController`).
 - El método `enviarConfirmacionCita` arma y envía un correo HTML con los datos de la cita al correo del paciente.
+- La agenda envía la confirmación al crear o reprogramar una cita, en un hilo en segundo plano para no bloquear la interfaz.
 - La configuración SMTP se toma de `correo.properties` o de variables de entorno. El archivo `correo.properties` está excluido de git.
-- Pendiente: llamar al envío desde la agenda al crear o reprogramar una cita. Hoy solo se usa en la clase de prueba `main` de `ControladorCorreo`.
+- Si el paciente no tiene correo o la configuración SMTP está incompleta, la cita se guarda igual y se muestra un aviso.
 
 ## 3. Reglas de negocio
 
@@ -183,7 +184,6 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 |---|---|---|
 | Alta | Validar credenciales e imponer permisos por rol | RF-01, RNF-05 |
 | Alta | Conectar la finalización de consulta con `finalizarConsulta` | RF-07, RN-13 |
-| Media | Enviar la confirmación por correo desde la agenda | RF-15 |
 | Media | CRUD de horarios y horarios bloqueados en la agenda | RF-13, RF-14 |
 | Media | Gestión de administradores | RF-12 |
 | Baja | Eliminar expediente desde la interfaz | RF-04 |
