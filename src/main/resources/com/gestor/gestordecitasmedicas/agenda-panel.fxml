@@ -33,6 +33,9 @@
                         <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                         <tooltip><Tooltip text="Semana siguiente" /></tooltip>
                     </Button>
+                    <Button styleClass="btn-secondary" text="Bloquear semana">
+                        <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
+                    </Button>
                     <Region HBox.hgrow="ALWAYS" />
                     <Label styleClass="caption" text="SEMÁFORO:" />
                     <Label styleClass="chip, chip-green" text="Disponible">
@@ -67,6 +70,9 @@
                                 </Button>
                             </HBox>
                             <GridPane fx:id="calendario" alignment="CENTER" hgap="6.0" vgap="6.0" />
+                            <Button maxWidth="Infinity" styleClass="btn-secondary" text="Bloquear día">
+                                <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
+                            </Button>
                         </VBox>
 
                         <VBox spacing="12.0" styleClass="card">
