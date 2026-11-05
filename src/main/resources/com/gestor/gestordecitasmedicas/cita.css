@@ -1094,3 +1094,16 @@
     -fx-background-color: #f0f9ff;
     -fx-border-color: #bae6fd;
 }
+
+/* Login: panel visual con la paleta del sidebar */
+.login-hero {
+    -fx-background-color: #1e293b;
+    -fx-background-image: url("../../../Imagenes/FondoLogin.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 12;
+    -fx-border-color: #0369a1;
+    -fx-border-width: 4;
+    -fx-border-radius: 12;
+}
