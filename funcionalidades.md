@@ -61,19 +61,30 @@ Interfaz conectada: `PacientesController`, `PacienteEditarController`.
 
 Interfaz conectada: `ExpedienteController`.
 
-## Funcionalidades pendientes
-
 ### Citas
 
-- `[~]` La base de datos ya permite insertar, actualizar, eliminar y cargar citas.
-- `[ ]` Conectar la agenda médica al CRUD de citas.
-- `[ ]` Crear citas desde los espacios disponibles del calendario.
-- `[ ]` Reprogramar citas.
-- `[ ]` Cancelar citas y actualizar su estado.
-- `[ ]` Cargar las citas reales por día o semana en lugar de los datos de ejemplo.
-- `[ ]` Mostrar el resumen semanal con citas reales.
+- `[x]` Conectar la agenda médica al CRUD de citas.
+- `[x]` Crear citas desde los espacios disponibles del calendario.
+- `[x]` Reprogramar citas.
+- `[x]` Cancelar citas y actualizar su estado.
+- `[x]` Cargar las citas reales por día o semana en lugar de los datos de ejemplo.
+- `[x]` Mostrar el resumen semanal con citas reales.
+- `[x]` Conservar la fecha y la hora de la cita en SQLite.
+- `[x]` Iniciar la cita clínica desde la ficha de la agenda.
 
-Métodos existentes sin uso en la interfaz: `insertarCita`, `actualizarCita`, `eliminarCita`, `cargarCitas`.
+Interfaz conectada: `AgendaController`, `CitaController`, `agenda-panel.fxml`, `cita-panel.fxml`.
+
+### Receta
+
+- `[x]` Conectar el panel de consulta con el guardado de recetas.
+- `[x]` Guardar el diagnóstico, los medicamentos y los signos vitales desde la interfaz.
+- `[x]` Actualizar una receta existente sin duplicar sus medicamentos.
+- `[x]` Generar y exportar la receta en PDF desde la consulta.
+- `[x]` Finalizar la consulta y marcar la cita como atendida.
+
+Interfaz conectada: `ConsultaController`, `consulta-panel.fxml`, `ControladorPDF`.
+
+## Funcionalidades pendientes
 
 ### Consulta
 
@@ -82,29 +93,20 @@ Métodos existentes sin uso en la interfaz: `insertarCita`, `actualizarCita`, `e
 - `[ ]` Asociar la consulta con la cita y el expediente correspondientes.
 - `[x]` Mostrar el historial de consultas en el expediente.
 
-### Receta
-
-- `[~]` La base de datos ya permite insertar, eliminar y cargar recetas.
-- `[ ]` Conectar el panel de consulta con el guardado de recetas.
-- `[ ]` Guardar el diagnóstico y los medicamentos desde la interfaz.
-- `[ ]` Generar y exportar la receta en PDF desde la consulta.
-
-Métodos existentes sin uso en la interfaz: `insertarReceta`, `eliminarReceta`, `cargarRecetas`.
-
 ### Medicamentos y detalle de receta
 
 - `[~]` La base de datos ya permite insertar y cargar medicamentos.
-- `[ ]` Implementar la actualización de medicamentos.
-- `[ ]` Implementar la eliminación individual de medicamentos.
-- `[ ]` Conectar la captura y eliminación de medicamentos con el panel de consulta.
+- `[ ]` Implementar la actualización individual de medicamentos.
+- `[ ]` Implementar la eliminación individual de medicamentos en `BaseDatos`.
+- `[x]` Conectar la captura y eliminación de medicamentos con el panel de consulta.
 
-Métodos existentes sin uso en la interfaz: `insertarMedicamento`, `cargarMedicamentos`.
+La actualización de una receta reemplaza sus medicamentos y signos vitales en una sola transacción.
 
 ### Signos vitales
 
 - `[~]` Se guardan y cargan únicamente como parte de una receta.
 - `[ ]` Implementar métodos CRUD independientes para signos vitales.
-- `[ ]` Guardar los signos vitales capturados en “Cita en curso”.
+- `[x]` Guardar los signos vitales capturados en “Cita en curso”.
 - `[x]` Mostrar la evolución de signos vitales en el expediente (mediciones vinculadas a recetas).
 
 ### Expediente completo
@@ -138,13 +140,22 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 |---|---|---|
 | Fase 1 | Asistentes | Completada |
 | Fase 2 | Pacientes y expediente básico | Completada |
-| Fase 3 | Agenda y citas | Pendiente |
-| Fase 4 | Cita en curso y signos vitales | Pendiente |
-| Fase 5 | Consulta, receta y medicamentos | Pendiente |
+| Fase 3 | Agenda y citas | Completada |
+| Fase 4 | Cita en curso y signos vitales | Parcial: captura y guardado con la receta; CRUD independiente pendiente |
+| Fase 5 | Consulta, receta y medicamentos | Completada: receta, medicamentos y PDF conectados; CRUD individual pendiente |
 | Fase 6 | Expediente completo | Parcial: edición, historial y PDF conectados; eliminación independiente pendiente |
 | Fase 7 | Administrador y horarios | Pendiente |
 
 ## Registro de cambios
+
+### 2026-11-04 (citas y receta)
+
+- Se conectó la agenda médica al CRUD real de citas en SQLite: alta desde espacios libres, reprogramación, cancelación y resumen semanal.
+- La cita conserva fecha y hora; la ficha permite iniciar la cita clínica con los datos reales del paciente.
+- Se conectó el panel de consulta con el guardado de la receta, sus medicamentos y signos vitales, actualizando sin duplicar detalles.
+- Se habilitó la exportación de la receta a PDF y la finalización de la consulta con estado `ATENDIDA`.
+- Se mantiene el modelo actual de `Receta` (lista de medicamentos y `SignosVitales`) y no se agregó la columna `motivo` a `Cita`.
+- Se agregó `CitaRecetaTest` para alta, hora, reprogramación, cancelación, receta, actualización y eliminación.
 
 ### 2026-11-04
 

@@ -6,21 +6,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class BaseDatos {
     private String contraseña;
-    private static final String URL = System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
     private static Connection conexion = null;
+
+    private static String url() {
+        return System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
+    }
 
     public static Connection getConexion() {
         try {
             if (conexion == null || conexion.isClosed()) {
                 Class.forName("org.sqlite.JDBC");
-                conexion = DriverManager.getConnection(URL);
+                conexion = DriverManager.getConnection(url());
                 System.out.println("Conexión a la base de datos SQLite establecida con éxito.");
 
                 try (Statement stmt = conexion.createStatement()) {
@@ -405,7 +411,7 @@ public class BaseDatos {
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, cita.getCurp());
-            ps.setDate(2, toSqlDate(cita.getFechaCita()));
+            ps.setTimestamp(2, toSqlTimestamp(cita.getFechaCita()));
             ps.setString(3, estado(cita.getEstado()).name());
 
             if (ps.executeUpdate() > 0) {
@@ -453,7 +459,7 @@ public class BaseDatos {
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, cita.getCurp());
-            ps.setDate(2, toSqlDate(cita.getFechaCita()));
+            ps.setTimestamp(2, toSqlTimestamp(cita.getFechaCita()));
             ps.setString(3, estado(cita.getEstado()).name());
             ps.setInt(4, cita.getIdCita());
             return ps.executeUpdate() > 0;
@@ -478,7 +484,7 @@ public class BaseDatos {
                 Cita cita = new Cita();
                 cita.setIdCita(rs.getInt("id_cita"));
                 cita.setCurp(rs.getString("CURP"));
-                cita.setFechaCita(toUtilDate(rs.getDate("fecha")));
+                cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
                 cita.setEstado(parseEstado(rs.getString("estado")));
                 citas.put(cita.getIdCita(), cita);
             }
@@ -486,6 +492,25 @@ public class BaseDatos {
             System.err.println("Error al cargar citas: " + e.getMessage());
         }
         return citas;
+    }
+
+    public ArrayList<Cita> cargarCitasEntre(LocalDate inicio, LocalDate fin) {
+        ArrayList<Cita> resultado = new ArrayList<>();
+        if (inicio == null || fin == null || fin.isBefore(inicio)) {
+            return resultado;
+        }
+        for (Cita cita : cargarCitas().values()) {
+            if (cita.getFechaCita() == null) {
+                continue;
+            }
+            LocalDate dia = cita.getFechaCita().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!dia.isBefore(inicio) && !dia.isAfter(fin)) {
+                resultado.add(cita);
+            }
+        }
+        resultado.sort(Comparator.comparing(Cita::getFechaCita, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparingInt(Cita::getIdCita));
+        return resultado;
     }
 
     public boolean insertarExpediente(Expediente expediente) {
@@ -721,6 +746,67 @@ public class BaseDatos {
         return false;
     }
 
+    public boolean actualizarReceta(Receta receta) {
+        if (receta == null || receta.getIdReceta() <= 0 || receta.getIdCita() <= 0) {
+            return false;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return false;
+        }
+
+        String sql = "UPDATE Receta SET id_administrador = ?, id_cita = ?, fecha = ?, diagnostico = ? " +
+                "WHERE id_receta = ?";
+
+        try {
+            con.setAutoCommit(false);
+
+            int idAdministrador = receta.getIdAdministrador() > 0
+                    ? receta.getIdAdministrador()
+                    : obtenerIdAdministradorPorDefecto(con);
+
+            if (idAdministrador <= 0) {
+                con.rollback();
+                return false;
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setInt(1, idAdministrador);
+                ps.setInt(2, receta.getIdCita());
+                ps.setDate(3, toSqlDate(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
+                ps.setString(4, receta.getDiagnostico());
+                ps.setInt(5, receta.getIdReceta());
+
+                if (ps.executeUpdate() == 0) {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+            receta.setIdAdministrador(idAdministrador);
+            eliminarDetalleReceta(con, receta.getIdReceta());
+            insertarDetallesReceta(con, receta);
+            insertarSignosVitales(con, receta);
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            try {
+                con.rollback();
+            } catch (SQLException rollbackError) {
+                System.err.println("Error al revertir la transacción de receta: " + rollbackError.getMessage());
+            }
+            System.err.println("Error al actualizar receta: " + e.getMessage());
+        } finally {
+            try {
+                con.setAutoCommit(true);
+            } catch (SQLException e) {
+                System.err.println("Error al restaurar el autocommit: " + e.getMessage());
+            }
+        }
+        return false;
+    }
+
     public boolean eliminarReceta(int idReceta) {
         Connection con = getConexion();
         if (con == null) {
@@ -747,6 +833,42 @@ public class BaseDatos {
             throw new IllegalArgumentException("La CURP es obligatoria.");
         }
         return cargarRecetasFiltradas(curp);
+    }
+
+    public Receta cargarRecetaPorCita(int idCita) {
+        if (idCita <= 0) {
+            return null;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            throw new IllegalStateException("No hay conexión para cargar la receta.");
+        }
+
+        String sql = "SELECT r.id_receta, r.id_administrador, r.id_cita, r.fecha, r.diagnostico, c.CURP " +
+                "FROM Receta r JOIN Cita c ON c.id_cita = r.id_cita " +
+                "WHERE r.id_cita = ? ORDER BY r.id_receta DESC LIMIT 1";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idCita);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Receta receta = new Receta();
+                    receta.setIdReceta(rs.getInt("id_receta"));
+                    receta.setIdAdministrador(rs.getInt("id_administrador"));
+                    receta.setIdCita(rs.getInt("id_cita"));
+                    receta.setFecha(toUtilDate(rs.getDate("fecha")));
+                    receta.setDiagnostico(rs.getString("diagnostico"));
+                    receta.setCurp(rs.getString("CURP"));
+                    receta.setMedicamentos(cargarMedicamentosPorReceta(con, receta.getIdReceta()));
+                    receta.setSignosVitales(cargarSignosVitalesPorReceta(con, receta.getIdReceta()));
+                    return receta;
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudo cargar la receta de la cita.", e);
+        }
+        return null;
     }
 
     private HashMap<Integer, Receta> cargarRecetasFiltradas(String curp) {
@@ -861,6 +983,17 @@ public class BaseDatos {
         }
     }
 
+    private static void eliminarDetalleReceta(Connection con, int idReceta) throws SQLException {
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM Detalle_receta WHERE id_receta = ?")) {
+            ps.setInt(1, idReceta);
+            ps.executeUpdate();
+        }
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM Signos_vitales WHERE id_receta = ?")) {
+            ps.setInt(1, idReceta);
+            ps.executeUpdate();
+        }
+    }
+
     private static void insertarDetallesReceta(Connection con, Receta receta) throws SQLException {
         if (receta.getMedicamentos() == null || receta.getMedicamentos().isEmpty()) {
             return;
@@ -971,8 +1104,36 @@ public class BaseDatos {
         return fecha == null ? null : new java.sql.Date(fecha.getTime());
     }
 
+    private static java.sql.Timestamp toSqlTimestamp(java.util.Date fecha) {
+        return fecha == null ? null : new java.sql.Timestamp(fecha.getTime());
+    }
+
     private static java.util.Date toUtilDate(java.sql.Date fecha) {
         return fecha == null ? null : new java.util.Date(fecha.getTime());
+    }
+
+    private static java.util.Date leerFechaHora(Object valor) {
+        if (valor == null) {
+            return null;
+        }
+        if (valor instanceof Number) {
+            return new java.util.Date(((Number) valor).longValue());
+        }
+        if (valor instanceof java.util.Date) {
+            return new java.util.Date(((java.util.Date) valor).getTime());
+        }
+        String texto = valor.toString().trim().replace(' ', 'T');
+        try {
+            if (texto.length() == 10) {
+                return java.util.Date.from(LocalDate.parse(texto)
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant());
+            }
+            return java.util.Date.from(java.time.LocalDateTime.parse(texto)
+                    .atZone(ZoneId.systemDefault()).toInstant());
+        } catch (java.time.format.DateTimeParseException e) {
+            System.err.println("Fecha de cita inválida: " + valor);
+            return null;
+        }
     }
 
     private static String valor(String texto) {

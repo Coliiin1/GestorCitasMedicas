@@ -27,7 +27,7 @@
                     <graphic><FontIcon iconLiteral="fi-rr-pause" /></graphic>
                     <tooltip><Tooltip text="Pausar consulta" /></tooltip>
                 </Button>
-                <Button onAction="#onCancelar" styleClass="btn-icon, btn-icon-danger">
+                <Button fx:id="btnCancelar" onAction="#onCancelar" styleClass="btn-icon, btn-icon-danger">
                     <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                     <tooltip><Tooltip text="Cancelar consulta" /></tooltip>
                 </Button>
@@ -61,7 +61,7 @@
                             </HBox>
                             <Label fx:id="lblPaciente" styleClass="patient-name" text="Carlos Alberto Mendoza Ruiz" />
                         </VBox>
-                        <Button onAction="#onVerExpediente" styleClass="btn-secondary" text="Consultar Expediente Clínico Completo">
+                        <Button fx:id="btnExpediente" onAction="#onVerExpediente" styleClass="btn-secondary" text="Consultar Expediente Clínico Completo">
                             <graphic><FontIcon iconLiteral="fi-rr-folder-open" /></graphic>
                         </Button>
                     </HBox>
@@ -114,9 +114,9 @@
                             <Label styleClass="hint" text="Grados Celsius" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <Label styleClass="caption" text="GLUCOSA" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtGlucosa" styleClass="vital-input" text="98" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" mg/dL" /></HBox>
-                            <Label styleClass="hint" text="Capilar / Ayuno" />
+                            <Label styleClass="caption" text="FREC. RESPIRATORIA" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtFrecuenciaRespiratoria" styleClass="vital-input" text="18" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" rpm" /></HBox>
+                            <Label styleClass="hint" text="Respiraciones por minuto" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <Label styleClass="caption" text="PESO CORPORAL" />
@@ -154,7 +154,7 @@
     <!-- Pie con acción principal -->
     <HBox alignment="CENTER" styleClass="page-footer">
         <HBox alignment="CENTER_RIGHT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
-            <Button styleClass="btn-primary, nav-link" text="Siguiente" userData="consulta-panel.fxml">
+            <Button fx:id="btnSiguiente" onAction="#onSiguiente" styleClass="btn-primary" text="Siguiente">
                 <graphic><FontIcon iconLiteral="fi-rr-arrow-right" /></graphic>
             </Button>
         </HBox>

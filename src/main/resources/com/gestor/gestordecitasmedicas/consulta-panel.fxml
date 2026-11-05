@@ -5,20 +5,20 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Consulta Médica - Diagnóstico y Receta" (Stitch df3f9d15...). Referencia en docs/stitch/consulta.png -->
-<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ConsultaController">
     <HBox alignment="CENTER" styleClass="banner">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <Label styleClass="h-title" text="Roberto Gómez Fernández" />
+                    <Label fx:id="lblPaciente" styleClass="h-title" text="Sin cita seleccionada" />
                     <Label styleClass="badge-active" text="En Atención" />
                 </HBox>
-                <Label styleClass="card-subtitle" text="Edad: 42 años  •  Hora Inicio: 10:15 AM  •  Consultorio 3" />
+                <Label fx:id="lblResumen" styleClass="card-subtitle" text="Selecciona una cita desde la agenda para iniciar la consulta" />
             </VBox>
             <HBox alignment="CENTER" spacing="12.0" styleClass="timer-box">
-                <Label styleClass="timer" text="27:40 min" />
+                <Label fx:id="lblTimer" styleClass="timer" text="00:00 min" />
             </HBox>
-            <Button styleClass="btn-secondary" text="Ver Historial">
+            <Button fx:id="btnHistorial" onAction="#onHistorial" styleClass="btn-secondary" text="Ver Historial">
                 <graphic><FontIcon iconLiteral="fi-rr-time-past" /></graphic>
             </Button>
         </HBox>
@@ -45,74 +45,33 @@
                 <VBox spacing="4.0">
                     <Label styleClass="title-section" text="Receta Médica y Prescripción Farmacológica" />
                     <Label styleClass="card-subtitle" text="Llene el diagnóstico principal y agregue los medicamentos que integrarán el informe final para el paciente." />
-                    <Label styleClass="hint" text="Fecha de emisión: 24 Octubre 2024" />
+                    <Label fx:id="lblFechaEmision" styleClass="hint" text="Fecha de emisión: --" />
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="card">
                     <Label styleClass="card-title" text="DIAGNÓSTICO CLÍNICO" />
                     <Separator />
                     <Label styleClass="caption" text="DIAGNÓSTICO PRINCIPAL / IMPRESIÓN DIAGNÓSTICA" />
-                    <TextField promptText="Ej. Faringoamigdalitis aguda" styleClass="search-field" />
+                    <TextField fx:id="txtDiagnostico" promptText="Ej. Faringoamigdalitis aguda" styleClass="search-field" />
                     <Label styleClass="caption" text="EVOLUCIÓN CLÍNICA Y JUSTIFICACIÓN TERAPÉUTICA" />
-                    <TextArea prefRowCount="4" styleClass="reason-area" text="Paciente masculino que acude refiriendo odinofagia de 72 hrs de evolución, febrícula cuantificada en 37.8°C y congestión nasal. A la exploración física: orofaringe hiperémica sin exudados purulentos, adenopatías cervicales leves bilaterales no dolorosas. Sin compromiso pulmonar." wrapText="true" />
+                    <TextArea fx:id="txtEvolucion" prefRowCount="4" promptText="Describe la evolución clínica, exploración física y justificación del tratamiento..." styleClass="reason-area" wrapText="true" />
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="card">
                     <HBox alignment="CENTER_LEFT">
                         <Label styleClass="card-title" text="MEDICAMENTOS A RECETAR" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
-                        <Label styleClass="hint" text="3 fármacos añadidos" />
+                        <Label fx:id="lblMedicamentos" styleClass="hint" text="0 fármacos añadidos" />
                     </HBox>
                     <Separator />
-                    <VBox spacing="12.0">
-                        <HBox spacing="12.0" styleClass="med-row">
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 1" /><TextField styleClass="search-field" text="Paracetamol 500 mg (Comprimidos)" /></VBox>
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 comprimido (500 mg) cada 8 horas por 5 días con alimentos." /></VBox>
-                            <Button styleClass="btn-icon, btn-icon-danger">
-                                <graphic><FontIcon iconLiteral="fi-rr-trash" /></graphic>
-                                <tooltip><Tooltip text="Quitar medicamento" /></tooltip>
-                            </Button>
-                        </HBox>
-                        <HBox spacing="12.0" styleClass="med-row">
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 2" /><TextField styleClass="search-field" text="Ibuprofeno 400 mg (Cápsulas blandas)" /></VBox>
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 cápsula cada 8 horas durante 2 días en caso de dolor persistente." /></VBox>
-                            <Button styleClass="btn-icon, btn-icon-danger">
-                                <graphic><FontIcon iconLiteral="fi-rr-trash" /></graphic>
-                                <tooltip><Tooltip text="Quitar medicamento" /></tooltip>
-                            </Button>
-                        </HBox>
-                        <HBox spacing="12.0" styleClass="med-row">
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 3" /><TextField styleClass="search-field" text="Loratadina 10 mg (Tabletas)" /></VBox>
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField styleClass="search-field" text="Tomar 1 tableta cada 24 horas por la noche durante 5 días." /></VBox>
-                            <Button styleClass="btn-icon, btn-icon-danger">
-                                <graphic><FontIcon iconLiteral="fi-rr-trash" /></graphic>
-                                <tooltip><Tooltip text="Quitar medicamento" /></tooltip>
-                            </Button>
-                        </HBox>
-                        <HBox spacing="12.0" styleClass="med-row">
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 4" /><TextField promptText="Nombre genérico / comercial / presentación..." styleClass="search-field" /></VBox>
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField promptText="Dosis, frecuencia y duración..." styleClass="search-field" /></VBox>
-                            <Button styleClass="btn-icon, btn-icon-danger">
-                                <graphic><FontIcon iconLiteral="fi-rr-trash" /></graphic>
-                                <tooltip><Tooltip text="Quitar medicamento" /></tooltip>
-                            </Button>
-                        </HBox>
-                        <HBox spacing="12.0" styleClass="med-row">
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption-blue" text="MEDICAMENTO 5" /><TextField promptText="Nombre genérico / comercial / presentación..." styleClass="search-field" /></VBox>
-                            <VBox spacing="4.0" HBox.hgrow="ALWAYS"><Label styleClass="caption" text="DOSIS Y POSOLOGÍA" /><TextField promptText="Dosis, frecuencia y duración..." styleClass="search-field" /></VBox>
-                            <Button styleClass="btn-icon, btn-icon-danger">
-                                <graphic><FontIcon iconLiteral="fi-rr-trash" /></graphic>
-                                <tooltip><Tooltip text="Quitar medicamento" /></tooltip>
-                            </Button>
-                        </HBox>
-                    </VBox>
-                    <Button maxWidth="Infinity" styleClass="btn-dashed" text="Añadir un medicamento a la prescripción">
+                    <VBox fx:id="medicamentosBox" spacing="12.0" />
+                    <Button fx:id="btnAgregarMedicamento" maxWidth="Infinity" onAction="#onAgregarMedicamento" styleClass="btn-dashed" text="Añadir un medicamento a la prescripción">
                         <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
                     </Button>
                 </VBox>
 
                 <VBox spacing="8.0" styleClass="card">
                     <Label styleClass="card-title" text="Medidas Generales, Cuidados y Signos de Alarma" />
-                    <TextArea prefRowCount="3" styleClass="reason-area" text="Abundante ingesta de líquidos tibios. Guardar reposo relativo por 48 horas. Evitar cambios bruscos de temperatura. En caso de presentar fiebre persistente &gt;38.5°C resistente a antipiréticos o dificultad respiratoria, acudir a urgencias de inmediato." wrapText="true" />
+                    <TextArea fx:id="txtIndicaciones" prefRowCount="3" promptText="Indicaciones generales, cuidados y signos de alarma para el paciente..." styleClass="reason-area" wrapText="true" />
                 </VBox>
             </VBox>
         </VBox>
@@ -120,14 +79,14 @@
 
     <HBox alignment="CENTER" styleClass="page-footer">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
-            <Button styleClass="btn-secondary, nav-link" text="Volver a Signos Vitales" userData="cita-panel.fxml">
+            <Button fx:id="btnVolver" onAction="#onVolver" styleClass="btn-secondary" text="Volver a Signos Vitales">
                 <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
             </Button>
             <Region HBox.hgrow="ALWAYS" />
-            <Button styleClass="btn-secondary" text="Guardar y Exportar Como PDF">
+            <Button fx:id="btnGuardarPdf" onAction="#onGuardarPdf" styleClass="btn-secondary" text="Guardar y Exportar Como PDF">
                 <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
             </Button>
-            <Button styleClass="btn-primary, nav-link" text="Finalizar Consulta" userData="agenda-panel.fxml">
+            <Button fx:id="btnFinalizar" onAction="#onFinalizar" styleClass="btn-primary" text="Finalizar Consulta">
                 <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
             </Button>
         </HBox>
