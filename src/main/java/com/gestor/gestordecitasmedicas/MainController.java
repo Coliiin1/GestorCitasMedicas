@@ -17,6 +17,7 @@ public class MainController {
     @FXML private StackPane contenido;
     @FXML private Pane menu;
     @FXML private Button btnCita;
+    @FXML private Button btnDashboard;
 
     // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
     private final Map<String, Node> paneles = new HashMap<>();
@@ -24,9 +25,31 @@ public class MainController {
     // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
     private Button ultimoActivo;
 
-    @FXML
-    private void initialize() {
-        btnCita.fire();
+    private boolean esAdmin;
+    private boolean rolConfigurado;
+
+    public boolean esAdministrador() {
+        return esAdmin;
+    }
+
+    /** Ajusta menú y navegación según el rol ("admin" o "asis") y abre la pantalla inicial. */
+    public void configurarRol(String rol) {
+        esAdmin = "admin".equals(rol);
+        rolConfigurado = true;
+        for (Node n : menu.getChildren()) {
+            if (n instanceof Button) {
+                boolean permitido = destinoPermitido((String) n.getUserData())
+                        && n != btnCita && (esAdmin || n != btnDashboard) && !"consulta-panel.fxml".equals(n.getUserData());
+                n.setVisible(permitido);
+                n.setManaged(permitido);
+            }
+        }
+        ir(esAdmin ? "dashboard-panel.fxml" : "agenda-panel.fxml");
+    }
+
+    private boolean destinoPermitido(String fxml) {
+        if (!rolConfigurado || esAdmin) return true;
+        return "agenda-panel.fxml".equals(fxml);
     }
 
     @FXML
@@ -35,6 +58,7 @@ public class MainController {
     }
 
     public void ir(String fxml) {
+        if (!destinoPermitido(fxml)) return;
         Node panel = obtenerPanel(fxml);
         contenido.getChildren().setAll(panel);
 
@@ -46,7 +70,6 @@ public class MainController {
         Button activo = null;
         for (Node n : menu.getChildren()) {
             n.getStyleClass().remove("nav-item-active");
-            // Dashboard y Agenda comparten destino: gana el último, Agenda.
             if (n instanceof Button && fxml.equals(n.getUserData())) activo = (Button) n;
         }
         // Los paneles fuera del menú (p. ej. edición de paciente) mantienen el resaltado anterior.
