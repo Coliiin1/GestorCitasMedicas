@@ -6,24 +6,21 @@ classDiagram
     class Main {
         +HashMap~String, Paciente~ pacientes
         +HashMap~Integer, Cita~ citas
-        +main(args: String[]) void
+        +main(args: String[])$ void
     }
 
     class Cita {
         +int idCita
         +Date fechaCita
         +Estado estado
-        +String motivo
         +String curp
         +getIdCita() int
         +getFechaCita() Date
         +getEstado() Estado
-        +getMotivo() String
         +getCurp() String
         +setIdCita(idCita: int) void
-        +setFechaCita(fecha: Date) void
+        +setFechaCita(fechaCita: Date) void
         +setEstado(estado: Estado) void
-        +setMotivo(motivo: String) void
         +setCurp(curp: String) void
     }
 
@@ -34,13 +31,55 @@ classDiagram
         CANCELADA
     }
 
+    class DiaSemana {
+        <<enumeration>>
+        LUNES
+        MARTES
+        MIERCOLES
+        JUEVES
+        VIERNES
+        SABADO
+        DOMINGO
+    }
+
+    class Horario {
+        -int idHorario
+        -LocalTime horaInicio
+        -LocalTime horaFin
+        -DiaSemana dia
+        -boolean estado
+        +getIdHorario() int
+        +getHoraInicio() LocalTime
+        +getHoraFin() LocalTime
+        +getDia() DiaSemana
+        +isEstado() boolean
+        +setIdHorario(idHorario: int) void
+        +setHoraInicio(horaInicio: LocalTime) void
+        +setHoraFin(horaFin: LocalTime) void
+        +setDia(dia: DiaSemana) void
+        +setEstado(estado: boolean) void
+    }
+
+    class HorarioBloqueado {
+        -int idHorarioBloqueado
+        -LocalDateTime fechaInicio
+        -LocalDateTime fechaFin
+        +getIdHorarioBloqueado() int
+        +getFechaInicio() LocalDateTime
+        +getFechaFin() LocalDateTime
+        +setIdHorarioBloqueado(idHorarioBloqueado: int) void
+        +setFechaInicio(fechaInicio: LocalDateTime) void
+        +setFechaFin(fechaFin: LocalDateTime) void
+    }
+
     class Paciente {
-        -String CURP
+        -String curp
         -Date fechaNacimiento
         -String sexo
         -String domicilio
         -String telefono
-        -String codigo
+        -String correo
+        +Paciente(curp: String, fechaNacimiento: Date, sexo: String, domicilio: String, telefono: String, correo: String)
         +getCurp() String
         +getFechaNacimiento() Date
         +getSexo() String
@@ -48,7 +87,7 @@ classDiagram
         +getTelefono() String
         +getCorreo() String
         +setCurp(curp: String) void
-        +setFechaNacimiento(fecha: Date) void
+        +setFechaNacimiento(fechaNacimiento: Date) void
         +setSexo(sexo: String) void
         +setDomicilio(domicilio: String) void
         +setTelefono(telefono: String) void
@@ -56,35 +95,114 @@ classDiagram
     }
 
     class Expediente {
+        -int idExpediente
         -Paciente datosPaciente
-        -HashMap~int, Receta~ recetas
-        -getDatosPaciente() Paciente
+        -Date fechaApertura
+        -String antecedentesFamiliares
+        -String antecedentesPersonales
+        -String alergias
+        -String observaciones
+        -HashMap~Integer, Receta~ recetas
+        -ArrayList~Consulta~ consultas
+        +getIdExpediente() int
+        +getDatosPaciente() Paciente
+        +getFechaApertura() Date
+        +getAntecedentesFamiliares() String
+        +getAntecedentesPersonales() String
+        +getAlergias() String
+        +getObservaciones() String
+        +getRecetas() HashMap~Integer, Receta~
+        +getConsultas() ArrayList~Consulta~
+        +setIdExpediente(idExpediente: int) void
+        +setDatosPaciente(datosPaciente: Paciente) void
+        +setFechaApertura(fechaApertura: Date) void
+        +setAntecedentesFamiliares(antecedentesFamiliares: String) void
+        +setAntecedentesPersonales(antecedentesPersonales: String) void
+        +setAlergias(alergias: String) void
+        +setObservaciones(observaciones: String) void
+        +setRecetas(recetas: HashMap~Integer, Receta~) void
+        +setConsultas(consultas: ArrayList~Consulta~) void
+    }
+
+    class Consulta {
+        -int idConsulta
+        -int idExpediente
+        -int idCita
+        -LocalDateTime fechaConsulta
+        -String padecimiento
+        -String motivo
+        -String observaciones
+        -Receta receta
+        -SignosVitales signosVitales
+        +getIdConsulta() int
+        +getIdExpediente() int
+        +getIdCita() int
+        +getFechaConsulta() LocalDateTime
+        +getPadecimiento() String
+        +getMotivo() String
+        +getObservaciones() String
+        +getReceta() Receta
+        +getSignosVitales() SignosVitales
+        +setIdConsulta(idConsulta: int) void
+        +setIdExpediente(idExpediente: int) void
+        +setIdCita(idCita: int) void
+        +setFechaConsulta(fechaConsulta: LocalDateTime) void
+        +setPadecimiento(padecimiento: String) void
+        +setMotivo(motivo: String) void
+        +setObservaciones(observaciones: String) void
+        +setReceta(receta: Receta) void
+        +setSignosVitales(signosVitales: SignosVitales) void
     }
 
     class Receta {
         -int idReceta
+        -int idCita
+        -int idAdministrador
         -String curp
         -Date fecha
-        -Medicamento medicamento
+        -String diagnostico
+        -ArrayList~Medicamento~ medicamentos
         -SignosVitales signosVitales
-        +setIdReceta(idReceta: int) void
-        +setCurp(curp: String) void
-        +setFecha(fecha: Date) void
-        +setMedicamentos(ArrayList<Medicamento>) void
-        +setSignosVitales(signosVitales: SignosVitales) void
+        +getIdReceta() int
+        +getIdCita() int
+        +getIdAdministrador() int
         +getCurp() String
         +getFecha() Date
-        +getMedicamento() String
-        +getSignosVitales() String
+        +getDiagnostico() String
+        +getMedicamentos() ArrayList~Medicamento~
+        +getSignosVitales() SignosVitales
+        +setIdReceta(idReceta: int) void
+        +setIdCita(idCita: int) void
+        +setIdAdministrador(idAdministrador: int) void
+        +setCurp(curp: String) void
+        +setFecha(fecha: Date) void
+        +setDiagnostico(diagnostico: String) void
+        +setMedicamentos(medicamentos: ArrayList~Medicamento~) void
+        +setSignosVitales(signosVitales: SignosVitales) void
     }
 
     class Medicamento {
+        -int idDetalleReceta
+        -int idReceta
         -String nombreMedicamento
         -String dosis
-        +setNombre(nombreMedicamento: String) void
-        +setDosis(dosis: String) void
+        -String concentracion
+        -String frecuencia
+        -String duradcion
+        +getIdDetalleReceta() int
+        +getIdReceta() int
         +getNombreMedicamento() String
         +getDosis() String
+        +getConcentracion() String
+        +getFrecuencia() String
+        +getDuradcion() String
+        +setIdDetalleReceta(idDetalleReceta: int) void
+        +setIdReceta(idReceta: int) void
+        +setNombreMedicamento(nombreMedicamento: String) void
+        +setDosis(dosis: String) void
+        +setConcentracion(concentracion: String) void
+        +setFrecuencia(frecuencia: String) void
+        +setDuradcion(duradcion: String) void
     }
 
     class SignosVitales {
@@ -95,13 +213,7 @@ classDiagram
         -int saturacionOxigeno
         -float peso
         -int talla
-        +setPresionArterial(presionArterial: String) void
-        +setFrecuenciaCardiaca(frecCardiaca: int) String
-        +setFrecuenciaRespiratoria(frecRespiratoria: int) String
-        +setTemperatura(temperatura: float) void
-        +setSaturacionOxigeno(satOxigeno: int) void
-        +setPeso(peso: float) void
-        +setTalla(talla: int) void
+        +SignosVitales(presionArterial: String, frecuenciaCardiaca: int, frecuenciaRespiratoria: int, temperaturaCorporal: float, saturacionOxigeno: int, peso: float, talla: int)
         +getPresionArterial() String
         +getFrecuenciaCardiaca() int
         +getFrecuenciaRespiratoria() int
@@ -109,9 +221,17 @@ classDiagram
         +getSaturacionOxigeno() int
         +getPeso() float
         +getTalla() int
+        +setPresionArterial(presionArterial: String) void
+        +setFrecuenciaCardiaca(frecuenciaCardiaca: int) void
+        +setFrecuenciaRespiratoria(frecuenciaRespiratoria: int) void
+        +setTemperatura(temperaturaCorporal: float) void
+        +setSaturacionOxigeno(saturacionOxigeno: int) void
+        +setPeso(peso: float) void
+        +setTalla(talla: int) void
     }
 
     class Usuario {
+        <<abstract>>
         -String nombre
         -String apellidoPaterno
         -String apellidoMaterno
@@ -119,16 +239,17 @@ classDiagram
         +getApellidoPaterno() String
         +getApellidoMaterno() String
         +setNombre(nombre: String) void
-        +setApellidoPaterno(apellido: String) void
-        +setApellidoMaterno(apellido: String) void
+        +setApellidoPaterno(apellidoPaterno: String) void
+        +setApellidoMaterno(apellidoMaterno: String) void
     }
 
     class Personal {
-        +listadoSemanal() Cita[]
-        +cancelarCita() boolean
-        +agendarCita() boolean
-        +reprogramarCita() boolean
-        +validarHorario() boolean
+        <<abstract>>
+        +listadoSemanal()* Cita[]
+        +cancelarCita()* boolean
+        +agendarCita()* boolean
+        +reprogramarCita()* boolean
+        +validarHorario()* boolean
     }
 
     class Administrador {
@@ -138,13 +259,18 @@ classDiagram
         -String domicilio
         -ArrayList~Asistente~ asistentes
         -ArrayList~Expediente~ expedientes
+        +getIdAdministrador() int
+        +getCedulaProfesional() String
+        +getInstitucionAcademica() String
+        +getDomicilio() String
+        +getAsistentes() ArrayList~Asistente~
+        +getExpedientes() ArrayList~Expediente~
         +setIdAdministrador(idAdministrador: int) void
         +setCedulaProfesional(cedulaProfesional: String) void
+        +setInstitucionAcademica(institucionAcademica: String) void
         +setDomicilio(domicilio: String) void
-        +getIdAdministrador() int
-        +getInstitucionAcademica() String
-        +getCedulaProfesional() String
-        +getDomicilio() String
+        +setAsistentes(asistentes: ArrayList~Asistente~) void
+        +setExpedientes(expedientes: ArrayList~Expediente~) void
         +registrarAsistente(asistente: Asistente) boolean
         +eliminarAsistente(asistente: Asistente) boolean
         +editarAsistente(asistente: Asistente) boolean
@@ -157,35 +283,126 @@ classDiagram
         +actualizarPaciente() boolean
         +eliminarPaciente() boolean
         +consultarDatosPaciente() Paciente
+        +listadoSemanal() Cita[]
+        +cancelarCita() boolean
+        +agendarCita() boolean
+        +reprogramarCita() boolean
+        +validarHorario() boolean
     }
 
     class Asistente {
         -int idAsistente
+        -String contrasena
+        +Asistente()
+        +Asistente(idAsistente: int)
+        +Asistente(nombre: String, apellidoPaterno: String, apellidoMaterno: String, contrasena: String)
         +getIdAsistente() int
+        +getContrasena() String
         +setIdAsistente(idAsistente: int) void
+        +setContrasena(contrasena: String) void
+        +listadoSemanal() Cita[]
+        +cancelarCita() boolean
+        +agendarCita() boolean
+        +reprogramarCita() boolean
+        +validarHorario() boolean
+    }
+
+    class BaseDatos {
+        -String contraseña
+        -Connection conexion$
+        +getConexion()$ Connection
+        +cerrarConexion()$ void
+        +insertarAsistente(asistente: Asistente) boolean
+        +eliminarAsistente(idAsistente: int) boolean
+        +actualizarAsistente(asistente: Asistente) boolean
+        +cargarAsistentes() ArrayList~Asistente~
+        +insertarPaciente(paciente: Paciente) boolean
+        +eliminarPaciente(idPaciente: String) boolean
+        +actualizarPaciente(paciente: Paciente) boolean
+        +cargarPacientes() HashMap~String, Paciente~
+        +cargarPacientePorCurp(curp: String) Paciente
+        +insertarCita(cita: Cita) boolean
+        +eliminarCita(idCita: int) boolean
+        +actualizarCita(cita: Cita) boolean
+        +cargarCitas() HashMap~Integer, Cita~
+        +cargarCitasEntre(inicio: LocalDate, fin: LocalDate) ArrayList~Cita~
+        +insertarExpediente(expediente: Expediente) boolean
+        +eliminarExpediente(idExpediente: String) boolean
+        +actualizarExpediente(expediente: Expediente) boolean
+        +cargarExpedientePorCurp(curp: String) Expediente
+        +cargarConsultasPorExpediente(idExpediente: int) ArrayList~Consulta~
+        +insertarReceta(receta: Receta) boolean
+        +actualizarReceta(receta: Receta) boolean
+        +eliminarReceta(idReceta: int) boolean
+        +cargarRecetas() HashMap~Integer, Receta~
+        +cargarRecetasPorCurp(curp: String) HashMap~Integer, Receta~
+        +cargarRecetaPorCita(idCita: int) Receta
+        +insertarMedicamento(medicamento: Medicamento) boolean
+        +cargarMedicamentos() ArrayList~Medicamento~
+        +convertirHoras(hora: LocalTime) void
     }
 
     class ControladorPDF {
-        +generarPDF(cita: Cita) boolean
+        +String CARPETA_SALIDA$
+        +generarPDF(receta: Receta) boolean
+        +generarExpediente(archivo: File, expediente: Expediente) void
+        +main(args: String[])$ void
+    }
+
+    class ControladorCorreo {
+        -String servidor
+        -String puerto
+        -String usuario
+        -String contrasena
+        -String remitente
+        -boolean ssl
+        -boolean starttls
+        +ControladorCorreo()
+        +enviarCorreo(destinatario: String, asunto: String, cuerpoHtml: String) boolean
+        +enviarConfirmacionCita(paciente: Paciente, cita: Cita) boolean
+        +estaConfigurado() boolean
+        +mandarCorreoElectronico()$ boolean
+        +mandarCorreoElectronico(paciente: Paciente, cita: Cita)$ boolean
+        +main(args: String[])$ void
     }
 
     Main "1" --> "1..*" Paciente : administra
     Main "1" --> "1..*" Cita : gestiona
+    Main ..> BaseDatos : obtiene conexion
     Cita --> Estado : utiliza
+    Cita "0..*" --> "1" Paciente : agendada para (curp)
+    Horario --> DiaSemana : dia
 
     Expediente "1" o-- "1" Paciente : datos del paciente
-    Expediente "1" *-- "1..*" Receta : contiene
-    Receta "1" *-- "1" Medicamento : prescribe
+    Expediente "1" *-- "0..*" Receta : contiene
+    Expediente "1" *-- "0..*" Consulta : registra
+    Consulta "1" --> "0..1" Receta : genera
+    Consulta "1" --> "0..1" SignosVitales : registra
+    Consulta "0..*" --> "1" Cita : corresponde a
+    Receta "1" *-- "0..*" Medicamento : prescribe
     Receta "1" *-- "1" SignosVitales : registra
+    Receta "0..1" --> "1" Cita : pertenece a
 
-    Paciente --> Usuario : datos personales
-    Personal --|> Usuario : hereda
-    Administrador --|> Personal : hereda
-    Asistente --|> Personal : hereda
+    Usuario <|-- Paciente : hereda
+    Usuario <|-- Personal : hereda
+    Personal <|-- Administrador : hereda
+    Personal <|-- Asistente : hereda
 
     Administrador "1" --> "0..*" Asistente : administra
-    Administrador --> Expediente : gestiona
+    Administrador "1" --> "0..*" Expediente : gestiona
     Administrador --> Cita : registra y atiende
+    Administrador "1" --> "0..*" Receta : emite
     Administrador "1" --> "1" ControladorPDF : utiliza
-    ControladorPDF --> Cita : genera PDF
+
+    BaseDatos ..> Asistente : persiste
+    BaseDatos ..> Paciente : persiste
+    BaseDatos ..> Cita : persiste
+    BaseDatos ..> Expediente : persiste
+    BaseDatos ..> Receta : persiste
+    BaseDatos ..> Medicamento : persiste
+
+    ControladorPDF ..> Receta : genera PDF
+    ControladorPDF ..> Expediente : genera PDF
+    ControladorCorreo ..> Paciente : notifica
+    ControladorCorreo ..> Cita : confirma
 ```

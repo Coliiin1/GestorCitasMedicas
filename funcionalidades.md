@@ -88,9 +88,13 @@ Interfaz conectada: `ConsultaController`, `consulta-panel.fxml`, `ControladorPDF
 
 ### Consulta
 
-- `[ ]` Implementar métodos CRUD de consultas en `BaseDatos`.
-- `[ ]` Registrar la consulta al finalizar la atención.
-- `[ ]` Asociar la consulta con la cita y el expediente correspondientes.
+- `[x]` Implementar métodos CRUD de consultas en `BaseDatos`.
+- `[x]` Registrar la consulta al finalizar la atención mediante `finalizarConsulta`.
+- `[x]` Asociar la consulta con la cita y el expediente correspondientes.
+- `[x]` Resolver el expediente por CURP y crearlo vacío si aún no existe.
+- `[x]` Guardar receta, consulta y estado `ATENDIDA` en una sola transacción.
+- `[x]` Reutilizar la consulta y la receta existentes al finalizar de nuevo la misma cita.
+- `[ ]` Conectar `ConsultaController` con `finalizarConsulta` para guardar motivo, padecimiento y observaciones.
 - `[x]` Mostrar el historial de consultas en el expediente.
 
 ### Medicamentos y detalle de receta
@@ -142,11 +146,20 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 | Fase 2 | Pacientes y expediente básico | Completada |
 | Fase 3 | Agenda y citas | Completada |
 | Fase 4 | Cita en curso y signos vitales | Parcial: captura y guardado con la receta; CRUD independiente pendiente |
-| Fase 5 | Consulta, receta y medicamentos | Completada: receta, medicamentos y PDF conectados; CRUD individual pendiente |
+| Fase 5 | Consulta, receta y medicamentos | Parcial: backend de consulta, receta, medicamentos y PDF listos; conectar la consulta desde la UI y CRUD individual pendiente |
 | Fase 6 | Expediente completo | Parcial: edición, historial y PDF conectados; eliminación independiente pendiente |
 | Fase 7 | Administrador y horarios | Pendiente |
 
 ## Registro de cambios
+
+### 2026-11-04 (backend de consulta)
+
+- Se agregó el CRUD de consultas en `BaseDatos`: insertar, actualizar, eliminar, cargar por id y cargar por cita.
+- `finalizarConsulta` guarda receta, medicamentos, signos vitales, consulta y estado `ATENDIDA` en una sola transacción.
+- El expediente se resuelve por CURP y se crea vacío si el paciente aún no tiene uno.
+- Una cita conserva una sola consulta y una sola receta: al finalizar de nuevo se actualizan los registros existentes.
+- Se agregó `ConsultaTest` con CRUD, lectura por cita/expediente, finalización, creación de expediente y rollback; total 13 pruebas.
+- `ConsultaController` aún usa el guardado anterior de receta y estado; queda pendiente llamar a `finalizarConsulta` para persistir motivo, padecimiento y observaciones desde la UI.
 
 ### 2026-11-04 (citas y receta)
 
