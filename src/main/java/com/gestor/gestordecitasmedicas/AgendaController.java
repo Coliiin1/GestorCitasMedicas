@@ -370,6 +370,14 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 AgendaController.class.getResource("cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
 
+        Label tituloEncabezado = new Label(existente == null ? "AGENDAR NUEVA CITA" : "REPROGRAMAR CITA");
+        tituloEncabezado.getStyleClass().add("field-label");
+        Label subtitulo = new Label(fechaLarga(fechaInicial));
+        subtitulo.getStyleClass().add("panel-title");
+        VBox encabezado = new VBox(8, tituloEncabezado, subtitulo);
+        encabezado.getStyleClass().add("expediente-editor-header");
+        dialogo.getDialogPane().setHeader(encabezado);
+
         ComboBox<Paciente> comboPaciente = new ComboBox<>();
         comboPaciente.getItems().setAll(pacientes);
         comboPaciente.setConverter(new StringConverter<Paciente>() {
@@ -414,9 +422,14 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().setPrefWidth(460);
 
         ButtonType guardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
-        dialogo.getDialogPane().getButtonTypes().addAll(guardar, ButtonType.CANCEL);
+        ButtonType bloquear = new ButtonType("Bloquear día", ButtonBar.ButtonData.LEFT);
+        dialogo.getDialogPane().getButtonTypes().addAll(bloquear, guardar, ButtonType.CANCEL);
         dialogo.getDialogPane().lookupButton(guardar).getStyleClass().add("btn-primary");
         dialogo.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn-secondary");
+        Node botonBloquear = dialogo.getDialogPane().lookupButton(bloquear);
+        botonBloquear.getStyleClass().add("btn-secondary");
+        // Maqueta: sin lógica todavía, se consume el evento para no cerrar el diálogo.
+        botonBloquear.addEventFilter(javafx.event.ActionEvent.ACTION, javafx.event.Event::consume);
 
         dialogo.getDialogPane().lookupButton(guardar).addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             LocalDate fecha = selectorFecha.getValue();
