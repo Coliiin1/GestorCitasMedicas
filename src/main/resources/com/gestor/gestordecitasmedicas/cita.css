@@ -1107,3 +1107,25 @@
     -fx-border-width: 4;
     -fx-border-radius: 12;
 }
+
+/* Combo y selector de fecha dentro del diálogo de cita. */
+.expediente-editor .combo-box,
+.expediente-editor .date-picker {
+    -fx-font-size: 13px;
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.expediente-editor .combo-box-base > .list-cell,
+.expediente-editor .date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-padding: 8 12;
+}
+
+.expediente-editor .combo-box:focused,
+.expediente-editor .date-picker:focused {
+    -fx-border-color: #0ea5e9;
+    -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
+}
