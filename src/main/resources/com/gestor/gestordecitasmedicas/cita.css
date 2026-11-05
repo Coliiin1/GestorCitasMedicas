@@ -903,6 +903,21 @@
     -fx-font-size: 11px;
 }
 
+.slot-agendada {
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: #bae6fd;
+}
+
+.slot-atendida {
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: #a7f3d0;
+}
+
+.slot-cancelada {
+    -fx-background-color: #fff1f2;
+    -fx-border-color: #fecdd3;
+}
+
 .slot-completada {
     -fx-background-color: #ecfdf5;
     -fx-border-color: #a7f3d0;
@@ -1078,4 +1093,17 @@
 .expediente-identidad {
     -fx-background-color: #f0f9ff;
     -fx-border-color: #bae6fd;
+}
+
+/* Login: panel visual con la paleta del sidebar */
+.login-hero {
+    -fx-background-color: #1e293b;
+    -fx-background-image: url("../../../Imagenes/FondoLogin.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 12;
+    -fx-border-color: #0369a1;
+    -fx-border-width: 4;
+    -fx-border-radius: 12;
 }

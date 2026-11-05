@@ -13,7 +13,7 @@
                 <Label styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" />
                 <Label styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" />
             </VBox>
-            <Button styleClass="btn-primary" text="Agendar Nueva Cita">
+            <Button fx:id="btnAgendar" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
                 <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
             </Button>
         </HBox>
@@ -74,14 +74,18 @@
                             <Label styleClass="hint" text="Turno en curso / Próximo a atender" />
                             <Separator />
                             <Label styleClass="caption" text="NOMBRE DEL PACIENTE:" />
-                            <TextField fx:id="fichaNombre" editable="false" styleClass="search-field" text="Carlos Alberto Mendoza Ruiz" />
-                            <Label fx:id="fichaEdad" styleClass="hint" text="Edad: 42 años" />
+                            <TextField fx:id="fichaNombre" editable="false" styleClass="search-field" />
+                            <Label fx:id="fichaEdad" styleClass="hint" text="Selecciona una cita de la agenda" />
                             <Label styleClass="caption" text="DATOS DE LA CITA:" />
-                            <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaFecha" styleClass="info-value" text="Lun, 24 Oct 2024" /></HBox>
-                            <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaHora" styleClass="chip" text="10:00 AM (45 min)" /></HBox>
-                            <Button maxWidth="Infinity" styleClass="btn-primary, nav-link" text="Iniciar Cita Clínica" userData="cita-panel.fxml">
+                            <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaFecha" styleClass="info-value" text="--" /></HBox>
+                            <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaHora" styleClass="chip" text="--" /></HBox>
+                            <Button fx:id="btnIniciar" maxWidth="Infinity" onAction="#onIniciarCita" styleClass="btn-primary" text="Iniciar Cita Clínica">
                                 <graphic><FontIcon iconLiteral="fi-rr-play" /></graphic>
                             </Button>
+                            <HBox spacing="8.0">
+                                <Button fx:id="btnReprogramar" maxWidth="Infinity" onAction="#onReprogramar" styleClass="btn-secondary" text="Reprogramar" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnCancelar" maxWidth="Infinity" onAction="#onCancelarCita" styleClass="btn-secondary" text="Cancelar cita" HBox.hgrow="ALWAYS" />
+                            </HBox>
                             <Label styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" />
                         </VBox>
 
@@ -107,7 +111,7 @@
                         </GridPane>
                         <Separator />
                         <HBox alignment="CENTER_LEFT" spacing="12.0">
-                            <Label fx:id="resumenLabel" styleClass="hint" text="Resumen Lun 24: 1 finalizada · 1 en espera · 2 confirmadas · 2 libres" />
+                            <Label fx:id="resumenLabel" styleClass="hint" text="Resumen semanal: 0 atendidas · 0 agendadas · 0 canceladas · 30 libres" />
                             <Region HBox.hgrow="ALWAYS" />
                             <Button styleClass="btn-edit" text="Imprimir">
                                 <graphic><FontIcon iconLiteral="fi-rr-print" /></graphic>

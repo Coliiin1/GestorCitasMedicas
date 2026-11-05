@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<GridPane styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.LoginController">
+    <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
+    <columnConstraints>
+        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+    </columnConstraints>
+    <rowConstraints><RowConstraints vgrow="ALWAYS" /></rowConstraints>
+
+    <!-- Panel visual -->
+    <StackPane fx:id="hero" styleClass="login-hero" GridPane.columnIndex="0" />
+
+    <!-- Formulario -->
+    <VBox alignment="CENTER" GridPane.columnIndex="1">
+        <VBox maxWidth="360.0" spacing="16.0">
+            <Label styleClass="h-title" text="Iniciar sesión" />
+
+            <VBox spacing="8.0">
+                <Label styleClass="field-label" text="USUARIO" />
+                <TextField fx:id="txtUsuario" onAction="#onIngresar" prefHeight="40.0" promptText="Usuario" styleClass="form-field" />
+            </VBox>
+
+            <VBox spacing="8.0">
+                <Label styleClass="field-label" text="CONTRASEÑA" />
+                <StackPane>
+                    <PasswordField fx:id="password" onAction="#onIngresar" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" />
+                    <TextField fx:id="passwordVisible" onAction="#onIngresar" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" visible="false" />
+                    <Button fx:id="btnTogglePassword" onAction="#onTogglePassword" styleClass="btn-icon" StackPane.alignment="CENTER_RIGHT">
+                        <graphic><FontIcon iconLiteral="fi-rr-eye" /></graphic>
+                    </Button>
+                </StackPane>
+            </VBox>
+
+            <Button maxWidth="Infinity" onAction="#onIngresar" styleClass="btn-primary" text="Ingresar" />
+        </VBox>
+    </VBox>
+</GridPane>
