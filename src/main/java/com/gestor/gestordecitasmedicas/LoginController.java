@@ -2,6 +2,8 @@ package com.gestor.gestordecitasmedicas;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -47,9 +49,17 @@ public class LoginController {
 
     @FXML
     private void onIngresar() {
-        // Solo interfaz: sin validación de credenciales por ahora.
+        // Provisional: el rol se decide por el texto del usuario ("admin" o "asis"), sin contraseña.
+        String rol = txtUsuario.getText() == null ? "" : txtUsuario.getText().trim().toLowerCase();
+        if (!rol.equals("admin") && !rol.equals("asis")) {
+            new Alert(Alert.AlertType.WARNING, "Usuario no válido. Usa \"admin\" o \"asis\".").showAndWait();
+            return;
+        }
         try {
-            txtUsuario.getScene().setRoot(new FXMLLoader(getClass().getResource("main-view.fxml")).load());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
+            Parent raiz = loader.load();
+            ((MainController) loader.getController()).configurarRol(rol);
+            txtUsuario.getScene().setRoot(raiz);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

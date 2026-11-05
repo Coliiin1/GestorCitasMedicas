@@ -85,6 +85,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @Override
     public void refrescar() {
+        boolean admin = mainController == null || mainController.esAdministrador();
+        btnIniciar.setVisible(admin);
+        btnIniciar.setManaged(admin);
         renderCalendario();
         renderSemana();
         if (citaSeleccionada != null) {
@@ -313,7 +316,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onIniciarCita() {
-        if (citaSeleccionada == null || mainController == null) {
+        if (citaSeleccionada == null || mainController == null || !mainController.esAdministrador()) {
             return;
         }
         CitaController controlador = mainController.controlador("cita-panel.fxml");

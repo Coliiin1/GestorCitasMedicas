@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<!-- Panel "Dashboard" (solo administrador). KPIs, listas y gráficas los llena DashboardController desde la base de datos. -->
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.DashboardController">
+    <HBox alignment="CENTER" styleClass="page-header">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="panel-title" text="DASHBOARD / INICIO" />
+                <Label fx:id="lblFecha" styleClass="card-subtitle" text="Resumen general de la actividad del consultorio" />
+            </VBox>
+            <Button styleClass="btn-primary, nav-link" text="Agendar Nueva Cita" userData="agenda-panel.fxml">
+                <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
+            </Button>
+        </HBox>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="24.0">
+
+                <!-- Alertas -->
+                <VBox fx:id="alertas" spacing="8.0" />
+
+                <!-- KPIs -->
+                <HBox fx:id="kpis" spacing="16.0" />
+
+                <!-- Citas de hoy + próxima cita -->
+                <GridPane hgap="24.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="62.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="38.0" />
+                    </columnConstraints>
+                    <VBox GridPane.columnIndex="0" spacing="12.0" styleClass="card">
+                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                            <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                                <Label styleClass="card-title" text="Citas de hoy" />
+                                <Label styleClass="card-subtitle" text="Turnos programados para la jornada actual" />
+                            </VBox>
+                            <Button styleClass="btn-secondary, nav-link" text="Ver agenda completa" userData="agenda-panel.fxml">
+                                <graphic><FontIcon iconLiteral="fi-rr-calendar" /></graphic>
+                            </Button>
+                        </HBox>
+                        <Separator />
+                        <VBox fx:id="citasHoy" spacing="8.0" />
+                    </VBox>
+                    <VBox GridPane.columnIndex="1" spacing="12.0" styleClass="card">
+                        <Label styleClass="caption" text="PRÓXIMA CITA" />
+                        <VBox fx:id="proximaCita" spacing="8.0" />
+                        <Separator />
+                        <Label styleClass="caption" text="ACCESOS RÁPIDOS" />
+                        <Button maxWidth="Infinity" styleClass="btn-secondary, nav-link" text="Administración de Pacientes" userData="pacientes-panel.fxml">
+                            <graphic><FontIcon iconLiteral="fi-rr-users" /></graphic>
+                        </Button>
+                        <Button maxWidth="Infinity" styleClass="btn-secondary, nav-link" text="Administración de Asistentes" userData="asistentes-panel.fxml">
+                            <graphic><FontIcon iconLiteral="fi-rr-user-md" /></graphic>
+                        </Button>
+                        <Button maxWidth="Infinity" styleClass="btn-secondary, nav-link" text="Recetas e Indicaciones" userData="consulta-panel.fxml">
+                            <graphic><FontIcon iconLiteral="fi-rr-notes-medical" /></graphic>
+                        </Button>
+                    </VBox>
+                </GridPane>
+
+                <!-- Gráficas -->
+                <GridPane hgap="24.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="34.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.0" />
+                        <ColumnConstraints hgrow="ALWAYS" percentWidth="33.0" />
+                    </columnConstraints>
+                    <VBox GridPane.columnIndex="0" spacing="8.0" styleClass="card">
+                        <Label styleClass="card-title" text="Citas de la semana" />
+                        <Label styleClass="card-subtitle" text="Total por día (lunes a viernes)" />
+                        <StackPane fx:id="graficaSemana" />
+                    </VBox>
+                    <VBox GridPane.columnIndex="1" spacing="8.0" styleClass="card">
+                        <Label styleClass="card-title" text="Estado de citas del mes" />
+                        <Label styleClass="card-subtitle" text="Atendidas, agendadas y canceladas" />
+                        <StackPane fx:id="graficaEstado" />
+                    </VBox>
+                    <VBox GridPane.columnIndex="2" spacing="8.0" styleClass="card">
+                        <Label styleClass="card-title" text="Consultas por mes" />
+                        <Label styleClass="card-subtitle" text="Citas atendidas, últimos 6 meses" />
+                        <StackPane fx:id="graficaMeses" />
+                    </VBox>
+                </GridPane>
+
+                <!-- Actividad clínica -->
+                <VBox spacing="12.0" styleClass="card">
+                    <Label styleClass="card-title" text="Actividad clínica reciente" />
+                    <Label styleClass="card-subtitle" text="Últimas recetas emitidas" />
+                    <Separator />
+                    <VBox fx:id="actividad" spacing="8.0" />
+                </VBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

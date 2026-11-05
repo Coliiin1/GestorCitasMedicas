@@ -26,7 +26,7 @@
             <VBox fx:id="menu" spacing="4.0">
                 <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
                 <Label styleClass="nav-title" text="MÓDULOS" />
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="agenda-panel.fxml">
+                <Button fx:id="btnDashboard" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Dashboard / Inicio" userData="dashboard-panel.fxml">
                     <graphic><FontIcon iconLiteral="fi-rr-home" /></graphic>
                 </Button>
                 <Button fx:id="btnCita" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Cita en Curso" userData="cita-panel.fxml">

@@ -221,6 +221,18 @@
     -fx-text-fill: #64748b;
 }
 
+.kpi-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0369a1;
+}
+
+.notice-box.chip-amber,
+.notice-box.chip-blood {
+    -fx-padding: 12 16;
+    -fx-font-size: 13px;
+}
+
 .patient-meta {
     -fx-font-size: 12px;
     -fx-text-fill: #64748b;
