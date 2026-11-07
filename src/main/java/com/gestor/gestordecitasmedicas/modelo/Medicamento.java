@@ -65,4 +65,23 @@ public class Medicamento {
     public void setDuradcion(String duradcion) {
         this.duradcion = duradcion;
     }
+
+    private String presentacion;
+    public String getPresentacion() { return presentacion; }
+    public void setPresentacion(String valor) { this.presentacion = valor; }
+
+    private String viaAdministracion;
+    public String getViaAdministracion() { return viaAdministracion; }
+    public void setViaAdministracion(String valor) { this.viaAdministracion = valor; }
+
+    private String denominacionDistintiva;
+    public String getDenominacionDistintiva() { return denominacionDistintiva; }
+    public void setDenominacionDistintiva(String valor) { this.denominacionDistintiva = valor; }
+
+    private String cantidad;
+    public String getCantidad() { return cantidad; }
+    public void setCantidad(String valor) { this.cantidad = valor; }
+    private String grupoRegulatorio;
+    public String getGrupoRegulatorio() { return grupoRegulatorio; }
+    public void setGrupoRegulatorio(String valor) { this.grupoRegulatorio = valor; }
 }

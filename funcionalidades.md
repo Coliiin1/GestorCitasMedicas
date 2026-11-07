@@ -1,10 +1,12 @@
-# Funcionalidades de la base de datos
+# Funcionalidades, flujo clínico y cambios de la base de datos
 
-Documento de seguimiento de las funcionalidades de conexión a la base de datos que ya están implementadas y las que permanecen pendientes. Debe actualizarse cada vez que se conecte un nuevo módulo a SQLite.
+Documento de seguimiento del flujo clínico, sus pantallas, exportaciones y persistencia en SQLite. Distingue implementación, verificación y pendientes. Debe actualizarse al conectar o modificar un módulo.
 
-- **Última actualización:** 2026-11-04
+- **Última actualización:** 2026-11-06
 - **Base de datos:** `citas_medicas.db` (SQLite)
 - **Acceso:** `com.gestor.gestordecitasmedicas.modelo.BaseDatos`
+
+Plan técnico detallado de los pendientes: [Plan de implementación por entregas](docs/plan-implementacion-pendientes.md). Incluye dependencias, cambios propuestos de interfaz/base de datos, recuperación ante fallos y criterios de aceptación; todavía no está implementado.
 
 ## Leyenda
 
@@ -13,6 +15,131 @@ Documento de seguimiento de las funcionalidades de conexión a la base de datos 
 | `[x] Implementado` | Operación disponible en la base de datos y conectada a la interfaz. |
 | `[~] Parcial` | Existe parte de la operación en la base de datos, pero falta interfaz o alguna operación CRUD. |
 | `[ ] Pendiente` | No existe la operación o no está conectada a la interfaz. |
+
+## Revisión de integración del 2026-11-06
+
+**Resultado:** el camino principal de cita → consulta → guardado → historial está conectado y ambos generadores PDF funcionan con los datos de prueba. No se declara el flujo completamente cerrado: quedan los hallazgos de integración descritos abajo y la configuración real del profesional/establecimiento. Las 21 pruebas actuales pasan, pero no cubren todas las transiciones de recepción ni equivalen a una certificación normativa o a una validación del consultorio real.
+
+### Flujo declarado y comportamiento comprobado
+
+| Paso | Entrada y destino | Estado y observaciones |
+|---|---|---|
+| Alta del paciente | `PacienteEditarController` → `Paciente`; creación de `Expediente` vacío | Conectado. La creación de paciente y expediente son operaciones separadas; existe aviso si solo se registra el paciente. |
+| Agendar/reprogramar/cancelar | `AgendaController` → CRUD de `Cita` | Conectado. La cita referencia la CURP del paciente y conserva fecha/hora; no duplica sus datos demográficos. |
+| Iniciar atención | `AgendaController.onIniciarCita` → `CitaController.cargarCita` | Conectado para el rol administrador. Carga al paciente desde SQLite y signos de una receta previa, si existe. Las citas canceladas no se inician desde la ficha. |
+| Recepción y signos | `cita-panel.fxml` → `leerSignos()` → `ConsultaController.cargarConsulta` | Conectado para signos de una atención nueva. El motivo de recepción no se transfiere; revisar también la prioridad de signos al reabrir. |
+| Consulta y receta | `consulta-panel.fxml` → `guardarAtencion` del controlador | Conectado. Captura clínica separada, identidad automática de solo lectura y medicamentos estructurados. |
+| Datos fijos | `BaseDatos.cargarDatosPrescriptor` → `Administrador` | Conectado. Las nuevas recetas usan el administrador predeterminado; una receta existente conserva su prescriptor salvo que le falte cédula. No hay edición de esos datos en la receta. |
+| Guardar y exportar PDF | `onGuardarPdf` → `guardarAtencion(false, true)` → `ControladorPDF.generarPDF` | Primero guarda la atención y después genera el archivo. Exige al menos un medicamento. No marca la cita como atendida. |
+| Finalizar | `onFinalizar` → `guardarAtencion(true, false)` | Guarda y marca `ATENDIDA` en la misma transacción; vuelve a la agenda. Admite atención sin medicamentos. **No genera ni actualiza el PDF automáticamente.** |
+| Consultar expediente | Desde pacientes o atención → `ExpedienteController.mostrarPaciente` | Carga identidad, historia clínica, consultas, recetas y signos desde SQLite. El historial se obtiene por expediente y CURP. |
+| Editar expediente | Botón Editar → panel integrado → guardar/cancelar | Conectado. Valida el formato de fecha/hora; guarda, recarga y muestra confirmación verde durante cinco segundos. Cancelar no persiste cambios. |
+| Exportar expediente | `exportarPdf` → selector de archivo → `generarExpediente` | Conectado. Usa el expediente cargado y permite elegir destino; no modifica el estado de la cita. |
+
+La navegación actual distingue los roles provisionales `admin` y `asis`: el administrador inicia atención y el asistente queda limitado a agenda. El login decide el rol por el texto ingresado, sin autenticar la contraseña contra SQLite. El menú no ofrece un listado independiente de recetas: el acceso operativo a la consulta parte de una cita.
+
+### Hallazgos que impiden declarar el flujo cerrado
+
+| Prioridad | Hallazgo confirmado por lectura del código | Consecuencia y pendiente |
+|---|---|---|
+| Alta | `CitaController.onSiguiente` no envía `txtMotivo`; el guardado de consulta asigna `motivo = "Consulta externa"`. Al recargar recepción se usa el diagnóstico de receta en ese campo. | El texto real del motivo de recepción no se conserva. Transferirlo y recuperarlo desde `Consulta`, sin confundirlo con el diagnóstico. |
+| Alta | Si ya existe una receta con signos, `ConsultaController.cargarConsulta` reemplaza los signos recibidos por los guardados. | Los signos recién corregidos en recepción pueden descartarse al reabrir una atención. Definir y probar la prioridad entre captura nueva y datos previos. |
+| Media | Los conversores numéricos de recepción usan cero ante valores vacíos o inválidos. | Puede guardarse cero sin distinguir ausencia de medición y error de captura. Añadir validación explícita y tratamiento de valores no medidos. |
+| Media | La acción Finalizar no exporta; el PDF se genera únicamente con Guardar y exportar. | Si se exporta, se cambia el tratamiento y luego solo se finaliza, el archivo anterior no refleja los últimos cambios. Regenerarlo explícitamente o completar la sincronización de emisión. |
+| Media | Las recetas usan siempre `pdf/receta_<id>.pdf`; volver a exportar reemplaza ese archivo. | El historial SQLite no es un archivo de versiones PDF firmadas. Completar la custodia del original y el versionado de documentos emitidos. |
+
+Estos hallazgos se documentan como pendientes; esta revisión no los marca corregidos. Además, no hay restricciones `UNIQUE` de una receta/consulta por cita: el flujo de interfaz reutiliza los identificadores existentes, pero esa conducta no garantiza unicidad para escrituras externas o simultáneas.
+
+## Formatos y exportaciones PDF
+
+### Receta médica ordinaria
+
+- Generador: `ControladorPDF.generarPDF(Receta)`; la sobrecarga `generarReceta(File, Receta)` permite indicar un archivo y se usa en pruebas.
+- Destino de la interfaz: `pdf/receta_<id_receta>.pdf`, relativo al directorio desde el que se ejecuta la aplicación. Se crea la carpeta si no existe y se informa la ruta absoluta al usuario.
+- Formato A4, con identificación del documento/paciente en cada página, aviso de confidencialidad, estado pendiente de firma y número de página.
+- Contenido: nombre del prescriptor, profesión, cédula, institución del título, domicilios, establecimiento, especialidad/registro cuando corresponda; folio, fecha/hora, paciente, edad, sexo, CURP y diagnóstico.
+- Por medicamento: denominación genérica, marca opcional, concentración, presentación, dosis, vía, frecuencia, duración, cantidad y fracción declarada. Las tablas pueden continuar en otras páginas, conservando la identificación del medicamento.
+- Incluye indicaciones generales y seguimiento, además del espacio para firma autógrafa. El nombre impreso no constituye firma electrónica.
+- La validación rechaza la receta incompleta, la cédula de ejemplo formada por ceros y las fracciones fuera del alcance ordinario IV/V/VI. Es validación de captura; no comprueba autenticidad de cédula ni idoneidad clínica del tratamiento.
+- Los signos vitales se conservan en la atención y el expediente; no se imprimen como una sección de esta receta. El diagnóstico y las indicaciones ya no se mezclan en un único campo.
+- Si falla el PDF después de guardar, la atención permanece en SQLite y se muestra el error de exportación: el guardado de base de datos y la escritura del archivo no son una sola transacción.
+
+### Expediente clínico
+
+- Generador: `ControladorPDF.generarExpediente(File, Expediente)`.
+- Destino: elegido mediante `FileChooser`; nombre propuesto `expediente_<CURP>.pdf`.
+- Formato A4 con identificación y numeración en cada página, pie de confidencialidad y firma pendiente.
+- Contenido: ficha del paciente, fecha de apertura, edad a la apertura, historia clínica ambulatoria, alergias, notas de evolución, recetas/medicamentos y evolución de signos vitales.
+- La historia incluye establecimiento, interrogatorio/antecedentes, consumo de sustancias, padecimiento y tratamientos previos, exploración, signos, estudios, diagnóstico, pronóstico, terapéutica, autor, cédula y fecha/hora. Cada nota contiene sus datos de atención y espacio de firma.
+- Las historias incompletas se identifican como **BORRADOR**; los datos ausentes se muestran como no registrados. La exportación del expediente permite revisar información incompleta y no equivale a validar o firmar su contenido.
+- La sección de recetas del expediente es una transcripción del historial, no la inserción de los PDF de receta firmados. Las versiones históricas `Version_*` tampoco se imprimen automáticamente.
+- La pantalla recarga el expediente al entrar y tras guardar. El exportador utiliza ese objeto cargado; no ofrece sincronización en tiempo real con cambios externos hechos directamente en SQLite.
+
+### Verificación realizada
+
+- Se ejecutó `./mvnw.cmd -q test` con JDK 25 y bases temporales: **21 pruebas aprobadas**, sin fallos ni errores.
+- `CitaRecetaTest`: 3 pruebas de citas/fecha-hora, guardado/actualización de receta y bajas.
+- `ConsultaTest`: 4 pruebas de CRUD, finalización, creación de expediente faltante y rollback.
+- `ExpedienteTest`: 6 pruebas de recarga, aislamiento de pacientes, fechas, PDF, panel de edición, guardar/cancelar y ocultamiento real de la confirmación a los cinco segundos. También comprueba captura/recarga/finalización de la consulta desde JavaFX y carga de datos fijos.
+- `FormatoClinicoTest`: 8 pruebas de validación, atención sin fármacos, persistencia y versiones, rollback, aislamiento entre citas, PDF de una o varias páginas, historia clínica y migración antigua.
+- Se regeneraron y revisaron visualmente la receta de un medicamento (una página), la receta de seis medicamentos (dos páginas), el expediente con historial y la historia completa (dos páginas en los ejemplos). Se comprobaron legibilidad, tablas, continuidad, firma e identificación.
+- Las pruebas usan datos ficticios y la propiedad `gestor.db.url`; no validan los datos reales del médico/establecimiento ni la impresión física y firma. Tampoco comprueban que se transfiera el motivo de recepción o se respeten los signos nuevos al reabrir: esos casos son los pendientes anteriores.
+
+## Cambios detallados de base de datos y persistencia
+
+### Migración de formatos clínicos
+
+`MigracionClinica.aplicar(Connection)` se ejecuta al abrir la conexión, después de crear las tablas base. Consulta `PRAGMA table_info` y agrega únicamente las columnas que faltan mediante `ALTER TABLE ... ADD COLUMN ... TEXT`. La inicialización y la migración están dentro de una transacción; si fallan se hace rollback y se cierra la conexión fallida. Reabrir una base ya migrada no vuelve a crear esas columnas ni sustituye los datos existentes.
+
+Se añadieron **53 columnas TEXT en cinco tablas**. Los valores previos permanecen y las nuevas columnas de filas antiguas pueden quedar `NULL`; la migración no inventa datos clínicos ni del profesional.
+
+| Tabla | Columnas añadidas | Uso |
+|---|---|---|
+| `Administrador` (5) | `profesion`, `especialidad`, `registro_especialidad`, `nombre_establecimiento`, `domicilio_establecimiento` | Datos fijos de emisión. Reutiliza `nombre`, apellidos, `cedula`, `institución` y `domicilio` existentes. |
+| `Expediente` (19) | `tipo_establecimiento`, `nombre_establecimiento`, `domicilio_establecimiento`, `institucion_establecimiento`, `propietario`, `grupo_etnico`, `antecedentes_no_patologicos`, `consumo_sustancias`, `padecimiento_actual`, `interrogatorio_sistemas`, `exploracion_fisica`, `resultados_estudios`, `diagnostico`, `pronostico`, `indicacion_terapeutica`, `autor_historia`, `cedula_historia`, `fecha_hora_historia`, `signos_historia` | Historia clínica ambulatoria. Reutiliza antecedentes familiares/personales, alergias y observaciones anteriores. |
+| `Consulta` (11) | `evolucion`, `exploracion_fisica`, `resultados_estudios`, `diagnostico`, `pronostico`, `indicaciones`, `nombre_medico`, `cedula_medico`, `nombre_paciente`, `edad_paciente`, `sexo_paciente` | Nota de evolución y datos de identidad de la atención. Conserva las columnas previas de motivo, padecimiento, observaciones y fecha. |
+| `Receta` (13) | `nombre_medico`, `cedula_medico`, `profesion`, `institucion_titulo`, `domicilio_medico`, `especialidad`, `registro_especialidad`, `nombre_establecimiento`, `domicilio_establecimiento`, `nombre_paciente`, `edad_paciente`, `sexo_paciente`, `indicaciones` | Datos impresos guardados con la receta para evitar que cambios posteriores del perfil alteren el documento original. |
+| `Detalle_receta` (5) | `presentacion`, `via_administracion`, `denominacion_distintiva`, `cantidad`, `grupo_regulatorio` | Completa los campos existentes de nombre, concentración, dosis, frecuencia y duración. |
+
+No se renombró `institución` en `Administrador`. El modelo `Medicamento` conserva por compatibilidad el método heredado `getDuradcion`/`setDuradcion`, que corresponde a la columna `duracion`; el formulario muestra “Duración”. Los datos fijos de `Administrador` y los del establecimiento del expediente son almacenamientos separados: no se sincronizan automáticamente.
+
+### Versiones anteriores
+
+Se crearon cinco tablas: `Version_Expediente`, `Version_Consulta`, `Version_Receta`, `Version_Detalle_receta` y `Version_Signos_vitales`.
+
+Cada una conserva las columnas de su tabla original y agrega `archivado_en` y `operacion`. Diez disparadores —`version_<Tabla>_UPDATE` y `version_<Tabla>_DELETE`— copian el registro **anterior** antes de actualizarlo o borrarlo. La fecha se registra en UTC y la operación es `UPDATE` o `DELETE`. Las versiones también se revierten si falla la transacción de la que forman parte.
+
+Las tablas de versiones no tienen las bajas en cascada de los registros operativos; permiten conservar el contenido anterior al reemplazo de detalles y otras bajas. No reconstruyen cambios anteriores a su creación, no registran la identidad autenticada de quien realizó la operación y no constituyen una bitácora inviolable. Aún no hay una pantalla de consulta/restauración de versiones ni una política automatizada de archivo.
+
+### Relaciones y operaciones
+
+- Se mantienen las relaciones: paciente por CURP → citas/expedientes; consulta → cita/expediente; receta → cita/administrador; medicamentos y signos → receta. No se añadió columna `motivo` a `Cita`.
+- `guardarAtencion(cita, consulta, receta, finalizar)` comprueba la CURP real de la cita y que una receta existente pertenezca a esa cita, resuelve o crea el expediente, guarda los detalles y la nota, y solo si `finalizar` es verdadero actualiza `ATENDIDA`.
+- `finalizarConsulta` permanece como método de conveniencia que llama a `guardarAtencion(..., true)`; la interfaz usa `guardarAtencion` para poder exportar sin finalizar.
+- Al fallar, se hace rollback, se restaura autocommit y se recuperan los identificadores originales de receta, consulta y expediente en los objetos de esa operación.
+- Las actualizaciones reemplazan medicamentos/signos de la receta dentro de la transacción; las versiones conservan sus valores anteriores. El flujo normal actualiza la nota existente de la misma cita.
+- Las fechas de receta se escriben como timestamp para conservar hora. La lectura acepta representaciones SQLite previas; la fecha/hora de historia se conserva como texto ISO y el editor valida ese formato.
+- `cargarDatosPrescriptor` lee el administrador vinculado o, para una nueva receta sin identificador, el primero por `id_administrador`. No vincula todavía la emisión con un profesional autenticado.
+- Las lecturas del expediente incluyen los campos nuevos y asocian cada consulta del historial con la receta/signos de su cita. Los datos faltantes se distinguen de un historial vacío y los errores de lectura no se presentan como ausencia de consultas.
+- No se modificaron las bajas operativas en cascada ni se agregó una restricción de conservación por antigüedad. Deben revisarse antes de declarar completa la custodia clínica.
+
+## Cambios detallados de interfaz y formatos realizados
+
+| Área | Cambios |
+|---|---|
+| Receta e indicaciones | Identificación automática del paciente al inicio, campos de solo lectura, edad a la emisión, carga de SQLite por CURP y conservación de identidad previa cuando ya existe una receta. |
+| Datos del profesional | Retiro de los campos manuales de prescriptor/establecimiento del formulario; lectura de los datos fijos desde `Administrador`, manteniéndolos en el PDF. |
+| Nota clínica | Captura independiente de diagnóstico, padecimiento, evolución, exploración, estudios, pronóstico e indicaciones; el guardado deja de concatenar todo en diagnóstico. |
+| Medicamentos | Filas con campos independientes y eliminación desde la interfaz; contador de fármacos, elección manual de fracción y validación del alcance ordinario. |
+| Expediente, lectura | Pestañas separadas visualmente para consultas, recetas e historia/signos; ficha del paciente y alertas clínicas visibles. |
+| Expediente, edición | Panel integrado en la misma vista, sin diálogo modal de edición; cinco grupos en dos columnas: establecimiento, interrogatorio/antecedentes, padecimiento/exploración, estudios/diagnóstico/tratamiento, autor/fecha. |
+| Campos de edición | Campos cortos de una línea para datos administrativos y autoría; áreas multilínea para narración clínica; 23 títulos resaltados, ayudas de captura y fecha ISO validada. |
+| Estilo | Encabezado de edición y cinco títulos de grupo con fondo celeste, borde y texto destacado, usando la paleta existente. |
+| Retroalimentación | Errores de fecha o guardado dentro del editor; confirmación verde fija al volver al expediente tras guardar. Desaparece a los cinco segundos y cada nuevo guardado reinicia el temporizador. |
+| Exportaciones | Receta ordinaria estructurada con firma pendiente; expediente con historia, notas, medicamentos y signos; identificación y numeración en continuaciones. |
+| Documentación | `docs/normativa-mexico.md` con trazabilidad y límites de alcance; este archivo con flujo real, pendientes, esquema y verificación. |
+
+Los archivos principales involucrados son `ConsultaController`, `ExpedienteController`, `BaseDatos`, `MigracionClinica`, `ValidacionClinica`, `TextoExpediente`, `ControladorPDF`, los modelos `Expediente`/`Consulta`/`Receta`/`Medicamento`, las vistas `consulta-panel.fxml`/`expediente-panel.fxml`, `cita.css` y las pruebas de expediente/formato clínico. En esta revisión de confirmación se actualiza documentación; no se corrigen ni se dan por resueltos los hallazgos de recepción.
 
 ## Conexión y estructura de la base de datos
 
@@ -58,6 +185,11 @@ Interfaz conectada: `PacientesController`, `PacienteEditarController`.
 - `[x]` Leer el historial de consultas del expediente y las recetas del paciente, con medicamentos y signos vitales.
 - `[x]` Exportar los datos reales del expediente y su historial en PDF.
 - `[x]` Refrescar el expediente al volver al panel y distinguir errores de lectura de historiales vacíos.
+- `[x]` Editar en un panel integrado, con guardar/cancelar, sin ventana de edición emergente.
+- `[x]` Agrupar y estandarizar los campos clínicos y administrativos, con títulos resaltados y ayudas de captura.
+- `[x]` Separar visualmente las pestañas de consultas, recetas e historia clínica.
+- `[x]` Resaltar en celeste el encabezado y los cinco apartados de edición.
+- `[x]` Mostrar confirmación verde al guardar y ocultarla a los cinco segundos, reiniciando el plazo en cada guardado.
 
 Interfaz conectada: `ExpedienteController`.
 
@@ -81,8 +213,34 @@ Interfaz conectada: `AgendaController`, `CitaController`, `agenda-panel.fxml`, `
 - `[x]` Actualizar una receta existente sin duplicar sus medicamentos.
 - `[x]` Generar y exportar la receta en PDF desde la consulta.
 - `[x]` Finalizar la consulta y marcar la cita como atendida.
+- `[x]` Mostrar primero la identificación del paciente, automática y de solo lectura desde SQLite.
+- `[x]` Cargar los datos fijos del prescriptor y establecimiento desde `Administrador`, sin pedirlos en cada receta.
+- `[x]` Capturar presentación, concentración, dosis, vía, frecuencia, duración, cantidad y fracción regulatoria por medicamento.
+- `[x]` Validar campos necesarios antes de emitir y excluir las fracciones I, II y III del formato ordinario.
+- `[x]` Guardar nota clínica, receta, medicamentos y signos vitales en una sola transacción y conservar versiones anteriores.
+- `[x]` Conservar la identificación original de recetas ya guardadas y preparar PDF para firma autógrafa.
 
 Interfaz conectada: `ConsultaController`, `consulta-panel.fxml`, `ControladorPDF`.
+
+#### Pendientes para cerrar el módulo de recetas ordinarias
+
+Este listado define el cierre funcional del módulo. No equivale a afirmar cumplimiento normativo integral ni incluye recetarios especiales. Ver [alcance normativo y obligaciones operativas](docs/normativa-mexico.md).
+
+- `[ ]` Corregir la transferencia y recarga del motivo de recepción hacia `Consulta.motivo`.
+- `[ ]` Corregir y probar la prioridad de los signos recién capturados al reabrir una cita con receta existente.
+- `[ ]` Validar los números de recepción sin convertir silenciosamente errores o ausencias en cero.
+- `[ ]` Definir la regeneración del PDF al finalizar una atención modificada y la conservación de documentos emitidos anteriores.
+- `[ ]` Configurar los datos reales de médico y establecimiento en `Administrador`; el registro de ejemplo no permite emitir. Completar nombre y apellidos, cédula, profesión, institución del título, domicilio, establecimiento y, cuando aplique, especialidad y registro.
+- `[ ]` Añadir una pantalla para consultar y actualizar esa configuración fija sin editar SQLite manualmente; validar antes de guardar y mostrar qué dato falta.
+- `[ ]` Conectar el inicio de sesión y los permisos al profesional responsable. Actualmente se usa el administrador predeterminado para las recetas nuevas.
+- `[ ]` Completar el acceso a recetas desde el menú: buscar paciente/cita, listar recetas, abrir una receta previa y reimprimirla sin exigir volver a iniciar la atención.
+- `[ ]` Separar guardar borrador de emitir la receta; definir cuándo puede corregirse y cómo registrar el motivo y autor de una corrección o cancelación sin perder el original.
+- `[ ]` Completar el flujo de impresión y custodia del original firmado. El PDF actual está pendiente de firma autógrafa; escribir el nombre no firma el documento.
+- `[ ]` Ofrecer consulta de revisiones y registro de accesos/exportaciones desde la interfaz, con permisos por rol. Las tablas de versiones ya conservan cambios, pero no hay una pantalla para consultarlos.
+- `[ ]` Definir respaldo, recuperación, archivo y conservación de expedientes/recetas; revisar las bajas existentes para no perder documentación que deba conservarse.
+- `[ ]` Validar el flujo completo con los datos reales del consultorio: cita registrada → captura clínica → receta → impresión → firma → consulta/reimpresión, incluidos errores de configuración y fallos de guardado.
+
+**Fuera del alcance actual:** emisión de fracciones I, II y III, firma electrónica/digital e integración con dispensación de farmacia. Si se amplía a esos servicios, se requiere un flujo propio; no deben habilitarse solo quitando la validación. El catálogo regulatorio y la revisión clínica de dosis, unidades, alergias e interacciones siguen a cargo del profesional; no existe un motor de verificación clínica automática.
 
 ## Funcionalidades pendientes
 
@@ -94,7 +252,7 @@ Interfaz conectada: `ConsultaController`, `consulta-panel.fxml`, `ControladorPDF
 - `[x]` Resolver el expediente por CURP y crearlo vacío si aún no existe.
 - `[x]` Guardar receta, consulta y estado `ATENDIDA` en una sola transacción.
 - `[x]` Reutilizar la consulta y la receta existentes al finalizar de nuevo la misma cita.
-- `[ ]` Conectar `ConsultaController` con `finalizarConsulta` para guardar motivo, padecimiento y observaciones.
+- `[x]` Conectar `ConsultaController` con `guardarAtencion` para persistir la nota clínica y la receta en una sola transacción.
 - `[x]` Mostrar el historial de consultas en el expediente.
 
 ### Medicamentos y detalle de receta
@@ -124,7 +282,7 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 
 ### Administrador
 
-- `[~]` Solo existe el registro del administrador por defecto.
+- `[~]` Existe el administrador por defecto y la lectura de sus datos fijos para recetas; la configuración visual del perfil sigue pendiente.
 - `[ ]` Implementar registro, consulta, actualización y eliminación de administradores.
 - `[ ]` Conectar el perfil del administrador con la interfaz.
 
@@ -146,11 +304,25 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 | Fase 2 | Pacientes y expediente básico | Completada |
 | Fase 3 | Agenda y citas | Completada |
 | Fase 4 | Cita en curso y signos vitales | Parcial: captura y guardado con la receta; CRUD independiente pendiente |
-| Fase 5 | Consulta, receta y medicamentos | Parcial: backend de consulta, receta, medicamentos y PDF listos; conectar la consulta desde la UI y CRUD individual pendiente |
+| Fase 5 | Consulta, receta y medicamentos | Parcial: captura, guardado transaccional y PDF conectados; pendientes de configuración, acceso, emisión y custodia detallados en Receta |
 | Fase 6 | Expediente completo | Parcial: edición, historial y PDF conectados; eliminación independiente pendiente |
 | Fase 7 | Administrador y horarios | Pendiente |
 
 ## Registro de cambios
+
+Las entradas antiguas describen el estado de cada fecha. Para el estado actual y sus límites, prevalecen la revisión de integración y los pendientes de este documento.
+
+### 2026-11-06
+
+- Se auditó el flujo desde agenda hasta consulta, guardado e historial; se distinguieron las acciones de exportar y finalizar.
+- Se documentaron 53 columnas nuevas en cinco tablas, cinco tablas de versiones y diez disparadores, además del guardado transaccional y la compatibilidad de fechas.
+- Se comprobaron las 21 pruebas y se regeneraron/revisaron visualmente los PDF de receta y expediente con datos ficticios.
+- Se registraron como pendientes la transferencia de motivo, la prioridad de signos al reabrir, la validación numérica de recepción y la sincronización/custodia de PDF.
+- Se aplicó celeste al encabezado y a los cinco apartados de edición del expediente, con confirmación verde fija que desaparece a los cinco segundos.
+- Se documentó el estado real y la lista de cierre del módulo de recetas ordinarias.
+- La identificación del paciente se carga automáticamente al inicio de la receta y los datos fijos del prescriptor se toman de `Administrador`.
+- La edición del expediente ahora utiliza un panel dentro de la aplicación, con campos agrupados, títulos destacados y errores de fecha/guardado en el propio panel.
+- Se separaron visualmente las pestañas del expediente y se adaptaron las pruebas de guardar, cancelar y recuperar un expediente faltante.
 
 ### 2026-11-04 (backend de consulta)
 

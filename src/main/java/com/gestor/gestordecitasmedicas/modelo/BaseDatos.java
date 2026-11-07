@@ -38,11 +38,13 @@ public class BaseDatos {
             }
         } catch (SQLException | ClassNotFoundException e) {
             System.err.println("Error de conexión a la base de datos: " + e.getMessage());
+            cerrarConexion();
+            conexion = null;
         }
         return conexion;
     }
 
-    private static void inicializarBaseDatos() {
+    private static void inicializarBaseDatos() throws SQLException {
         String[] sentencias = {
                 "CREATE TABLE IF NOT EXISTS Administrador (" +
                         "id_administrador INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -135,13 +137,19 @@ public class BaseDatos {
                         "FOREIGN KEY (id_horario) REFERENCES Horario(id_horario) ON DELETE CASCADE)"
         };
 
+        conexion.setAutoCommit(false);
         try (Statement stmt = conexion.createStatement()) {
             for (String sentencia : sentencias) {
                 stmt.execute(sentencia);
             }
+            MigracionClinica.aplicar(conexion);
             insertarAdministradorPorDefecto(stmt);
+            conexion.commit();
         } catch (SQLException e) {
-            System.err.println("Error al inicializar la base de datos: " + e.getMessage());
+            conexion.rollback();
+            throw e;
+        } finally {
+            conexion.setAutoCommit(true);
         }
     }
 
@@ -525,9 +533,12 @@ public class BaseDatos {
             return false;
         }
 
-        String sql = "INSERT INTO Expediente " +
-                "(CURP, fecha_apertura, antecedentes_familiares, antecedentes_personales, alergias, observaciones) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Expediente (CURP, fecha_apertura, antecedentes_familiares, antecedentes_personales, alergias, " +
+                "observaciones, tipo_establecimiento, nombre_establecimiento, domicilio_establecimiento, " +
+                "institucion_establecimiento, propietario, grupo_etnico, antecedentes_no_patologicos, consumo_sustancias, " +
+                "padecimiento_actual, interrogatorio_sistemas, exploracion_fisica, resultados_estudios, diagnostico, " +
+                "pronostico, indicacion_terapeutica, autor_historia, cedula_historia, fecha_hora_historia, " +
+                "signos_historia) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, expediente.getDatosPaciente().getCurp());
@@ -538,6 +549,25 @@ public class BaseDatos {
             ps.setString(4, expediente.getAntecedentesPersonales());
             ps.setString(5, expediente.getAlergias());
             ps.setString(6, expediente.getObservaciones());
+            ps.setString(7, expediente.getTipoEstablecimiento());
+            ps.setString(8, expediente.getNombreEstablecimiento());
+            ps.setString(9, expediente.getDomicilioEstablecimiento());
+            ps.setString(10, expediente.getInstitucionEstablecimiento());
+            ps.setString(11, expediente.getPropietario());
+            ps.setString(12, expediente.getGrupoEtnico());
+            ps.setString(13, expediente.getAntecedentesNoPatologicos());
+            ps.setString(14, expediente.getConsumoSustancias());
+            ps.setString(15, expediente.getPadecimientoActual());
+            ps.setString(16, expediente.getInterrogatorioSistemas());
+            ps.setString(17, expediente.getExploracionFisica());
+            ps.setString(18, expediente.getResultadosEstudios());
+            ps.setString(19, expediente.getDiagnostico());
+            ps.setString(20, expediente.getPronostico());
+            ps.setString(21, expediente.getIndicacionTerapeutica());
+            ps.setString(22, expediente.getAutorHistoria());
+            ps.setString(23, expediente.getCedulaHistoria());
+            ps.setString(24, expediente.getFechaHoraHistoria());
+            ps.setString(25, expediente.getSignosHistoria());
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -588,8 +618,13 @@ public class BaseDatos {
             return false;
         }
 
-        String sql = "UPDATE Expediente SET CURP = ?, fecha_apertura = ?, antecedentes_familiares = ?, " +
-                "antecedentes_personales = ?, alergias = ?, observaciones = ? WHERE id_expediente = ?";
+        String sql = "UPDATE Expediente SET CURP = ?, fecha_apertura = ?, antecedentes_familiares = ?, antecedentes_personales " +
+                "= ?, alergias = ?, observaciones = ?, tipo_establecimiento = ?, nombre_establecimiento = ?, " +
+                "domicilio_establecimiento = ?, institucion_establecimiento = ?, propietario = ?, grupo_etnico = ?, " +
+                "antecedentes_no_patologicos = ?, consumo_sustancias = ?, padecimiento_actual = ?, interrogatorio_sistemas " +
+                "= ?, exploracion_fisica = ?, resultados_estudios = ?, diagnostico = ?, pronostico = ?, " +
+                "indicacion_terapeutica = ?, autor_historia = ?, cedula_historia = ?, fecha_hora_historia = ?, " +
+                "signos_historia = ? WHERE id_expediente = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, expediente.getDatosPaciente().getCurp());
@@ -598,7 +633,26 @@ public class BaseDatos {
             ps.setString(4, expediente.getAntecedentesPersonales());
             ps.setString(5, expediente.getAlergias());
             ps.setString(6, expediente.getObservaciones());
-            ps.setInt(7, expediente.getIdExpediente());
+            ps.setString(7, expediente.getTipoEstablecimiento());
+            ps.setString(8, expediente.getNombreEstablecimiento());
+            ps.setString(9, expediente.getDomicilioEstablecimiento());
+            ps.setString(10, expediente.getInstitucionEstablecimiento());
+            ps.setString(11, expediente.getPropietario());
+            ps.setString(12, expediente.getGrupoEtnico());
+            ps.setString(13, expediente.getAntecedentesNoPatologicos());
+            ps.setString(14, expediente.getConsumoSustancias());
+            ps.setString(15, expediente.getPadecimientoActual());
+            ps.setString(16, expediente.getInterrogatorioSistemas());
+            ps.setString(17, expediente.getExploracionFisica());
+            ps.setString(18, expediente.getResultadosEstudios());
+            ps.setString(19, expediente.getDiagnostico());
+            ps.setString(20, expediente.getPronostico());
+            ps.setString(21, expediente.getIndicacionTerapeutica());
+            ps.setString(22, expediente.getAutorHistoria());
+            ps.setString(23, expediente.getCedulaHistoria());
+            ps.setString(24, expediente.getFechaHoraHistoria());
+            ps.setString(25, expediente.getSignosHistoria());
+            ps.setInt(26, expediente.getIdExpediente());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al actualizar expediente: " + e.getMessage());
@@ -616,8 +670,7 @@ public class BaseDatos {
             throw new IllegalStateException("No hay conexión para cargar el expediente.");
         }
 
-        String sql = "SELECT id_expediente, CURP, fecha_apertura, antecedentes_familiares, " +
-                "antecedentes_personales, alergias, observaciones FROM Expediente " +
+        String sql = "SELECT * FROM Expediente " +
                 "WHERE CURP = ? ORDER BY id_expediente DESC LIMIT 1";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -631,6 +684,25 @@ public class BaseDatos {
                     expediente.setAntecedentesPersonales(rs.getString("antecedentes_personales"));
                     expediente.setAlergias(rs.getString("alergias"));
                     expediente.setObservaciones(rs.getString("observaciones"));
+                    expediente.setTipoEstablecimiento(rs.getString("tipo_establecimiento"));
+                    expediente.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
+                    expediente.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
+                    expediente.setInstitucionEstablecimiento(rs.getString("institucion_establecimiento"));
+                    expediente.setPropietario(rs.getString("propietario"));
+                    expediente.setGrupoEtnico(rs.getString("grupo_etnico"));
+                    expediente.setAntecedentesNoPatologicos(rs.getString("antecedentes_no_patologicos"));
+                    expediente.setConsumoSustancias(rs.getString("consumo_sustancias"));
+                    expediente.setPadecimientoActual(rs.getString("padecimiento_actual"));
+                    expediente.setInterrogatorioSistemas(rs.getString("interrogatorio_sistemas"));
+                    expediente.setExploracionFisica(rs.getString("exploracion_fisica"));
+                    expediente.setResultadosEstudios(rs.getString("resultados_estudios"));
+                    expediente.setDiagnostico(rs.getString("diagnostico"));
+                    expediente.setPronostico(rs.getString("pronostico"));
+                    expediente.setIndicacionTerapeutica(rs.getString("indicacion_terapeutica"));
+                    expediente.setAutorHistoria(rs.getString("autor_historia"));
+                    expediente.setCedulaHistoria(rs.getString("cedula_historia"));
+                    expediente.setFechaHoraHistoria(rs.getString("fecha_hora_historia"));
+                    expediente.setSignosHistoria(rs.getString("signos_historia"));
                     expediente.setDatosPaciente(cargarPacientePorCurp(curp));
                     expediente.setConsultas(cargarConsultasPorExpediente(expediente.getIdExpediente()));
                     expediente.setRecetas(cargarRecetasPorCurp(curp));
@@ -649,7 +721,7 @@ public class BaseDatos {
         if (con == null) {
             throw new IllegalStateException("No hay conexión para cargar las consultas.");
         }
-        String sql = "SELECT id_consulta, id_cita, fecha, padecimiento, motivo, observaciones "
+        String sql = "SELECT * "
                 + "FROM Consulta WHERE id_expediente = ? ORDER BY fecha DESC, id_consulta DESC";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idExpediente);
@@ -671,6 +743,19 @@ public class BaseDatos {
                     consulta.setPadecimiento(rs.getString("padecimiento"));
                     consulta.setMotivo(rs.getString("motivo"));
                     consulta.setObservaciones(rs.getString("observaciones"));
+                    consulta.setEvolucion(rs.getString("evolucion"));
+                    consulta.setExploracionFisica(rs.getString("exploracion_fisica"));
+                    consulta.setResultadosEstudios(rs.getString("resultados_estudios"));
+                    consulta.setDiagnostico(rs.getString("diagnostico"));
+                    consulta.setPronostico(rs.getString("pronostico"));
+                    consulta.setIndicaciones(rs.getString("indicaciones"));
+                    consulta.setNombreMedico(rs.getString("nombre_medico"));
+                    consulta.setCedulaMedico(rs.getString("cedula_medico"));
+                    consulta.setNombrePaciente(rs.getString("nombre_paciente"));
+                    consulta.setEdadPaciente(rs.getString("edad_paciente"));
+                    consulta.setSexoPaciente(rs.getString("sexo_paciente"));
+                    consulta.setReceta(cargarRecetaPorCita(consulta.getIdCita()));
+                    if (consulta.getReceta() != null) consulta.setSignosVitales(consulta.getReceta().getSignosVitales());
                     consultas.add(consulta);
                 }
             }
@@ -777,6 +862,10 @@ public class BaseDatos {
      * de la cita y la marca como atendida dentro de una sola transacción.
      */
     public boolean finalizarConsulta(Cita cita, Consulta consulta, Receta receta) {
+        return guardarAtencion(cita, consulta, receta, true);
+    }
+
+    public boolean guardarAtencion(Cita cita, Consulta consulta, Receta receta, boolean finalizar) {
         if (cita == null || cita.getIdCita() <= 0 || consulta == null || receta == null) {
             return false;
         }
@@ -786,16 +875,27 @@ public class BaseDatos {
             return false;
         }
 
+        int idRecetaAnterior = receta.getIdReceta();
+        int idConsultaAnterior = consulta.getIdConsulta();
+        int idExpedienteAnterior = consulta.getIdExpediente();
+        boolean confirmado = false;
         try {
             con.setAutoCommit(false);
 
             int idCita = cita.getIdCita();
-            String curp = cita.getCurp() != null && !cita.getCurp().trim().isEmpty()
-                    ? cita.getCurp()
-                    : curpDeCita(con, idCita);
-            if (curp == null || curp.trim().isEmpty()) {
+            String curp = curpDeCita(con, idCita);
+            if (curp == null || curp.trim().isEmpty()
+                    || (cita.getCurp() != null && !curp.equals(cita.getCurp()))) {
                 con.rollback();
                 return false;
+            }
+            if (receta.getIdReceta() > 0) {
+                try (PreparedStatement ps = con.prepareStatement("SELECT id_cita FROM Receta WHERE id_receta = ?")) {
+                    ps.setInt(1, receta.getIdReceta());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (!rs.next() || rs.getInt(1) != idCita) { con.rollback(); return false; }
+                    }
+                }
             }
             cita.setCurp(curp);
 
@@ -824,9 +924,7 @@ public class BaseDatos {
             Consulta existente = consultaPorCitaInterna(con, idCita);
             consulta.setIdCita(idCita);
             consulta.setIdExpediente(idExpediente);
-            if (existente != null) {
-                consulta.setIdConsulta(existente.getIdConsulta());
-            }
+            consulta.setIdConsulta(existente == null ? 0 : existente.getIdConsulta());
             if (consulta.getFechaConsulta() == null) {
                 consulta.setFechaConsulta(existente != null && existente.getFechaConsulta() != null
                         ? existente.getFechaConsulta()
@@ -841,19 +939,25 @@ public class BaseDatos {
                 return false;
             }
 
-            if (!actualizarEstadoCita(con, idCita, Estado.ATENDIDA)) {
+            if (finalizar && !actualizarEstadoCita(con, idCita, Estado.ATENDIDA)) {
                 con.rollback();
                 return false;
             }
 
             con.commit();
-            cita.setEstado(Estado.ATENDIDA);
+            confirmado = true;
+            if (finalizar) cita.setEstado(Estado.ATENDIDA);
             consulta.setReceta(receta);
             consulta.setSignosVitales(receta.getSignosVitales());
             return true;
         } catch (SQLException e) {
             revertir(con, "finalizar consulta", e);
         } finally {
+            if (!confirmado) {
+                receta.setIdReceta(idRecetaAnterior);
+                consulta.setIdConsulta(idConsultaAnterior);
+                consulta.setIdExpediente(idExpedienteAnterior);
+            }
             restaurarAutoCommit(con);
         }
         return false;
@@ -886,7 +990,10 @@ public class BaseDatos {
     }
 
     private static int insertarRecetaInterna(Connection con, Receta receta) throws SQLException {
-        String sql = "INSERT INTO Receta (id_administrador, id_cita, fecha, diagnostico) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Receta (id_administrador, id_cita, fecha, diagnostico, nombre_medico, cedula_medico, " +
+                "profesion, institucion_titulo, domicilio_medico, especialidad, registro_especialidad, " +
+                "nombre_establecimiento, domicilio_establecimiento, nombre_paciente, edad_paciente, sexo_paciente, " +
+                "indicaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         int idAdministrador = receta.getIdAdministrador() > 0
                 ? receta.getIdAdministrador()
@@ -899,8 +1006,21 @@ public class BaseDatos {
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, idAdministrador);
             ps.setInt(2, receta.getIdCita());
-            ps.setDate(3, toSqlDate(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
+            ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
             ps.setString(4, receta.getDiagnostico());
+            ps.setString(5, receta.getNombreMedico());
+            ps.setString(6, receta.getCedulaMedico());
+            ps.setString(7, receta.getProfesion());
+            ps.setString(8, receta.getInstitucionTitulo());
+            ps.setString(9, receta.getDomicilioMedico());
+            ps.setString(10, receta.getEspecialidad());
+            ps.setString(11, receta.getRegistroEspecialidad());
+            ps.setString(12, receta.getNombreEstablecimiento());
+            ps.setString(13, receta.getDomicilioEstablecimiento());
+            ps.setString(14, receta.getNombrePaciente());
+            ps.setString(15, receta.getEdadPaciente());
+            ps.setString(16, receta.getSexoPaciente());
+            ps.setString(17, receta.getIndicaciones());
 
             if (ps.executeUpdate() == 0) {
                 return -1;
@@ -946,8 +1066,10 @@ public class BaseDatos {
     }
 
     private static boolean actualizarRecetaInterna(Connection con, Receta receta) throws SQLException {
-        String sql = "UPDATE Receta SET id_administrador = ?, id_cita = ?, fecha = ?, diagnostico = ? " +
-                "WHERE id_receta = ?";
+        String sql = "UPDATE Receta SET id_administrador = ?, id_cita = ?, fecha = ?, diagnostico = ?, nombre_medico = ?, " +
+                "cedula_medico = ?, profesion = ?, institucion_titulo = ?, domicilio_medico = ?, especialidad = ?, " +
+                "registro_especialidad = ?, nombre_establecimiento = ?, domicilio_establecimiento = ?, nombre_paciente = " +
+                "?, edad_paciente = ?, sexo_paciente = ?, indicaciones = ? WHERE id_receta = ?";
 
         int idAdministrador = receta.getIdAdministrador() > 0
                 ? receta.getIdAdministrador()
@@ -960,9 +1082,22 @@ public class BaseDatos {
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idAdministrador);
             ps.setInt(2, receta.getIdCita());
-            ps.setDate(3, toSqlDate(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
+            ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
             ps.setString(4, receta.getDiagnostico());
-            ps.setInt(5, receta.getIdReceta());
+            ps.setString(5, receta.getNombreMedico());
+            ps.setString(6, receta.getCedulaMedico());
+            ps.setString(7, receta.getProfesion());
+            ps.setString(8, receta.getInstitucionTitulo());
+            ps.setString(9, receta.getDomicilioMedico());
+            ps.setString(10, receta.getEspecialidad());
+            ps.setString(11, receta.getRegistroEspecialidad());
+            ps.setString(12, receta.getNombreEstablecimiento());
+            ps.setString(13, receta.getDomicilioEstablecimiento());
+            ps.setString(14, receta.getNombrePaciente());
+            ps.setString(15, receta.getEdadPaciente());
+            ps.setString(16, receta.getSexoPaciente());
+            ps.setString(17, receta.getIndicaciones());
+            ps.setInt(18, receta.getIdReceta());
 
             if (ps.executeUpdate() == 0) {
                 return false;
@@ -1014,7 +1149,7 @@ public class BaseDatos {
             throw new IllegalStateException("No hay conexión para cargar la receta.");
         }
 
-        String sql = "SELECT r.id_receta, r.id_administrador, r.id_cita, r.fecha, r.diagnostico, c.CURP " +
+        String sql = "SELECT r.*, c.CURP " +
                 "FROM Receta r JOIN Cita c ON c.id_cita = r.id_cita " +
                 "WHERE r.id_cita = ? ORDER BY r.id_receta DESC LIMIT 1";
 
@@ -1026,9 +1161,22 @@ public class BaseDatos {
                     receta.setIdReceta(rs.getInt("id_receta"));
                     receta.setIdAdministrador(rs.getInt("id_administrador"));
                     receta.setIdCita(rs.getInt("id_cita"));
-                    receta.setFecha(toUtilDate(rs.getDate("fecha")));
+                    receta.setFecha(leerFechaHora(rs.getObject("fecha")));
                     receta.setDiagnostico(rs.getString("diagnostico"));
                     receta.setCurp(rs.getString("CURP"));
+                    receta.setNombreMedico(rs.getString("nombre_medico"));
+                    receta.setCedulaMedico(rs.getString("cedula_medico"));
+                    receta.setProfesion(rs.getString("profesion"));
+                    receta.setInstitucionTitulo(rs.getString("institucion_titulo"));
+                    receta.setDomicilioMedico(rs.getString("domicilio_medico"));
+                    receta.setEspecialidad(rs.getString("especialidad"));
+                    receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
+                    receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
+                    receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
+                    receta.setNombrePaciente(rs.getString("nombre_paciente"));
+                    receta.setEdadPaciente(rs.getString("edad_paciente"));
+                    receta.setSexoPaciente(rs.getString("sexo_paciente"));
+                    receta.setIndicaciones(rs.getString("indicaciones"));
                     receta.setMedicamentos(cargarMedicamentosPorReceta(con, receta.getIdReceta()));
                     receta.setSignosVitales(cargarSignosVitalesPorReceta(con, receta.getIdReceta()));
                     return receta;
@@ -1047,7 +1195,7 @@ public class BaseDatos {
             throw new IllegalStateException("No hay conexión para cargar las recetas.");
         }
 
-        String sql = "SELECT r.id_receta, r.id_administrador, r.id_cita, r.fecha, r.diagnostico, c.CURP " +
+        String sql = "SELECT r.*, c.CURP " +
                 "FROM Receta r JOIN Cita c ON c.id_cita = r.id_cita " +
                 (curp == null ? "" : "WHERE c.CURP = ? ") + "ORDER BY r.id_receta";
 
@@ -1061,9 +1209,22 @@ public class BaseDatos {
                 receta.setIdReceta(rs.getInt("id_receta"));
                 receta.setIdAdministrador(rs.getInt("id_administrador"));
                 receta.setIdCita(rs.getInt("id_cita"));
-                receta.setFecha(toUtilDate(rs.getDate("fecha")));
+                receta.setFecha(leerFechaHora(rs.getObject("fecha")));
                 receta.setDiagnostico(rs.getString("diagnostico"));
                 receta.setCurp(rs.getString("CURP"));
+                    receta.setNombreMedico(rs.getString("nombre_medico"));
+                    receta.setCedulaMedico(rs.getString("cedula_medico"));
+                    receta.setProfesion(rs.getString("profesion"));
+                    receta.setInstitucionTitulo(rs.getString("institucion_titulo"));
+                    receta.setDomicilioMedico(rs.getString("domicilio_medico"));
+                    receta.setEspecialidad(rs.getString("especialidad"));
+                    receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
+                    receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
+                    receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
+                    receta.setNombrePaciente(rs.getString("nombre_paciente"));
+                    receta.setEdadPaciente(rs.getString("edad_paciente"));
+                    receta.setSexoPaciente(rs.getString("sexo_paciente"));
+                    receta.setIndicaciones(rs.getString("indicaciones"));
                 recetas.put(receta.getIdReceta(), receta);
             }
             }
@@ -1092,8 +1253,9 @@ public class BaseDatos {
             return false;
         }
 
-        String sql = "INSERT INTO Detalle_receta " +
-                "(id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Detalle_receta (id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion, " +
+                "presentacion, via_administracion, denominacion_distintiva, cantidad, grupo_regulatorio) VALUES (?, ?, ?, " +
+                "?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, medicamento.getIdReceta());
@@ -1102,6 +1264,11 @@ public class BaseDatos {
             ps.setString(4, medicamento.getDosis());
             ps.setString(5, medicamento.getFrecuencia());
             ps.setString(6, medicamento.getDuradcion());
+            ps.setString(7, medicamento.getPresentacion());
+            ps.setString(8, medicamento.getViaAdministracion());
+            ps.setString(9, medicamento.getDenominacionDistintiva());
+            ps.setString(10, medicamento.getCantidad());
+            ps.setString(11, medicamento.getGrupoRegulatorio());
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -1124,8 +1291,7 @@ public class BaseDatos {
             return medicamentos;
         }
 
-        String sql = "SELECT id_detalle_receta, id_receta, nombre_medicamento, concentracion, dosis, " +
-                "frecuencia, duracion FROM Detalle_receta ORDER BY id_detalle_receta";
+        String sql = "SELECT * FROM Detalle_receta ORDER BY id_detalle_receta";
 
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -1145,8 +1311,10 @@ public class BaseDatos {
     }
 
     private static boolean insertarConsultaInterna(Connection con, Consulta consulta) throws SQLException {
-        String sql = "INSERT INTO Consulta (id_cita, id_expediente, fecha, padecimiento, motivo, observaciones) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Consulta (id_cita, id_expediente, fecha, padecimiento, motivo, observaciones, evolucion, " +
+                "exploracion_fisica, resultados_estudios, diagnostico, pronostico, indicaciones, nombre_medico, " +
+                "cedula_medico, nombre_paciente, edad_paciente, sexo_paciente) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
+                "?, ?, ?, ?, ?)";
 
         LocalDateTime fecha = consulta.getFechaConsulta();
         if (fecha == null) {
@@ -1161,6 +1329,17 @@ public class BaseDatos {
             ps.setString(4, consulta.getPadecimiento());
             ps.setString(5, consulta.getMotivo());
             ps.setString(6, consulta.getObservaciones());
+            ps.setString(7, consulta.getEvolucion());
+            ps.setString(8, consulta.getExploracionFisica());
+            ps.setString(9, consulta.getResultadosEstudios());
+            ps.setString(10, consulta.getDiagnostico());
+            ps.setString(11, consulta.getPronostico());
+            ps.setString(12, consulta.getIndicaciones());
+            ps.setString(13, consulta.getNombreMedico());
+            ps.setString(14, consulta.getCedulaMedico());
+            ps.setString(15, consulta.getNombrePaciente());
+            ps.setString(16, consulta.getEdadPaciente());
+            ps.setString(17, consulta.getSexoPaciente());
 
             if (ps.executeUpdate() == 0) {
                 return false;
@@ -1176,8 +1355,10 @@ public class BaseDatos {
     }
 
     private static boolean actualizarConsultaInterna(Connection con, Consulta consulta) throws SQLException {
-        String sql = "UPDATE Consulta SET id_cita = ?, id_expediente = ?, fecha = ?, padecimiento = ?, " +
-                "motivo = ?, observaciones = ? WHERE id_consulta = ?";
+        String sql = "UPDATE Consulta SET id_cita = ?, id_expediente = ?, fecha = ?, padecimiento = ?, motivo = ?, " +
+                "observaciones = ?, evolucion = ?, exploracion_fisica = ?, resultados_estudios = ?, diagnostico = ?, " +
+                "pronostico = ?, indicaciones = ?, nombre_medico = ?, cedula_medico = ?, nombre_paciente = ?, " +
+                "edad_paciente = ?, sexo_paciente = ? WHERE id_consulta = ?";
 
         LocalDateTime fecha = consulta.getFechaConsulta() == null
                 ? LocalDateTime.now()
@@ -1191,13 +1372,24 @@ public class BaseDatos {
             ps.setString(4, consulta.getPadecimiento());
             ps.setString(5, consulta.getMotivo());
             ps.setString(6, consulta.getObservaciones());
-            ps.setInt(7, consulta.getIdConsulta());
+            ps.setString(7, consulta.getEvolucion());
+            ps.setString(8, consulta.getExploracionFisica());
+            ps.setString(9, consulta.getResultadosEstudios());
+            ps.setString(10, consulta.getDiagnostico());
+            ps.setString(11, consulta.getPronostico());
+            ps.setString(12, consulta.getIndicaciones());
+            ps.setString(13, consulta.getNombreMedico());
+            ps.setString(14, consulta.getCedulaMedico());
+            ps.setString(15, consulta.getNombrePaciente());
+            ps.setString(16, consulta.getEdadPaciente());
+            ps.setString(17, consulta.getSexoPaciente());
+            ps.setInt(18, consulta.getIdConsulta());
             return ps.executeUpdate() > 0;
         }
     }
 
     private static Consulta consultaPorIdInterna(Connection con, int idConsulta) throws SQLException {
-        String sql = "SELECT id_consulta, id_cita, id_expediente, fecha, padecimiento, motivo, observaciones " +
+        String sql = "SELECT * " +
                 "FROM Consulta WHERE id_consulta = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idConsulta);
@@ -1208,7 +1400,7 @@ public class BaseDatos {
     }
 
     private static Consulta consultaPorCitaInterna(Connection con, int idCita) throws SQLException {
-        String sql = "SELECT id_consulta, id_cita, id_expediente, fecha, padecimiento, motivo, observaciones " +
+        String sql = "SELECT * " +
                 "FROM Consulta WHERE id_cita = ? ORDER BY fecha DESC, id_consulta DESC LIMIT 1";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idCita);
@@ -1232,6 +1424,17 @@ public class BaseDatos {
         consulta.setPadecimiento(rs.getString("padecimiento"));
         consulta.setMotivo(rs.getString("motivo"));
         consulta.setObservaciones(rs.getString("observaciones"));
+        consulta.setEvolucion(rs.getString("evolucion"));
+        consulta.setExploracionFisica(rs.getString("exploracion_fisica"));
+        consulta.setResultadosEstudios(rs.getString("resultados_estudios"));
+        consulta.setDiagnostico(rs.getString("diagnostico"));
+        consulta.setPronostico(rs.getString("pronostico"));
+        consulta.setIndicaciones(rs.getString("indicaciones"));
+        consulta.setNombreMedico(rs.getString("nombre_medico"));
+        consulta.setCedulaMedico(rs.getString("cedula_medico"));
+        consulta.setNombrePaciente(rs.getString("nombre_paciente"));
+        consulta.setEdadPaciente(rs.getString("edad_paciente"));
+        consulta.setSexoPaciente(rs.getString("sexo_paciente"));
         return consulta;
     }
 
@@ -1293,6 +1496,33 @@ public class BaseDatos {
         }
     }
 
+    public void cargarDatosPrescriptor(Receta receta) {
+        Connection con = getConexion();
+        if (con == null) throw new IllegalStateException("No hay conexión para cargar los datos del prescriptor.");
+        try {
+            int id = receta.getIdAdministrador() > 0 ? receta.getIdAdministrador() : obtenerIdAdministradorPorDefecto(con);
+            try (PreparedStatement ps = con.prepareStatement("SELECT * FROM Administrador WHERE id_administrador = ?")) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) throw new IllegalStateException("No hay un prescriptor configurado en la base de datos.");
+                    receta.setIdAdministrador(id);
+                    receta.setNombreMedico((valor(rs.getString("nombre")) + " " + valor(rs.getString("apellido_paterno"))
+                            + " " + valor(rs.getString("apellido_materno"))).trim());
+                    receta.setCedulaMedico(rs.getString("cedula"));
+                    receta.setProfesion(rs.getString("profesion"));
+                    receta.setInstitucionTitulo(rs.getString("institución"));
+                    receta.setDomicilioMedico(rs.getString("domicilio"));
+                    receta.setEspecialidad(rs.getString("especialidad"));
+                    receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
+                    receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
+                    receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new IllegalStateException("No se pudieron cargar los datos del prescriptor.", ex);
+        }
+    }
+
     private static int obtenerIdAdministradorPorDefecto(Connection con) throws SQLException {
         String sql = "SELECT id_administrador FROM Administrador ORDER BY id_administrador LIMIT 1";
         try (PreparedStatement ps = con.prepareStatement(sql);
@@ -1317,8 +1547,9 @@ public class BaseDatos {
             return;
         }
 
-        String sql = "INSERT INTO Detalle_receta " +
-                "(id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Detalle_receta (id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion, " +
+                "presentacion, via_administracion, denominacion_distintiva, cantidad, grupo_regulatorio) VALUES (?, ?, ?, " +
+                "?, ?, ?, ?, ?, ?, ?, ?)";
 
         for (Medicamento medicamento : receta.getMedicamentos()) {
             if (medicamento == null) {
@@ -1332,6 +1563,11 @@ public class BaseDatos {
                 ps.setString(4, medicamento.getDosis());
                 ps.setString(5, medicamento.getFrecuencia());
                 ps.setString(6, medicamento.getDuradcion());
+                ps.setString(7, medicamento.getPresentacion());
+                ps.setString(8, medicamento.getViaAdministracion());
+                ps.setString(9, medicamento.getDenominacionDistintiva());
+                ps.setString(10, medicamento.getCantidad());
+                ps.setString(11, medicamento.getGrupoRegulatorio());
                 ps.executeUpdate();
 
                 medicamento.setIdReceta(receta.getIdReceta());
@@ -1369,8 +1605,7 @@ public class BaseDatos {
 
     private static ArrayList<Medicamento> cargarMedicamentosPorReceta(Connection con, int idReceta) throws SQLException {
         ArrayList<Medicamento> medicamentos = new ArrayList<>();
-        String sql = "SELECT id_detalle_receta, id_receta, nombre_medicamento, concentracion, dosis, " +
-                "frecuencia, duracion FROM Detalle_receta WHERE id_receta = ? ORDER BY id_detalle_receta";
+        String sql = "SELECT * FROM Detalle_receta WHERE id_receta = ? ORDER BY id_detalle_receta";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idReceta);
@@ -1415,6 +1650,11 @@ public class BaseDatos {
         medicamento.setDosis(rs.getString("dosis"));
         medicamento.setFrecuencia(rs.getString("frecuencia"));
         medicamento.setDuradcion(rs.getString("duracion"));
+        medicamento.setPresentacion(rs.getString("presentacion"));
+        medicamento.setViaAdministracion(rs.getString("via_administracion"));
+        medicamento.setDenominacionDistintiva(rs.getString("denominacion_distintiva"));
+        medicamento.setCantidad(rs.getString("cantidad"));
+        medicamento.setGrupoRegulatorio(rs.getString("grupo_regulatorio"));
         return medicamento;
     }
 

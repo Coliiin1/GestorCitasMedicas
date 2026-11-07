@@ -84,4 +84,48 @@ public class Consulta {
     public void setIdCita(int idCita) {
         this.idCita = idCita;
     }
+
+    private String evolucion;
+    public String getEvolucion() { return evolucion; }
+    public void setEvolucion(String valor) { this.evolucion = valor; }
+
+    private String exploracionFisica;
+    public String getExploracionFisica() { return exploracionFisica; }
+    public void setExploracionFisica(String valor) { this.exploracionFisica = valor; }
+
+    private String resultadosEstudios;
+    public String getResultadosEstudios() { return resultadosEstudios; }
+    public void setResultadosEstudios(String valor) { this.resultadosEstudios = valor; }
+
+    private String diagnostico;
+    public String getDiagnostico() { return diagnostico; }
+    public void setDiagnostico(String valor) { this.diagnostico = valor; }
+
+    private String pronostico;
+    public String getPronostico() { return pronostico; }
+    public void setPronostico(String valor) { this.pronostico = valor; }
+
+    private String indicaciones;
+    public String getIndicaciones() { return indicaciones; }
+    public void setIndicaciones(String valor) { this.indicaciones = valor; }
+
+    private String nombreMedico;
+    public String getNombreMedico() { return nombreMedico; }
+    public void setNombreMedico(String valor) { this.nombreMedico = valor; }
+
+    private String cedulaMedico;
+    public String getCedulaMedico() { return cedulaMedico; }
+    public void setCedulaMedico(String valor) { this.cedulaMedico = valor; }
+
+    private String nombrePaciente;
+    public String getNombrePaciente() { return nombrePaciente; }
+    public void setNombrePaciente(String valor) { this.nombrePaciente = valor; }
+
+    private String edadPaciente;
+    public String getEdadPaciente() { return edadPaciente; }
+    public void setEdadPaciente(String valor) { this.edadPaciente = valor; }
+
+    private String sexoPaciente;
+    public String getSexoPaciente() { return sexoPaciente; }
+    public void setSexoPaciente(String valor) { this.sexoPaciente = valor; }
 }

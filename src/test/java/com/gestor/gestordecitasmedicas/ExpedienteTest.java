@@ -11,9 +11,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 import org.junit.jupiter.api.*;
@@ -168,6 +165,7 @@ class ExpedienteTest {
         historia(paciente, expediente, "Control local", "Paracetamol");
         Platform.startup(() -> { });
         javafxIniciado = true;
+        java.util.concurrent.CompletableFuture<Boolean> confirmacionOculta = new java.util.concurrent.CompletableFuture<>();
         FutureTask<Void> verificar = new FutureTask<>(() -> {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("expediente-panel.fxml"));
             VBox vista = loader.load();
@@ -176,26 +174,42 @@ class ExpedienteTest {
             vista.applyCss(); vista.layout();
             ExpedienteController controlador = loader.getController();
             controlador.mostrarPaciente(paciente);
-            Dialog<ButtonType> cancelado = controlador.crearEditor();
-            VBox campos = (VBox) cancelado.getDialogPane().getContent();
-            ((TextArea) campos.getChildren().get(5)).setText("No guardar esta alergia");
-            ((Button) cancelado.getDialogPane().lookupButton(ButtonType.CANCEL)).fire();
+            Button editar = (Button) loader.getNamespace().get("btnEditar");
+            Button guardar = (Button) loader.getNamespace().get("btnGuardarEdicion");
+            Button cancelar = (Button) loader.getNamespace().get("btnCancelarEdicion");
+            VBox editor = (VBox) loader.getNamespace().get("editorExpediente");
+            VBox lectura = (VBox) loader.getNamespace().get("vistaExpediente");
+            editar.fire();
+            assertTrue(editor.isVisible()); assertFalse(lectura.isVisible());
+            VBox campos = (VBox) loader.getNamespace().get("camposEditor");
+            ((TextArea) campos.lookup("#alergiasEditor")).setText("No guardar esta alergia");
+            cancelar.fire();
+            assertFalse(editor.isVisible()); assertTrue(lectura.isVisible());
             assertNull(bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
-            Dialog<ButtonType> editor = controlador.crearEditor();
-            campos = (VBox) editor.getDialogPane().getContent();
-            ((TextArea) campos.getChildren().get(1)).setText("Diabetes familiar");
-            ((TextArea) campos.getChildren().get(3)).setText("Cirugía previa");
-            ((TextArea) campos.getChildren().get(5)).setText("Penicilina");
-            ((TextArea) campos.getChildren().get(7)).setText("Seguimiento");
-            editor.getDialogPane().applyCss();
-            editor.getDialogPane().resize(620, editor.getDialogPane().prefHeight(620));
-            editor.getDialogPane().layout();
-            ImageIO.write(SwingFXUtils.fromFXImage(editor.getDialogPane().snapshot(null, null), null), "png",
+            editar.fire();
+            ((TextArea) campos.lookup("#familiares")).setText("Diabetes familiar");
+            ((TextArea) campos.lookup("#personales")).setText("Cirugía previa");
+            ((TextArea) campos.lookup("#alergiasEditor")).setText("Penicilina");
+            ((TextArea) campos.lookup("#observaciones")).setText("Seguimiento");
+            javafx.scene.control.TextField fecha = (javafx.scene.control.TextField) campos.lookup("#fechaHoraHistoria");
+            String fechaValida = fecha.getText();
+            fecha.setText("fecha inválida"); guardar.fire();
+            assertTrue(editor.isVisible());
+            assertTrue(((Label) loader.getNamespace().get("errorEdicion")).isVisible());
+            assertFalse(((Label) loader.getNamespace().get("estadoEdicion")).isVisible());
+            assertNull(bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
+            fecha.setText(fechaValida);
+            vista.applyCss(); vista.layout();
+            assertEquals(5, campos.lookupAll(".expediente-grupo-titulo").size());
+            assertEquals(23, campos.lookupAll(".expediente-campo-titulo").size());
+            ImageIO.write(SwingFXUtils.fromFXImage(vista.snapshot(null, null), null), "png",
                     Paths.get("target", "expediente-editor-prueba.png").toFile());
-            ButtonType guardar = editor.getDialogPane().getButtonTypes().stream()
-                    .filter(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE).findFirst().get();
-            ((Button) editor.getDialogPane().lookupButton(guardar)).fire();
-            controlador.refrescar();
+            guardar.fire();
+            assertFalse(editor.isVisible()); assertTrue(lectura.isVisible());
+            Label confirmacion = (Label) loader.getNamespace().get("estadoEdicion");
+            assertTrue(confirmacion.isVisible());
+            assertTrue(confirmacion.isManaged());
+            assertEquals("Expediente actualizado correctamente.", confirmacion.getText());
             assertEquals("Penicilina", ((Label) loader.getNamespace().get("alergias")).getText());
             assertTrue(((Label) loader.getNamespace().get("antecedentes")).getText().contains("Cirugía previa"));
             assertTrue(((Label) loader.getNamespace().get("historialConsultas")).getText().contains("Control local"));
@@ -207,16 +221,82 @@ class ExpedienteTest {
                     Paths.get("target", "expediente-vista-prueba.png").toFile());
             assertTrue(bd.eliminarExpediente(String.valueOf(expediente.getIdExpediente())));
             controlador.mostrarPaciente(paciente);
-            Dialog<ButtonType> nuevo = controlador.crearEditor();
-            ((TextArea) ((VBox) nuevo.getDialogPane().getContent()).getChildren().get(5)).setText("Alergia recuperada");
-            ButtonType crear = nuevo.getDialogPane().getButtonTypes().stream()
-                    .filter(b -> b.getButtonData() == ButtonBar.ButtonData.OK_DONE).findFirst().get();
-            ((Button) nuevo.getDialogPane().lookupButton(crear)).fire();
+            editar.fire();
+            ((TextArea) campos.lookup("#alergiasEditor")).setText("Alergia recuperada");
+            guardar.fire();
             assertEquals("Alergia recuperada", bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
+            verificarCapturaConsulta();
+            confirmacion.visibleProperty().addListener((obs, anterior, visible) -> {
+                if (!visible) Platform.runLater(() -> confirmacionOculta.complete(!confirmacion.isManaged()));
+            });
             return null;
         });
         Platform.runLater(verificar);
         verificar.get(30, TimeUnit.SECONDS);
+        assertTrue(confirmacionOculta.get(7, TimeUnit.SECONDS), "La confirmación debe ocultarse y liberar su espacio después de cinco segundos.");
+    }
+
+    private void verificarCapturaConsulta() throws Exception {
+        try (Statement s = BaseDatos.getConexion().createStatement()) {
+            s.executeUpdate("UPDATE Administrador SET nombre='María', apellido_paterno='Médica', apellido_materno='Ejemplo', "
+                    + "cedula='12345678', profesion='Médica cirujana', \"institución\"='Universidad de prueba', "
+                    + "domicilio='Calle Consultorio 123, Ciudad de México', nombre_establecimiento='Consultorio de prueba', "
+                    + "domicilio_establecimiento='Calle Consultorio 123, Ciudad de México'");
+        }
+        Cita nueva = new Cita(); nueva.setCurp(paciente.getCurp()); nueva.setEstado(Estado.AGENDADA); nueva.setFechaCita(new Date());
+        assertTrue(bd.insertarCita(nueva));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("consulta-panel.fxml"));
+        VBox vista = loader.load();
+        Scene escena = new Scene(vista, 1368, 900);
+        escena.getStylesheets().add(getClass().getResource("cita.css").toExternalForm());
+        ConsultaController controlador = loader.getController();
+        controlador.cargarConsulta(nueva, null, new SignosVitales("120/80",72,18,36.5f,98,70f,170));
+        for (String id : new String[]{"txtNombrePaciente", "txtEdadPaciente", "txtSexoPaciente"}) {
+            javafx.scene.control.TextField campo = (javafx.scene.control.TextField) loader.getNamespace().get(id);
+            assertFalse(campo.isEditable());
+            assertFalse(campo.getText().isEmpty());
+        }
+        assertEquals(TextoExpediente.nombre(paciente), ((javafx.scene.control.TextField) loader.getNamespace().get("txtNombrePaciente")).getText());
+        assertFalse(loader.getNamespace().containsKey("txtNombreMedico"));
+        assertFalse(loader.getNamespace().containsKey("txtNombreEstablecimiento"));
+        String[][] campos = {{"txtDiagnostico","Diagnóstico independiente"}, {"txtPadecimiento","Padecimiento actual"},
+                {"txtEvolucion","Evolución independiente"}, {"txtExploracion","Exploración física"}, {"txtEstudios","Sin estudios solicitados"},
+                {"txtPronostico","Pronóstico de prueba"}, {"txtIndicaciones","Indicaciones independientes"}};
+        for(String[] campo:campos) {
+            javafx.scene.control.TextInputControl entrada=(javafx.scene.control.TextInputControl) loader.getNamespace().get(campo[0]);
+            assertNotNull(entrada,campo[0]); entrada.setText(campo[1]);
+        }
+        java.lang.reflect.Field filas=ConsultaController.class.getDeclaredField("filas"); filas.setAccessible(true);
+        Object fila=((java.util.List<?>)filas.get(controlador)).get(0);
+        for(String[] campo:new String[][]{{"nombre","Medicamento de prueba"},{"concentracion","10 mg"},{"presentacion","Tabletas"},
+                {"dosis","1 tableta"},{"via","Oral"},{"frecuencia","Cada 24 horas"},{"duracion","10 días"},{"cantidad","10 tabletas"}}) {
+            java.lang.reflect.Field f=fila.getClass().getDeclaredField(campo[0]); f.setAccessible(true);
+            ((javafx.scene.control.TextField)f.get(fila)).setText(campo[1]);
+        }
+        java.lang.reflect.Field grupo=fila.getClass().getDeclaredField("grupo"); grupo.setAccessible(true);
+        @SuppressWarnings("unchecked") javafx.scene.control.ComboBox<String> selector=(javafx.scene.control.ComboBox<String>)grupo.get(fila);
+        selector.setValue("IV");
+        java.lang.reflect.Method guardar=ConsultaController.class.getDeclaredMethod("guardarAtencion",boolean.class,boolean.class); guardar.setAccessible(true);
+        assertEquals(true,guardar.invoke(controlador,false,true));
+        assertEquals(Estado.AGENDADA,bd.cargarCitas().get(nueva.getIdCita()).getEstado());
+        assertEquals("Diagnóstico independiente",bd.cargarRecetaPorCita(nueva.getIdCita()).getDiagnostico());
+        assertEquals("Evolución independiente",bd.cargarConsultaPorCita(nueva.getIdCita()).getEvolucion());
+        assertEquals("María Médica Ejemplo", bd.cargarRecetaPorCita(nueva.getIdCita()).getNombreMedico());
+        assertEquals("12345678", bd.cargarRecetaPorCita(nueva.getIdCita()).getCedulaMedico());
+        assertEquals("Consultorio de prueba", bd.cargarRecetaPorCita(nueva.getIdCita()).getNombreEstablecimiento());
+        try (Statement s = BaseDatos.getConexion().createStatement()) {
+            s.executeUpdate("UPDATE Administrador SET nombre='Nombre cambiado después'");
+        }
+        controlador.cargarConsulta(nueva,paciente,null);
+        assertEquals("Indicaciones independientes",((TextArea)loader.getNamespace().get("txtIndicaciones")).getText());
+        assertEquals(true,guardar.invoke(controlador,true,false));
+        assertEquals(Estado.ATENDIDA,bd.cargarCitas().get(nueva.getIdCita()).getEstado());
+        assertEquals("María Médica Ejemplo", bd.cargarRecetaPorCita(nueva.getIdCita()).getNombreMedico());
+        vista.applyCss(); vista.layout();
+        javafx.scene.control.TextField ficha = (javafx.scene.control.TextField) loader.getNamespace().get("txtNombrePaciente");
+        javafx.scene.control.TextField diagnostico = (javafx.scene.control.TextField) loader.getNamespace().get("txtDiagnostico");
+        assertTrue(ficha.localToScene(ficha.getBoundsInLocal()).getMinY() < diagnostico.localToScene(diagnostico.getBoundsInLocal()).getMinY());
+        ImageIO.write(SwingFXUtils.fromFXImage(vista.snapshot(null,null),null),"png",Paths.get("target","consulta-normativa-prueba.png").toFile());
     }
 
     @AfterAll static void cerrar() {

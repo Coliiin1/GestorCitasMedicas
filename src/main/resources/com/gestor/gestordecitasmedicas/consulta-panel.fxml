@@ -44,8 +44,28 @@
 
                 <VBox spacing="4.0">
                     <Label styleClass="title-section" text="Receta Médica y Prescripción Farmacológica" />
-                    <Label styleClass="card-subtitle" text="Llene el diagnóstico principal y agregue los medicamentos que integrarán el informe final para el paciente." />
+                    <Label styleClass="card-subtitle" text="Complete la nota de evolución y, si procede, la receta ordinaria. Use lenguaje médico sin abreviaturas." />
                     <Label fx:id="lblFechaEmision" styleClass="hint" text="Fecha de emisión: --" />
+                </VBox>
+
+                <VBox spacing="12.0" styleClass="card">
+                    <Label styleClass="card-title" text="IDENTIFICACIÓN DEL PACIENTE" />
+                    <Label styleClass="hint" text="Datos cargados automáticamente del paciente registrado." />
+                    <Separator />
+                    <HBox spacing="16.0">
+                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="caption" text="NOMBRE COMPLETO" />
+                            <TextField fx:id="txtNombrePaciente" editable="false" styleClass="search-field" />
+                        </VBox>
+                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="caption" text="EDAD A LA FECHA DE EMISIÓN" />
+                            <TextField fx:id="txtEdadPaciente" editable="false" styleClass="search-field" />
+                        </VBox>
+                        <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                            <Label styleClass="caption" text="SEXO" />
+                            <TextField fx:id="txtSexoPaciente" editable="false" styleClass="search-field" />
+                        </VBox>
+                    </HBox>
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="card">
@@ -53,8 +73,16 @@
                     <Separator />
                     <Label styleClass="caption" text="DIAGNÓSTICO PRINCIPAL / IMPRESIÓN DIAGNÓSTICA" />
                     <TextField fx:id="txtDiagnostico" promptText="Ej. Faringoamigdalitis aguda" styleClass="search-field" />
-                    <Label styleClass="caption" text="EVOLUCIÓN CLÍNICA Y JUSTIFICACIÓN TERAPÉUTICA" />
-                    <TextArea fx:id="txtEvolucion" prefRowCount="4" promptText="Describe la evolución clínica, exploración física y justificación del tratamiento..." styleClass="reason-area" wrapText="true" />
+                    <Label styleClass="caption" text="Padecimiento actual y tratamientos previos" />
+                    <TextArea fx:id="txtPadecimiento" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <Label styleClass="caption" text="Exploración física" />
+                    <TextArea fx:id="txtExploracion" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <Label styleClass="caption" text="Resultados relevantes de estudios (o indicar que no se solicitaron)" />
+                    <TextArea fx:id="txtEstudios" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <Label styleClass="caption" text="Pronóstico" />
+                    <TextArea fx:id="txtPronostico" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <Label styleClass="caption" text="EVOLUCIÓN Y ACTUALIZACIÓN DEL CUADRO CLÍNICO" />
+                    <TextArea fx:id="txtEvolucion" prefRowCount="4" promptText="Actualización del cuadro clínico, evolución y justificación del tratamiento..." styleClass="reason-area" wrapText="true" />
                 </VBox>
 
                 <VBox spacing="12.0" styleClass="card">
@@ -86,7 +114,7 @@
             <Button fx:id="btnGuardarPdf" onAction="#onGuardarPdf" styleClass="btn-secondary" text="Guardar y Exportar Como PDF">
                 <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
             </Button>
-            <Button fx:id="btnFinalizar" onAction="#onFinalizar" styleClass="btn-primary" text="Finalizar Consulta">
+            <Button fx:id="btnFinalizar" onAction="#onFinalizar" styleClass="btn-primary" text="Finalizar y preparar para firma">
                 <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
             </Button>
         </HBox>

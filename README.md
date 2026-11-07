@@ -2,6 +2,8 @@
 
 Aplicación de escritorio para la gestión de citas médicas, desarrollada con **JavaFX + Maven**.
 
+La estandarización de historia clínica, notas de evolución y receta ordinaria para México se describe en [Formatos clínicos y trazabilidad normativa](docs/normativa-mexico.md), incluyendo alcance, fuentes oficiales, migración y requisitos operativos pendientes.
+
 > **Estado actual: solo estructura base (scaffold).**
 > El proyecto contiene únicamente la plantilla inicial generada por el IDE: una ventana
 > "Hello!" con un botón que cambia un texto. Todavía no existen modelos, base de datos,

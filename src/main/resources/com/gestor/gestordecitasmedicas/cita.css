@@ -17,28 +17,39 @@
 }
 
 /* Editor clínico: misma tipografía, colores y controles que los demás formularios. */
-.dialog-pane.expediente-editor {
-    -fx-background-color: white;
-    -fx-padding: 0;
-}
-
-.expediente-editor .expediente-editor-header {
+.expediente-grupo-titulo {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #075985;
     -fx-background-color: #f0f9ff;
-    -fx-border-color: transparent transparent #e2e8f0 transparent;
-    -fx-padding: 20 24;
+    -fx-border-color: #bae6fd;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 12 16;
 }
 
-.expediente-editor > .header-panel {
-    -fx-background-color: #f0f9ff;
-    -fx-padding: 0;
+.expediente-exito {
+    -fx-background-color: #ecfdf5;
+    -fx-border-color: #a7f3d0;
+    -fx-text-fill: #065f46;
+    -fx-font-weight: bold;
+    -fx-padding: 14 24;
+    -fx-graphic-text-gap: 10;
 }
 
-.expediente-editor .expediente-editor-fields {
-    -fx-padding: 16 24 20 24;
+.expediente-exito .ikonli-font-icon {
+    -fx-icon-color: #047857;
 }
 
-.expediente-editor-fields > .field-label {
-    -fx-padding: 8 0 0 0;
+.expediente-campo-titulo {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0c4a6e;
+}
+
+.expediente-error {
+    -fx-font-weight: bold;
+    -fx-text-fill: #b91c1c;
 }
 
 .expediente-editor .expediente-editor-input {
@@ -48,7 +59,7 @@
     -fx-border-color: #cbd5e1;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 0;
+    -fx-padding: 8;
 }
 
 .expediente-editor-input .content {
@@ -60,12 +71,6 @@
 .expediente-editor-input:focused {
     -fx-border-color: #0ea5e9;
     -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
-}
-
-.expediente-editor > .button-bar {
-    -fx-background-color: #f8fafc;
-    -fx-border-color: #e2e8f0 transparent transparent transparent;
-    -fx-padding: 16 24 20 24;
 }
 
 /* ---------------------------------------------------------------------
@@ -1072,7 +1077,9 @@
     -fx-background-radius: 8;
     -fx-border-color: #cbd5e1;
     -fx-border-radius: 8;
-    -fx-padding: 10 16;
+    -fx-background-insets: 0 12 0 0;
+    -fx-border-insets: 0 12 0 0;
+    -fx-padding: 12 28 12 16;
     -fx-cursor: hand;
 }
 .expediente-tabs > .tab-header-area .tab:hover {

@@ -4,7 +4,6 @@ import com.gestor.gestordecitasmedicas.modelo.Medicamento;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
-import com.gestor.gestordecitasmedicas.modelo.SignosVitales;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -17,6 +16,8 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.ColumnText;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -37,62 +38,83 @@ public class ControladorPDF {
     private static final Font FUENTE_DATO = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
 
     public boolean generarPDF(Receta receta) {
-        if (receta == null) {
-            System.err.println("No se puede generar el PDF: la receta es nula.");
-            return false;
-        }
-
+        if (!ValidacionClinica.receta(receta, true).isEmpty()) return false;
         File carpeta = new File(CARPETA_SALIDA);
-        if (!carpeta.exists() && !carpeta.mkdirs()) {
-            System.err.println("No se pudo crear la carpeta de salida: " + carpeta.getAbsolutePath());
+        if (!carpeta.exists() && !carpeta.mkdirs()) return false;
+        try {
+            generarReceta(archivoSalida(receta), receta);
+            return true;
+        } catch (IOException | DocumentException e) {
+            System.err.println("Error al generar la receta: " + e.getMessage());
             return false;
         }
+    }
 
-        File archivo = archivoSalida(receta);
-        Document documento = new Document(PageSize.A4, 40, 40, 40, 40);
-        boolean generado = false;
-
+    /** Genera un formato para firma autógrafa, nunca una receta electrónica firmada. */
+    public void generarReceta(File archivo, Receta receta) throws IOException, DocumentException {
+        List<String> errores = ValidacionClinica.receta(receta, true);
+        if (!errores.isEmpty()) throw new IllegalArgumentException(String.join("\n", errores));
+        Document documento = new Document(PageSize.A4, 40, 40, 65, 60);
         try (FileOutputStream salida = new FileOutputStream(archivo)) {
-            PdfWriter.getInstance(documento, salida);
+            PdfWriter writer = PdfWriter.getInstance(documento, salida);
+            identificarPaginas(writer, "Receta #" + receta.getIdReceta() + " | " + receta.getNombrePaciente());
             documento.open();
-
-            Paragraph titulo = new Paragraph("Receta Médica", FUENTE_TITULO);
-            titulo.setAlignment(Element.ALIGN_CENTER);
-            documento.add(titulo);
-
-            Paragraph subtitulo = new Paragraph("Gestor de Citas Médicas", FUENTE_SUBTITULO);
-            subtitulo.setAlignment(Element.ALIGN_CENTER);
-            subtitulo.setSpacingAfter(20);
-            documento.add(subtitulo);
-
-            agregarSeccion(documento, "Datos de la receta");
-            PdfPTable datos = new PdfPTable(2);
-            datos.setWidthPercentage(100);
-            datos.setWidths(new float[]{1f, 2f});
-            agregarFila(datos, "Folio de receta", String.valueOf(receta.getIdReceta()));
-            agregarFila(datos, "Fecha", formatearFecha(receta.getFecha()));
-            agregarFila(datos, "CURP del paciente", texto(receta.getCurp()));
-            documento.add(datos);
-
-            agregarSignosVitales(documento, receta.getSignosVitales());
-            agregarMedicamentos(documento, receta.getMedicamentos());
-
-            Paragraph pie = new Paragraph("Documento generado automáticamente por el sistema.", FUENTE_SUBTITULO);
-            pie.setSpacingBefore(20);
-            pie.setAlignment(Element.ALIGN_CENTER);
-            documento.add(pie);
-
-            documento.close();
-            generado = true;
-        } catch (DocumentException | IOException e) {
-            System.err.println("Error al generar el PDF: " + e.getMessage());
-        } finally {
-            if (documento.isOpen()) {
-                documento.close();
-            }
+            try {
+                documento.add(new Paragraph("Receta médica ordinaria", FUENTE_TITULO));
+                documento.add(new Paragraph("Formato para firma autógrafa - pendiente de firma", FUENTE_SUBTITULO));
+                agregarSeccion(documento, "Prescriptor y establecimiento");
+                PdfPTable emisor = tablaDatos();
+                agregarFila(emisor, "Profesional que prescribe", receta.getNombreMedico());
+                agregarFila(emisor, "Profesión y cédula profesional", receta.getProfesion() + " | " + receta.getCedulaMedico());
+                agregarFila(emisor, "Institución que expidió el título", receta.getInstitucionTitulo());
+                agregarFila(emisor, "Domicilio del prescriptor", receta.getDomicilioMedico());
+                if (receta.getEspecialidad() != null && !receta.getEspecialidad().trim().isEmpty())
+                    agregarFila(emisor, "Especialidad y registro", receta.getEspecialidad() + " | " + receta.getRegistroEspecialidad());
+                agregarFila(emisor, "Establecimiento", receta.getNombreEstablecimiento());
+                agregarFila(emisor, "Domicilio del establecimiento", receta.getDomicilioEstablecimiento());
+                documento.add(emisor);
+                agregarSeccion(documento, "Paciente y prescripción");
+                PdfPTable datos = tablaDatos();
+                agregarFila(datos, "Folio interno", String.valueOf(receta.getIdReceta()));
+                agregarFila(datos, "Fecha y hora de expedición", formatearFecha(receta.getFecha()));
+                agregarFila(datos, "Nombre completo del paciente", receta.getNombrePaciente());
+                agregarFila(datos, "Edad y sexo", receta.getEdadPaciente() + " | " + receta.getSexoPaciente());
+                agregarFila(datos, "CURP", texto(receta.getCurp()));
+                agregarFila(datos, "Diagnóstico", receta.getDiagnostico());
+                documento.add(datos);
+                agregarMedicamentos(documento, receta.getMedicamentos());
+                agregarBloqueClinico(documento, "Indicaciones generales y seguimiento", TextoExpediente.valor(receta.getIndicaciones()));
+                Paragraph firma = new Paragraph("\n\n________________________________________\nFirma autógrafa de " + receta.getNombreMedico()
+                        + "\nCédula profesional: " + receta.getCedulaMedico()
+                        + "\nImprimir y firmar por el profesional que prescribe.", FUENTE_DATO);
+                firma.setKeepTogether(true);
+                firma.setAlignment(Element.ALIGN_CENTER);
+                documento.add(firma);
+            } finally { documento.close(); }
         }
+    }
 
-        return generado && archivo.exists() && archivo.length() > 0;
+    private PdfPTable tablaDatos() throws DocumentException {
+        PdfPTable tabla = new PdfPTable(2);
+        tabla.setWidthPercentage(100);
+        tabla.setWidths(new float[]{1f, 2f});
+        return tabla;
+    }
+
+    private void identificarPaginas(PdfWriter writer, final String identificador) {
+        writer.setPageEvent(new PdfPageEventHelper() {
+            @Override public void onEndPage(PdfWriter w, Document d) {
+                w.getDirectContent().saveState();
+                w.getDirectContent().setColorFill(BaseColor.BLACK);
+                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_LEFT,
+                        new Phrase(identificador, FUENTE_DATO), d.left(), d.top() + 22, 0);
+                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_LEFT,
+                        new Phrase("Confidencial | Pendiente de firma autógrafa", FUENTE_SUBTITULO), d.left(), 30, 0);
+                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_RIGHT,
+                        new Phrase("Página " + w.getPageNumber(), FUENTE_DATO), d.right(), 30, 0);
+                w.getDirectContent().restoreState();
+            }
+        });
     }
 
     public void generarExpediente(File archivo, Expediente expediente)
@@ -101,13 +123,14 @@ public class ControladorPDF {
             throw new IllegalArgumentException("El expediente debe incluir los datos del paciente.");
         }
         Paciente paciente = expediente.getDatosPaciente();
-        Document documento = new Document(PageSize.A4, 40, 40, 40, 40);
+        Document documento = new Document(PageSize.A4, 40, 40, 65, 60);
         try (FileOutputStream salida = new FileOutputStream(archivo)) {
-            PdfWriter.getInstance(documento, salida);
+            PdfWriter writer = PdfWriter.getInstance(documento, salida);
+            identificarPaginas(writer, "Expediente #" + expediente.getIdExpediente() + " | " + TextoExpediente.nombre(paciente));
             documento.open();
             try {
                 documento.add(new Paragraph("Expediente del paciente", FUENTE_TITULO));
-                documento.add(new Paragraph("Información disponible en el sistema", FUENTE_SUBTITULO));
+                documento.add(new Paragraph("Consulta externa - copia para revisión y firma autógrafa", FUENTE_SUBTITULO));
                 agregarSeccion(documento, "Ficha de identidad");
                 PdfPTable datos = new PdfPTable(2);
                 datos.setWidthPercentage(100);
@@ -120,6 +143,7 @@ public class ControladorPDF {
                 agregarFila(datos, "Teléfono", texto(paciente.getTelefono()));
                 agregarFila(datos, "Fecha de nacimiento", TextoExpediente.fecha(paciente.getFechaNacimiento()));
                 agregarFila(datos, "Sexo", texto(paciente.getSexo()));
+                agregarFila(datos, "Edad a la apertura", TextoExpediente.edad(paciente, expediente.getFechaApertura()));
                 agregarFila(datos, "Domicilio", texto(paciente.getDomicilio()));
                 agregarFila(datos, "Correo", texto(paciente.getCorreo()));
                 for (com.itextpdf.text.pdf.PdfPRow fila : datos.getRows()) {
@@ -128,10 +152,16 @@ public class ControladorPDF {
                     }
                 }
                 documento.add(datos);
+                agregarBloqueClinico(documento, "Historia clínica ambulatoria", TextoExpediente.historia(expediente));
                 agregarBloqueClinico(documento, "Alergias y advertencias", TextoExpediente.valor(expediente.getAlergias()));
-                agregarBloqueClinico(documento, "Historial de consultas", TextoExpediente.consultas(expediente));
+                agregarSeccion(documento, "Notas de evolución");
+                if (expediente.getConsultas().isEmpty()) documento.add(new Paragraph("No hay consultas registradas para este paciente.", FUENTE_DATO));
+                for (com.gestor.gestordecitasmedicas.modelo.Consulta consulta : expediente.getConsultas()) {
+                    Expediente nota = new Expediente();
+                    nota.getConsultas().add(consulta);
+                    agregarBloqueClinico(documento, "Nota de evolución #" + consulta.getIdConsulta(), TextoExpediente.consultas(nota));
+                }
                 agregarBloqueClinico(documento, "Recetas y farmacología", TextoExpediente.recetas(expediente));
-                agregarBloqueClinico(documento, "Antecedentes", TextoExpediente.antecedentes(expediente));
                 agregarBloqueClinico(documento, "Evolución de signos vitales", TextoExpediente.signos(expediente));
             } finally {
                 documento.close();
@@ -141,7 +171,7 @@ public class ControladorPDF {
     private void agregarBloqueClinico(Document documento, String titulo, String contenido) throws DocumentException {
         Paragraph bloque = new Paragraph();
         bloque.setSpacingBefore(14);
-        bloque.setKeepTogether(true);
+        bloque.setKeepTogether(false);
         bloque.add(new Chunk(titulo + "\n", FUENTE_SECCION));
         bloque.add(new Chunk(contenido, FUENTE_DATO));
         documento.add(bloque);
@@ -154,89 +184,38 @@ public class ControladorPDF {
         documento.add(seccion);
     }
 
-    private void agregarSignosVitales(Document documento, SignosVitales signos) throws DocumentException {
-        agregarSeccion(documento, "Signos vitales");
-
-        if (signos == null) {
-            documento.add(new Paragraph("No hay signos vitales registrados.", FUENTE_DATO));
-            return;
-        }
-
-        PdfPTable tabla = new PdfPTable(2);
-        tabla.setWidthPercentage(100);
-        tabla.setWidths(new float[]{1f, 1f});
-        agregarFila(tabla, "Presión arterial", texto(signos.getPresionArterial()));
-        agregarFila(tabla, "Frecuencia cardíaca", signos.getFrecuenciaCardiaca() + " lpm");
-        agregarFila(tabla, "Frecuencia respiratoria", signos.getFrecuenciaRespiratoria() + " rpm");
-        agregarFila(tabla, "Temperatura", signos.getTemperatura() + " °C");
-        agregarFila(tabla, "Saturación de oxígeno", signos.getSaturacionOxigeno() + " %");
-        agregarFila(tabla, "Peso", signos.getPeso() + " kg");
-        agregarFila(tabla, "Talla", signos.getTalla() + " cm");
-        documento.add(tabla);
-    }
-
     private void agregarMedicamentos(Document documento, List<Medicamento> medicamentos) throws DocumentException {
-        agregarSeccion(documento, "Medicamentos");
-
-        if (medicamentos == null || medicamentos.isEmpty()) {
-            documento.add(new Paragraph("No hay medicamentos registrados.", FUENTE_DATO));
-            return;
+        agregarSeccion(documento, "Prescripción farmacológica");
+        int i = 0;
+        for (Medicamento m : medicamentos) {
+            PdfPTable tabla = tablaDatos();
+            tabla.setSpacingBefore(8);
+            tabla.setSplitLate(false);
+            tabla.setKeepTogether(true);
+            agregarFila(tabla, "Medicamento " + (++i) + " / denominación genérica", m.getNombreMedicamento());
+            if (m.getDenominacionDistintiva() != null && !m.getDenominacionDistintiva().trim().isEmpty())
+                agregarFila(tabla, "Denominación distintiva", m.getDenominacionDistintiva());
+            agregarFila(tabla, "Concentración y presentación", m.getConcentracion() + " | " + m.getPresentacion());
+            agregarFila(tabla, "Dosis y vía de administración", m.getDosis() + " | " + m.getViaAdministracion());
+            agregarFila(tabla, "Frecuencia y duración", m.getFrecuencia() + " | " + m.getDuradcion());
+            agregarFila(tabla, "Cantidad a dispensar", m.getCantidad());
+            agregarFila(tabla, "Fracción regulatoria declarada", m.getGrupoRegulatorio());
+            tabla.setHeaderRows(1);
+            documento.add(tabla);
         }
-
-        PdfPTable tabla = new PdfPTable(5);
-        tabla.setWidthPercentage(100);
-        tabla.setWidths(new float[]{2.2f, 1.4f, 1.6f, 1.8f, 1.4f});
-        agregarEncabezado(tabla, "Medicamento");
-        agregarEncabezado(tabla, "Dosis");
-        agregarEncabezado(tabla, "Concentración");
-        agregarEncabezado(tabla, "Frecuencia");
-        agregarEncabezado(tabla, "Duración");
-
-        for (Medicamento medicamento : medicamentos) {
-            if (medicamento == null) {
-                agregarCelda(tabla, "-");
-                agregarCelda(tabla, "-");
-                agregarCelda(tabla, "-");
-                agregarCelda(tabla, "-");
-                agregarCelda(tabla, "-");
-                continue;
-            }
-            agregarCelda(tabla, texto(medicamento.getNombreMedicamento()));
-            agregarCelda(tabla, texto(medicamento.getDosis()));
-            agregarCelda(tabla, texto(medicamento.getConcentracion()));
-            agregarCelda(tabla, texto(medicamento.getFrecuencia()));
-            agregarCelda(tabla, texto(medicamento.getDuradcion()));
-        }
-
-        documento.add(tabla);
     }
 
     private void agregarFila(PdfPTable tabla, String etiqueta, String valor) {
         PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta, FUENTE_ENCABEZADO));
         celdaEtiqueta.setBackgroundColor(COLOR_PRIMARIO);
-        celdaEtiqueta.setPadding(8);
+        celdaEtiqueta.setPadding(5);
         celdaEtiqueta.setHorizontalAlignment(Element.ALIGN_LEFT);
         tabla.addCell(celdaEtiqueta);
 
         PdfPCell celdaValor = new PdfPCell(new Phrase(valor, FUENTE_DATO));
-        celdaValor.setPadding(8);
+        celdaValor.setPadding(5);
         celdaValor.setHorizontalAlignment(Element.ALIGN_LEFT);
         tabla.addCell(celdaValor);
-    }
-
-    private void agregarEncabezado(PdfPTable tabla, String texto) {
-        PdfPCell celda = new PdfPCell(new Phrase(texto, FUENTE_ENCABEZADO));
-        celda.setBackgroundColor(COLOR_PRIMARIO);
-        celda.setPadding(6);
-        celda.setHorizontalAlignment(Element.ALIGN_CENTER);
-        tabla.addCell(celda);
-    }
-
-    private void agregarCelda(PdfPTable tabla, String texto) {
-        PdfPCell celda = new PdfPCell(new Phrase(texto, FUENTE_DATO));
-        celda.setPadding(6);
-        celda.setHorizontalAlignment(Element.ALIGN_LEFT);
-        tabla.addCell(celda);
     }
 
     private String formatearFecha(Date fecha) {
@@ -254,39 +233,4 @@ public class ControladorPDF {
         return new File(new File(CARPETA_SALIDA), "receta_" + receta.getIdReceta() + ".pdf");
     }
 
-    public static void main(String[] args) {
-        Receta receta = new Receta();
-        receta.setIdReceta(1);
-        receta.setCurp("MEND800101HDFRRN01");
-        receta.setFecha(new Date());
-
-        Medicamento paracetamol = new Medicamento();
-        paracetamol.setNombreMedicamento("Paracetamol");
-        paracetamol.setDosis("500 mg");
-        paracetamol.setConcentracion("Tableta");
-        paracetamol.setFrecuencia("Cada 8 horas");
-        paracetamol.setDuradcion("5 días");
-        receta.getMedicamentos().add(paracetamol);
-
-        Medicamento amoxicilina = new Medicamento();
-        amoxicilina.setNombreMedicamento("Amoxicilina");
-        amoxicilina.setDosis("500 mg");
-        amoxicilina.setConcentracion("Cápsula");
-        amoxicilina.setFrecuencia("Cada 12 horas");
-        amoxicilina.setDuradcion("7 días");
-        receta.getMedicamentos().add(amoxicilina);
-
-        receta.setSignosVitales(new SignosVitales("120/80", 72, 18, 36.5f, 98, 70.5f, 170));
-
-        ControladorPDF controlador = new ControladorPDF();
-        boolean generado = controlador.generarPDF(receta);
-
-        File archivo = controlador.archivoSalida(receta);
-        if (generado) {
-            System.out.println("PDF generado correctamente: " + archivo.getAbsolutePath());
-        } else {
-            System.out.println("No se pudo generar el PDF.");
-        }
-    }
 }
-

@@ -77,4 +77,56 @@ public class Receta {
     public void setSignosVitales(SignosVitales signosVitales) {
         this.signosVitales = signosVitales;
     }
+
+    private String nombreMedico;
+    public String getNombreMedico() { return nombreMedico; }
+    public void setNombreMedico(String valor) { this.nombreMedico = valor; }
+
+    private String cedulaMedico;
+    public String getCedulaMedico() { return cedulaMedico; }
+    public void setCedulaMedico(String valor) { this.cedulaMedico = valor; }
+
+    private String profesion;
+    public String getProfesion() { return profesion; }
+    public void setProfesion(String valor) { this.profesion = valor; }
+
+    private String institucionTitulo;
+    public String getInstitucionTitulo() { return institucionTitulo; }
+    public void setInstitucionTitulo(String valor) { this.institucionTitulo = valor; }
+
+    private String domicilioMedico;
+    public String getDomicilioMedico() { return domicilioMedico; }
+    public void setDomicilioMedico(String valor) { this.domicilioMedico = valor; }
+
+    private String especialidad;
+    public String getEspecialidad() { return especialidad; }
+    public void setEspecialidad(String valor) { this.especialidad = valor; }
+
+    private String registroEspecialidad;
+    public String getRegistroEspecialidad() { return registroEspecialidad; }
+    public void setRegistroEspecialidad(String valor) { this.registroEspecialidad = valor; }
+
+    private String nombreEstablecimiento;
+    public String getNombreEstablecimiento() { return nombreEstablecimiento; }
+    public void setNombreEstablecimiento(String valor) { this.nombreEstablecimiento = valor; }
+
+    private String domicilioEstablecimiento;
+    public String getDomicilioEstablecimiento() { return domicilioEstablecimiento; }
+    public void setDomicilioEstablecimiento(String valor) { this.domicilioEstablecimiento = valor; }
+
+    private String nombrePaciente;
+    public String getNombrePaciente() { return nombrePaciente; }
+    public void setNombrePaciente(String valor) { this.nombrePaciente = valor; }
+
+    private String edadPaciente;
+    public String getEdadPaciente() { return edadPaciente; }
+    public void setEdadPaciente(String valor) { this.edadPaciente = valor; }
+
+    private String sexoPaciente;
+    public String getSexoPaciente() { return sexoPaciente; }
+    public void setSexoPaciente(String valor) { this.sexoPaciente = valor; }
+
+    private String indicaciones;
+    public String getIndicaciones() { return indicaciones; }
+    public void setIndicaciones(String valor) { this.indicaciones = valor; }
 }

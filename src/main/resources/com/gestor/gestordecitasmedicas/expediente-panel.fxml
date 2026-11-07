@@ -3,6 +3,8 @@
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ExpedienteController">
+    <StackPane VBox.vgrow="ALWAYS">
+        <VBox fx:id="vistaExpediente">
     <HBox alignment="CENTER" styleClass="page-header">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
@@ -12,6 +14,9 @@
             <Button styleClass="btn-primary, nav-link" text="Volver a pacientes" userData="pacientes-panel.fxml"><graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic></Button>
         </HBox>
     </HBox>
+    <Label fx:id="estadoEdicion" visible="false" managed="false" maxWidth="Infinity" styleClass="expediente-exito" wrapText="true">
+        <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
+    </Label>
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox styleClass="page-body">
             <VBox styleClass="page-content" spacing="20.0">
@@ -26,7 +31,7 @@
                         <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
                     </Button>
                 </HBox>
-                <HBox alignment="TOP_LEFT" spacing="20.0">
+                <HBox alignment="TOP_LEFT" spacing="24.0">
                     <VBox spacing="20.0" prefWidth="270.0" minWidth="230.0">
                         <VBox spacing="12.0" styleClass="card">
                             <Label styleClass="section-label" text="FICHA DE IDENTIDAD" />
@@ -55,9 +60,9 @@
                                     <Label fx:id="historialRecetas" styleClass="patient-meta" wrapText="true" />
                                 </VBox>
                             </Tab>
-                            <Tab text="Antecedentes y evolución vital">
+                            <Tab text="Historia clínica y signos vitales">
                                 <VBox spacing="12.0" styleClass="card">
-                                    <Label styleClass="section-label" text="ANTECEDENTES Y EVOLUCIÓN DE SIGNOS VITALES" wrapText="true" />
+                                    <Label styleClass="section-label" text="HISTORIA CLÍNICA AMBULATORIA" wrapText="true" />
                                     <Label styleClass="card-subtitle" text="Seguimiento de antecedentes y mediciones registradas en las consultas." wrapText="true" />
                                     <Label fx:id="antecedentes" styleClass="patient-meta" text="No hay antecedentes ni signos vitales disponibles para este paciente." wrapText="true" />
                                     <Label styleClass="section-label" text="EVOLUCIÓN DE SIGNOS VITALES" />
@@ -70,7 +75,27 @@
             </VBox>
         </VBox>
     </ScrollPane>
+        </VBox>
+        <VBox fx:id="editorExpediente" visible="false" managed="false" styleClass="expediente-editor">
+            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="page-header, expediente-identidad">
+                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="panel-title" text="EDITAR EXPEDIENTE CLÍNICO" />
+                    <Label fx:id="pacienteEditor" styleClass="card-subtitle" wrapText="true" />
+                </VBox>
+                <Button text="Volver al expediente" styleClass="btn-secondary" onAction="#cancelarEdicion" />
+            </HBox>
+            <ScrollPane fx:id="editorScroll" fitToWidth="true" VBox.vgrow="ALWAYS">
+                <VBox styleClass="page-body">
+                    <VBox fx:id="camposEditor" styleClass="page-content" spacing="24.0" />
+                </VBox>
+            </ScrollPane>
+            <VBox spacing="10.0" styleClass="page-footer">
+                <Label fx:id="errorEdicion" visible="false" managed="false" wrapText="true" styleClass="expediente-error" />
+                <HBox spacing="12.0" alignment="CENTER_RIGHT">
+                    <Button fx:id="btnCancelarEdicion" text="Cancelar" onAction="#cancelarEdicion" styleClass="btn-secondary" />
+                    <Button fx:id="btnGuardarEdicion" text="Guardar expediente" styleClass="btn-primary" />
+                </HBox>
+            </VBox>
+        </VBox>
+    </StackPane>
 </VBox>
-
-
-
