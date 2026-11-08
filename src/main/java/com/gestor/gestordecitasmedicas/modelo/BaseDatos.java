@@ -25,10 +25,8 @@ public class BaseDatos {
         return System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
     }
 
-    // 1. Agrega este método a tu clase para poder leer el archivo db.properties
     private static Properties cargarConfig() {
         Properties p = new Properties();
-        // Busca el archivo en la carpeta resources (src/main/resources/db.properties)
         try (InputStream in = BaseDatos.class.getResourceAsStream("/db.properties")) {
             if (in != null) {
                 p.load(in);
@@ -41,18 +39,15 @@ public class BaseDatos {
         return p;
     }
 
-    // 2. Tu método actualizado
     public static Connection getConexion() {
         try {
             if (conexion == null || conexion.isClosed()) {
                 // A. Cargar la configuración
                 Properties config = cargarConfig();
 
-                // Puedes seguir usando tu método url() o tomar la URL del properties
                 String dbUrl = config.getProperty("db.url", url());
                 String password = config.getProperty("db.password", "");
 
-                // B. Preparar la contraseña para SQLCipher
                 Properties connectionProps = new Properties();
                 if (password != null && !password.trim().isEmpty()) {
                     connectionProps.setProperty("password", password);
@@ -60,7 +55,6 @@ public class BaseDatos {
 
                 Class.forName("org.sqlite.JDBC");
 
-                // C. Pasamos tanto la URL como las propiedades (que contienen la contraseña)
                 conexion = DriverManager.getConnection(dbUrl, connectionProps);
                 System.out.println("Conexión segura a la base de datos SQLite establecida con éxito.");
 
