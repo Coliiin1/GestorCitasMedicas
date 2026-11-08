@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class BaseDatos {
     private String contraseña;
@@ -23,12 +25,38 @@ public class BaseDatos {
         return System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
     }
 
+    private static Properties cargarConfig() {
+        Properties p = new Properties();
+        try (InputStream in = BaseDatos.class.getResourceAsStream("/db.properties")) {
+            if (in != null) {
+                p.load(in);
+            } else {
+                System.err.println("Advertencia: No se encontró db.properties.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error al cargar configuración: " + e.getMessage());
+        }
+        return p;
+    }
+
     public static Connection getConexion() {
         try {
             if (conexion == null || conexion.isClosed()) {
+                // A. Cargar la configuración
+                Properties config = cargarConfig();
+
+                String dbUrl = config.getProperty("db.url", url());
+                String password = config.getProperty("db.password", "");
+
+                Properties connectionProps = new Properties();
+                if (password != null && !password.trim().isEmpty()) {
+                    connectionProps.setProperty("password", password);
+                }
+
                 Class.forName("org.sqlite.JDBC");
-                conexion = DriverManager.getConnection(url());
-                System.out.println("Conexión a la base de datos SQLite establecida con éxito.");
+
+                conexion = DriverManager.getConnection(dbUrl, connectionProps);
+                System.out.println("Conexión segura a la base de datos SQLite establecida con éxito.");
 
                 try (Statement stmt = conexion.createStatement()) {
                     stmt.execute("PRAGMA foreign_keys = ON;");
