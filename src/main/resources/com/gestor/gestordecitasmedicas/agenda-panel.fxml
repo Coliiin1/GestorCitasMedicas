@@ -9,11 +9,11 @@
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.AgendaController">
     <HBox alignment="CENTER" styleClass="page-header">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
-            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
-                <Label styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" />
-                <Label styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" />
+            <VBox spacing="4.0" minWidth="0.0" HBox.hgrow="ALWAYS">
+                <Label minWidth="0.0" styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" wrapText="true" />
+                <Label minWidth="0.0" styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" wrapText="true" />
             </VBox>
-            <Button fx:id="btnAgendar" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
+            <Button fx:id="btnAgendar" minWidth="-Infinity" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
                 <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
             </Button>
         </HBox>
@@ -23,53 +23,66 @@
         <VBox styleClass="page-body">
             <VBox styleClass="page-content" spacing="24.0">
 
-                <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card-flat">
-                    <Button onAction="#onSemanaAnterior" styleClass="btn-icon">
-                        <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
-                        <tooltip><Tooltip text="Semana anterior" /></tooltip>
-                    </Button>
-                    <Label fx:id="rangoLabel" styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
-                    <Button onAction="#onSemanaSiguiente" styleClass="btn-icon">
-                        <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
-                        <tooltip><Tooltip text="Semana siguiente" /></tooltip>
-                    </Button>
-                    <Button styleClass="btn-secondary" text="Bloquear semana">
-                        <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
-                    </Button>
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label styleClass="caption" text="SEMÁFORO:" />
-                    <Label styleClass="chip, chip-green" text="Disponible">
-                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
-                    </Label>
-                    <Label styleClass="chip, chip-amber" text="En Sala">
-                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
-                    </Label>
-                    <Label styleClass="chip, chip-blood" text="Ocupado">
-                        <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
-                    </Label>
-                </HBox>
+                <FlowPane alignment="CENTER_LEFT" hgap="16.0" vgap="8.0" styleClass="card-flat">
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Button onAction="#onSemanaAnterior" styleClass="btn-icon">
+                            <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
+                            <tooltip><Tooltip text="Semana anterior" /></tooltip>
+                        </Button>
+                        <Label fx:id="rangoLabel" minWidth="-Infinity" styleClass="row-name" text="Semana del 24 al 28 de Octubre, 2024" />
+                        <Button onAction="#onSemanaSiguiente" styleClass="btn-icon">
+                            <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
+                            <tooltip><Tooltip text="Semana siguiente" /></tooltip>
+                        </Button>
+                        <Button minWidth="-Infinity" styleClass="btn-secondary" text="Bloquear semana">
+                            <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
+                        </Button>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="12.0">
+                        <Label minWidth="-Infinity" styleClass="caption" text="SEMÁFORO:" />
+                        <Label minWidth="-Infinity" styleClass="chip, chip-green" text="Disponible">
+                            <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
+                        </Label>
+                        <Label minWidth="-Infinity" styleClass="chip, chip-amber" text="En Sala">
+                            <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
+                        </Label>
+                        <Label minWidth="-Infinity" styleClass="chip, chip-blood" text="Ocupado">
+                            <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
+                        </Label>
+                    </HBox>
+                </FlowPane>
 
                 <GridPane alignment="TOP_LEFT" hgap="24.0">
                     <columnConstraints>
-                        <ColumnConstraints minWidth="220.0" percentWidth="24.0" />
-                        <ColumnConstraints hgrow="ALWAYS" percentWidth="76.0" />
+                        <ColumnConstraints hgrow="NEVER" maxWidth="340.0" minWidth="270.0" prefWidth="290.0" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" />
                     </columnConstraints>
                     <!-- Columna izquierda -->
                     <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="24.0">
                         <VBox spacing="12.0" styleClass="card">
-                            <HBox alignment="CENTER_LEFT" spacing="4.0">
-                                <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" HBox.hgrow="ALWAYS" />
+                            <Label maxWidth="Infinity" styleClass="caption" text="CALENDARIO MENSUAL" wrapText="true" />
+                            <HBox alignment="CENTER" spacing="4.0">
                                 <Button onAction="#onMesAnterior" styleClass="btn-icon">
                                     <graphic><FontIcon iconLiteral="fi-rr-angle-small-left" /></graphic>
                                     <tooltip><Tooltip text="Mes anterior" /></tooltip>
                                 </Button>
-                                <Label fx:id="mesLabel" styleClass="row-name" text="Octubre 2024" />
+                                <Label fx:id="mesLabel" alignment="CENTER" maxWidth="Infinity" minWidth="-Infinity" styleClass="row-name" text="Octubre 2024" HBox.hgrow="ALWAYS" />
                                 <Button onAction="#onMesSiguiente" styleClass="btn-icon">
                                     <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                                     <tooltip><Tooltip text="Mes siguiente" /></tooltip>
                                 </Button>
                             </HBox>
-                            <GridPane fx:id="calendario" alignment="CENTER" hgap="6.0" vgap="6.0" />
+                            <GridPane fx:id="calendario" hgap="4.0" maxWidth="Infinity" vgap="4.0">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.28" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.32" />
+                                </columnConstraints>
+                            </GridPane>
                             <Button maxWidth="Infinity" styleClass="btn-secondary" text="Bloquear día">
                                 <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                             </Button>
@@ -77,11 +90,11 @@
 
                         <VBox spacing="12.0" styleClass="card">
                             <Label styleClass="caption" text="FICHA DE CITA SELECCIONADA" />
-                            <Label styleClass="hint" text="Turno en curso / Próximo a atender" />
+                            <Label maxWidth="Infinity" styleClass="hint" text="Turno en curso / Próximo a atender" wrapText="true" />
                             <Separator />
                             <Label styleClass="caption" text="NOMBRE DEL PACIENTE:" />
                             <TextField fx:id="fichaNombre" editable="false" styleClass="search-field" />
-                            <Label fx:id="fichaEdad" styleClass="hint" text="Selecciona una cita de la agenda" />
+                            <Label fx:id="fichaEdad" maxWidth="Infinity" wrapText="true" styleClass="hint" text="Selecciona una cita de la agenda" />
                             <Label styleClass="caption" text="DATOS DE LA CITA:" />
                             <HBox><Label styleClass="hint" text="Fecha programada:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaFecha" styleClass="info-value" text="--" /></HBox>
                             <HBox><Label styleClass="hint" text="Hora de inicio:" HBox.hgrow="ALWAYS" maxWidth="Infinity" /><Label fx:id="fichaHora" styleClass="chip" text="--" /></HBox>
@@ -89,10 +102,10 @@
                                 <graphic><FontIcon iconLiteral="fi-rr-play" /></graphic>
                             </Button>
                             <HBox spacing="8.0">
-                                <Button fx:id="btnReprogramar" maxWidth="Infinity" onAction="#onReprogramar" styleClass="btn-secondary" text="Reprogramar" HBox.hgrow="ALWAYS" />
-                                <Button fx:id="btnCancelar" maxWidth="Infinity" onAction="#onCancelarCita" styleClass="btn-secondary" text="Cancelar cita" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnReprogramar" maxWidth="Infinity" minWidth="0.0" onAction="#onReprogramar" styleClass="btn-secondary" text="Reprogramar" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="btnCancelar" maxWidth="Infinity" minWidth="0.0" onAction="#onCancelarCita" styleClass="btn-secondary" text="Cancelar cita" HBox.hgrow="ALWAYS" />
                             </HBox>
-                            <Label styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" />
+                            <Label maxWidth="Infinity" styleClass="hint" text="Abre el expediente clínico y módulo de diagnóstico" wrapText="true" />
                         </VBox>
 
                         <VBox spacing="8.0" styleClass="card">
@@ -102,9 +115,9 @@
                     </VBox>
 
                     <!-- Agenda semanal -->
-                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" spacing="12.0" styleClass="card">
+                    <VBox GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" minWidth="0.0" spacing="12.0" styleClass="card">
                         <Label styleClass="card-title" text="Agenda Semanal de Turnos Médicos" />
-                        <Label styleClass="card-subtitle" text="Haz clic en cualquier celda para ver la ficha o crear un turno rápido" />
+                        <Label maxWidth="Infinity" styleClass="card-subtitle" text="Haz clic en cualquier celda para ver la ficha o crear un turno rápido" wrapText="true" />
                         <GridPane fx:id="semana" hgap="4.0" vgap="4.0">
                             <columnConstraints>
                                 <ColumnConstraints minWidth="64.0" prefWidth="64.0" maxWidth="64.0" />
@@ -117,13 +130,12 @@
                         </GridPane>
                         <Separator />
                         <HBox alignment="CENTER_LEFT" spacing="12.0">
-                            <Label fx:id="resumenLabel" styleClass="hint" text="Resumen semanal: 0 atendidas · 0 agendadas · 0 canceladas · 30 libres" />
-                            <Region HBox.hgrow="ALWAYS" />
-                            <Button styleClass="btn-edit" text="Imprimir">
+                            <Label fx:id="resumenLabel" maxWidth="Infinity" minWidth="0.0" wrapText="true" HBox.hgrow="ALWAYS" styleClass="hint" text="Resumen semanal: 0 atendidas · 0 agendadas · 0 canceladas · 30 libres" />
+                            <Button minWidth="-Infinity" styleClass="btn-edit" text="Imprimir">
                                 <graphic><FontIcon iconLiteral="fi-rr-print" /></graphic>
                                 <tooltip><Tooltip text="Imprimir agenda diaria" /></tooltip>
                             </Button>
-                            <Button styleClass="btn-edit" text="Exportar PDF">
+                            <Button minWidth="-Infinity" styleClass="btn-edit" text="Exportar PDF">
                                 <graphic><FontIcon iconLiteral="fi-rr-file-pdf" /></graphic>
                             </Button>
                         </HBox>

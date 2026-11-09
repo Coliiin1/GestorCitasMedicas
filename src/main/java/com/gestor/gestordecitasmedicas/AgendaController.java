@@ -21,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -273,7 +274,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         Label l = new Label(texto);
         l.getStyleClass().add(estilo);
         l.setAlignment(Pos.CENTER);
-        l.setMinSize(32, 32);
+        l.setMinSize(0, 32);
+        l.setMaxWidth(Double.MAX_VALUE);
         return l;
     }
 
@@ -282,6 +284,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             Button libre = new Button("+ Disponible");
             libre.getStyleClass().add("slot-free");
             libre.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            libre.setMinWidth(0);
+            libre.setPrefWidth(0);
             libre.setOnAction(e -> dialogoCita(null, fecha, hora));
             return libre;
         }
@@ -289,12 +293,16 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         estado.getStyleClass().add("caption");
         Label paciente = new Label(nombrePaciente(turno.paciente, turno.cita.getCurp()));
         paciente.getStyleClass().add("info-value");
+        paciente.setWrapText(true);
         Label referencia = new Label("Cita #" + turno.cita.getIdCita());
         referencia.getStyleClass().add("hint");
         VBox contenido = new VBox(2, estado, paciente, referencia);
         contenido.setMaxWidth(Double.MAX_VALUE);
+        contenido.setMinWidth(0);
 
         Button celda = new Button();
+        celda.setMinWidth(0);
+        celda.setPrefWidth(0);
         celda.setGraphic(contenido);
         celda.getStyleClass().addAll("slot", "slot-" + turno.cita.getEstado().name().toLowerCase());
         celda.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -398,8 +406,10 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         tituloEncabezado.getStyleClass().add("field-label");
         Label subtitulo = new Label(fechaLarga(fechaInicial));
         subtitulo.getStyleClass().add("panel-title");
-        VBox encabezado = new VBox(8, tituloEncabezado, subtitulo);
-        encabezado.getStyleClass().add("expediente-editor-header");
+        Label descripcion = new Label("Selecciona paciente, fecha y hora");
+        descripcion.getStyleClass().add("card-subtitle");
+        VBox encabezado = new VBox(4, tituloEncabezado, subtitulo, descripcion);
+        encabezado.getStyleClass().add("edit-header");
         dialogo.getDialogPane().setHeader(encabezado);
 
         ComboBox<Paciente> comboPaciente = new ComboBox<>();
@@ -419,13 +429,16 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 ? "No hay pacientes registrados"
                 : "Selecciona un paciente");
         comboPaciente.setMaxWidth(Double.MAX_VALUE);
+        comboPaciente.getStyleClass().add("combo-field");
 
         DatePicker selectorFecha = new DatePicker(fechaInicial);
         selectorFecha.setMaxWidth(Double.MAX_VALUE);
+        selectorFecha.getStyleClass().add("date-field");
 
         ComboBox<String> comboHora = new ComboBox<>();
         comboHora.getItems().setAll(HORAS);
         comboHora.setMaxWidth(Double.MAX_VALUE);
+        comboHora.getStyleClass().add("combo-field");
         comboHora.getSelectionModel().select(indiceHoraSeguro(horaInicial));
 
         if (existente != null) {
@@ -456,16 +469,19 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             dialogo.close();
         });
 
-        VBox contenido = new VBox(8);
-        contenido.getChildren().add(etiqueta("PACIENTE"));
+        VBox campoPaciente = new VBox(8, etiquetaRequerida("PACIENTE"));
         if (existente == null) {
-            contenido.getChildren().addAll(comboPaciente, registrarPaciente);
+            campoPaciente.getChildren().addAll(comboPaciente, registrarPaciente);
         } else {
-            contenido.getChildren().add(new Label(nombrePaciente(
-                    pacientesMapa.get(existente.getCurp()), existente.getCurp())));
+            Label nombreActual = new Label(nombrePaciente(
+                    pacientesMapa.get(existente.getCurp()), existente.getCurp()));
+            nombreActual.getStyleClass().add("info-value");
+            campoPaciente.getChildren().add(nombreActual);
         }
-        contenido.getChildren().addAll(etiqueta("FECHA"), selectorFecha, etiqueta("HORA"), comboHora);
-        contenido.getStyleClass().add("expediente-editor-fields");
+        VBox contenido = new VBox(16, campoPaciente,
+                new VBox(8, etiquetaRequerida("FECHA"), selectorFecha),
+                new VBox(8, etiquetaRequerida("HORA"), comboHora));
+        contenido.getStyleClass().addAll("expediente-editor-fields", "form-body");
         dialogo.getDialogPane().setContent(contenido);
         dialogo.getDialogPane().setPrefWidth(460);
 
@@ -476,6 +492,25 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn-secondary");
         Node botonBloquear = dialogo.getDialogPane().lookupButton(bloquear);
         botonBloquear.getStyleClass().add("btn-secondary");
+        // Mismo margen lateral que form-body (24) para que los botones queden al ras de los campos.
+        dialogo.setOnShown(e -> {
+            Node barraBotones = dialogo.getDialogPane().lookup(".button-bar");
+            if (barraBotones instanceof ButtonBar) {
+                // Orden fijo en cualquier plataforma: Bloquear (izquierda), Cancelar, Guardar.
+                ((ButtonBar) barraBotones).setButtonOrder("L+CO");
+            }
+            Node barra = dialogo.getDialogPane().lookup(".button-bar > .container");
+            if (barra != null) {
+                barra.setStyle("-fx-padding: 0 24 20 24;");
+            }
+            Node encabezadoNodo = dialogo.getDialogPane().getHeader();
+            if (encabezadoNodo != null && encabezadoNodo.getParent() != null) {
+                encabezadoNodo.getParent().setStyle("-fx-padding: 0;");
+            }
+        });
+        ((Button) botonBloquear).setGraphic(new FontIcon("fi-rr-lock"));
+        ((Button) dialogo.getDialogPane().lookupButton(guardar)).setGraphic(new FontIcon("fi-rr-check"));
+        ((Button) dialogo.getDialogPane().lookupButton(ButtonType.CANCEL)).setGraphic(new FontIcon("fi-rr-cross"));
         // Maqueta: sin lógica todavía, se consume el evento para no cerrar el diálogo.
         botonBloquear.addEventFilter(javafx.event.ActionEvent.ACTION, javafx.event.Event::consume);
 
@@ -629,6 +664,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private static int indiceHoraSeguro(LocalTime hora) {
         int indice = indiceHora(hora);
         return indice < 0 ? 0 : indice;
+    }
+
+    private static HBox etiquetaRequerida(String texto) {
+        Label asterisco = new Label("*");
+        asterisco.getStyleClass().add("required");
+        return new HBox(4, etiqueta(texto), asterisco);
     }
 
     private static Label etiqueta(String texto) {

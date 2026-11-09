@@ -175,17 +175,27 @@ class ExpedienteTest {
             ExpedienteController controlador = loader.getController();
             controlador.mostrarPaciente(paciente);
             Button editar = (Button) loader.getNamespace().get("btnEditar");
-            Button guardar = (Button) loader.getNamespace().get("btnGuardarEdicion");
-            Button cancelar = (Button) loader.getNamespace().get("btnCancelarEdicion");
-            VBox editor = (VBox) loader.getNamespace().get("editorExpediente");
-            VBox lectura = (VBox) loader.getNamespace().get("vistaExpediente");
+            FXMLLoader cargadorEditor = new FXMLLoader(getClass().getResource("expediente-editar-panel.fxml"));
+            VBox vistaEditor = cargadorEditor.load();
+            ExpedienteEditarController editorControlador = cargadorEditor.getController();
+            PrincipalPrueba principal = new PrincipalPrueba(controlador, editorControlador);
+            editorControlador.setMainController(principal);
+            controlador.setMainController(principal);
+            Label confirmacion = (Label) loader.getNamespace().get("estadoEdicion");
+            VBox campos = (VBox) cargadorEditor.getNamespace().get("camposEditor");
+            Scene escenaEditor = new Scene(vistaEditor, 1368, 900);
+            escenaEditor.getStylesheets().add(getClass().getResource("cita.css").toExternalForm());
+
             editar.fire();
-            assertTrue(editor.isVisible()); assertFalse(lectura.isVisible());
-            VBox campos = (VBox) loader.getNamespace().get("camposEditor");
+            assertEquals("expediente-editar-panel.fxml", principal.destino);
             ((TextArea) campos.lookup("#alergiasEditor")).setText("No guardar esta alergia");
-            cancelar.fire();
-            assertFalse(editor.isVisible()); assertTrue(lectura.isVisible());
+            java.lang.reflect.Method cancelarEditor = ExpedienteEditarController.class.getDeclaredMethod("onCancelar");
+            cancelarEditor.setAccessible(true);
+            cancelarEditor.invoke(editorControlador);
+            assertEquals("expediente-panel.fxml", principal.destino);
             assertNull(bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
+            java.lang.reflect.Method guardarEditor = ExpedienteEditarController.class.getDeclaredMethod("onGuardar");
+            guardarEditor.setAccessible(true);
             editar.fire();
             ((TextArea) campos.lookup("#familiares")).setText("Diabetes familiar");
             ((TextArea) campos.lookup("#personales")).setText("Cirugía previa");
@@ -193,20 +203,21 @@ class ExpedienteTest {
             ((TextArea) campos.lookup("#observaciones")).setText("Seguimiento");
             javafx.scene.control.TextField fecha = (javafx.scene.control.TextField) campos.lookup("#fechaHoraHistoria");
             String fechaValida = fecha.getText();
-            fecha.setText("fecha inválida"); guardar.fire();
-            assertTrue(editor.isVisible());
-            assertTrue(((Label) loader.getNamespace().get("errorEdicion")).isVisible());
-            assertFalse(((Label) loader.getNamespace().get("estadoEdicion")).isVisible());
+            fecha.setText("fecha inválida"); guardarEditor.invoke(editorControlador);
+            assertEquals("expediente-editar-panel.fxml", principal.destino);
+            assertTrue(((Label) cargadorEditor.getNamespace().get("errorEdicion")).isVisible());
+            assertFalse(confirmacion.isVisible());
             assertNull(bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
             fecha.setText(fechaValida);
-            vista.applyCss(); vista.layout();
-            assertEquals(5, campos.lookupAll(".expediente-grupo-titulo").size());
-            assertEquals(23, campos.lookupAll(".expediente-campo-titulo").size());
-            ImageIO.write(SwingFXUtils.fromFXImage(vista.snapshot(null, null), null), "png",
+            vistaEditor.applyCss(); vistaEditor.layout();
+            assertEquals(5, campos.lookupAll(".section-label").size());
+            assertEquals(23, campos.lookupAll(".field-label").size());
+            assertEquals("Tipo de Establecimiento", ((Label) campos.lookupAll(".field-label").iterator().next()).getText());
+            assertEquals("Ej. Faringitis aguda.", ((javafx.scene.control.TextInputControl) campos.lookup("#diagnostico")).getPromptText());
+            ImageIO.write(SwingFXUtils.fromFXImage(vistaEditor.snapshot(null, null), null), "png",
                     Paths.get("target", "expediente-editor-prueba.png").toFile());
-            guardar.fire();
-            assertFalse(editor.isVisible()); assertTrue(lectura.isVisible());
-            Label confirmacion = (Label) loader.getNamespace().get("estadoEdicion");
+            guardarEditor.invoke(editorControlador);
+            assertEquals("expediente-panel.fxml", principal.destino);
             assertTrue(confirmacion.isVisible());
             assertTrue(confirmacion.isManaged());
             assertEquals("Expediente actualizado correctamente.", confirmacion.getText());
@@ -223,7 +234,7 @@ class ExpedienteTest {
             controlador.mostrarPaciente(paciente);
             editar.fire();
             ((TextArea) campos.lookup("#alergiasEditor")).setText("Alergia recuperada");
-            guardar.fire();
+            guardarEditor.invoke(editorControlador);
             assertEquals("Alergia recuperada", bd.cargarExpedientePorCurp(paciente.getCurp()).getAlergias());
             verificarCapturaConsulta();
             confirmacion.visibleProperty().addListener((obs, anterior, visible) -> {
@@ -234,6 +245,28 @@ class ExpedienteTest {
         Platform.runLater(verificar);
         verificar.get(30, TimeUnit.SECONDS);
         assertTrue(confirmacionOculta.get(7, TimeUnit.SECONDS), "La confirmación debe ocultarse y liberar su espacio después de cinco segundos.");
+    }
+
+    /** MainController mínimo: registra el destino y entrega los controladores ya cargados. */
+    private static final class PrincipalPrueba extends MainController {
+        private final ExpedienteController expediente;
+        private final ExpedienteEditarController editor;
+        private String destino;
+
+        PrincipalPrueba(ExpedienteController expediente, ExpedienteEditarController editor) {
+            this.expediente = expediente;
+            this.editor = editor;
+        }
+
+        @Override public void ir(String fxml) {
+            destino = fxml;
+            if ("expediente-panel.fxml".equals(fxml)) expediente.refrescar();
+        }
+
+        @Override @SuppressWarnings("unchecked")
+        public <T> T controlador(String fxml) {
+            return (T) ("expediente-editar-panel.fxml".equals(fxml) ? editor : expediente);
+        }
     }
 
     private void verificarCapturaConsulta() throws Exception {

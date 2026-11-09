@@ -4,7 +4,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ExpedienteController">
     <StackPane VBox.vgrow="ALWAYS">
-        <VBox fx:id="vistaExpediente">
+        <VBox>
     <HBox alignment="CENTER" styleClass="page-header">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
@@ -75,27 +75,6 @@
             </VBox>
         </VBox>
     </ScrollPane>
-        </VBox>
-        <VBox fx:id="editorExpediente" visible="false" managed="false" styleClass="expediente-editor">
-            <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="page-header, expediente-identidad">
-                <VBox spacing="6.0" HBox.hgrow="ALWAYS">
-                    <Label styleClass="panel-title" text="EDITAR EXPEDIENTE CLÍNICO" />
-                    <Label fx:id="pacienteEditor" styleClass="card-subtitle" wrapText="true" />
-                </VBox>
-                <Button text="Volver al expediente" styleClass="btn-secondary" onAction="#cancelarEdicion" />
-            </HBox>
-            <ScrollPane fx:id="editorScroll" fitToWidth="true" VBox.vgrow="ALWAYS">
-                <VBox styleClass="page-body">
-                    <VBox fx:id="camposEditor" styleClass="page-content" spacing="24.0" />
-                </VBox>
-            </ScrollPane>
-            <VBox spacing="10.0" styleClass="page-footer">
-                <Label fx:id="errorEdicion" visible="false" managed="false" wrapText="true" styleClass="expediente-error" />
-                <HBox spacing="12.0" alignment="CENTER_RIGHT">
-                    <Button fx:id="btnCancelarEdicion" text="Cancelar" onAction="#cancelarEdicion" styleClass="btn-secondary" />
-                    <Button fx:id="btnGuardarEdicion" text="Guardar expediente" styleClass="btn-primary" />
-                </HBox>
-            </VBox>
         </VBox>
     </StackPane>
 </VBox>

@@ -31,7 +31,10 @@ public enum FlaticonIcons implements Ikon {
     TRASH("fi-rr-trash", 0xF026),
     ARROW_LEFT("fi-rr-arrow-left", 0xE0C6),
     EYE("fi-rr-eye", 0xE62C),
-    EYE_CROSSED("fi-rr-eye-crossed", 0xE62F);
+    EYE_CROSSED("fi-rr-eye-crossed", 0xE62F),
+    TRIANGLE_WARNING("fi-rr-triangle-warning", 0xF047),
+    ENVELOPE("fi-rr-envelope", 0xE5FE),
+    LOCK("fi-rr-lock", 0xE9C5);
 
     private final String description;
     private final int code;
