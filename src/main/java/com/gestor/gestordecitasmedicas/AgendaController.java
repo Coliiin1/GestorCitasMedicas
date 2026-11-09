@@ -139,14 +139,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             btnConfigHorario.setVisible(visible);
             btnConfigHorario.setManaged(visible);
         }
-        if (btnBloquearDia != null) {
-            btnBloquearDia.setVisible(visible);
-            btnBloquearDia.setManaged(visible);
-        }
-        if (btnBloquearSemana != null) {
-            btnBloquearSemana.setVisible(visible);
-            btnBloquearSemana.setManaged(visible);
-        }
+        // Bloquear día/semana: disponible para administrador y asistente.
     }
 
     private boolean esAdmin() {
@@ -521,9 +514,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onBloquearDia() {
-        if (!esAdmin()) {
-            return;
-        }
         if (dialogoBloqueo(seleccion, false)) {
             refrescar();
         }
@@ -531,9 +521,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onBloquearSemana() {
-        if (!esAdmin()) {
-            return;
-        }
         if (dialogoBloqueo(lunesSemana(seleccion), true)) {
             refrescar();
         }
@@ -784,7 +771,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     }
 
     private boolean dialogoBloqueo(LocalDate fechaInicial, boolean semana) {
-        if (!esAdmin() || fechaInicial == null) {
+        if (fechaInicial == null) {
             return false;
         }
 
@@ -821,17 +808,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             comboFin.setDisable(seleccionado);
         });
 
-        TextField motivo = new TextField();
-        motivo.setPromptText("Motivo (opcional)");
-        motivo.getStyleClass().add("search-field");
-
         VBox contenido = new VBox(16,
                 new VBox(8, etiquetaRequerida("DESDE"), dpInicio),
                 new VBox(8, etiquetaRequerida("HASTA"), dpFin),
                 todoElDia,
                 new VBox(8, etiqueta("HORA INICIO"), comboInicio),
-                new VBox(8, etiqueta("HORA FIN"), comboFin),
-                new VBox(8, etiqueta("MOTIVO"), motivo));
+                new VBox(8, etiqueta("HORA FIN"), comboFin));
         contenido.getStyleClass().addAll("expediente-editor-fields", "form-body");
         dialogo.getDialogPane().setContent(contenido);
         dialogo.getDialogPane().setPrefWidth(460);
@@ -889,7 +871,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             HorarioBloqueado bloqueo = new HorarioBloqueado();
             bloqueo.setFechaInicio(inicio);
             bloqueo.setFechaFin(fin);
-            bloqueo.setMotivo(motivo.getText() == null ? null : motivo.getText().trim());
             if (!baseDatos.guardarBloqueo(bloqueo)) {
                 event.consume();
                 aviso(Alert.AlertType.ERROR, "No se pudo bloquear",
