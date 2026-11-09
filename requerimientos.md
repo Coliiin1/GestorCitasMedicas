@@ -20,7 +20,7 @@ Este documento describe los requerimientos que el sistema cumple hoy y los que s
 | Actor | Responsabilidad en el sistema | Clase del modelo |
 |---|---|---|
 | Administrador | Responsable clínico. Según el modelo, atiende citas, genera recetas y administra pacientes y expedientes. En la interfaz, la consulta y la receta las registra el sistema con el administrador por defecto (RN-16). | `Administrador` (extiende `Personal`) |
-| Asistente | Según el modelo, gestiona la agenda (agendar, reprogramar, cancelar y consultar citas). Hoy esas operaciones están en los controladores de agenda, y los métodos de `Asistente` no están implementados. | `Asistente` (extiende `Personal`) |
+| Asistente | Según el modelo, gestiona la agenda (agendar, reprogramar, cancelar y consultar citas). Desde la agenda puede abrir el alta de paciente para completar una cita. Hoy esas operaciones están en los controladores de agenda, y los métodos de `Asistente` no están implementados. | `Asistente` (extiende `Personal`) |
 
 Observación: la aplicación todavía no separa permisos por rol. Todas las pantallas están disponibles para cualquier usuario que abra el sistema. La pantalla de acceso no valida credenciales (ver RF-01).
 
@@ -45,6 +45,7 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 - Registrar, listar, buscar por nombre o CURP, editar y eliminar pacientes.
 - Al eliminar un paciente, la aplicación advierte que también se borran su expediente, sus citas, consultas y recetas.
 - Al registrar un paciente se crea automáticamente su expediente vacío.
+- La agenda permite registrar un paciente nuevo desde el diálogo de cita; al guardarlo se retoma la cita con fecha, hora y paciente preseleccionado.
 - Las reglas de validación se describen en la sección 3.
 
 ### RF-04 Expediente clínico
@@ -65,6 +66,7 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 - Reprogramar una cita existente.
 - Cancelar una cita.
 - Mostrar un resumen semanal con el número de citas atendidas, agendadas, canceladas y libres.
+- Registrar un paciente nuevo desde el diálogo de cita y reabrirla al guardar, conservando fecha, hora y paciente.
 - Iniciar la cita clínica desde la ficha de la cita.
 
 ### RF-06 Estados de la cita
@@ -196,7 +198,7 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 |---|---|
 | RF-01 | `LoginController`, `login-view.fxml`, `main-view.fxml` |
 | RF-02 | `AsistentesController`, `AsistenteEditarController`, `Asistente` |
-| RF-03 | `PacientesController`, `PacienteEditarController`, `Paciente` |
+| RF-03 | `PacientesController`, `PacienteEditarController`, `AgendaController`, `Paciente` |
 | RF-04 | `ExpedienteController`, `Expediente`, `ControladorPDF` |
 | RF-05, RF-06 | `AgendaController`, `CitaController`, `Cita`, `Estado` |
 | RF-07, RF-09, RF-11 | `ConsultaController`, `consulta-panel.fxml`, `Receta`, `Medicamento`, `SignosVitales` |

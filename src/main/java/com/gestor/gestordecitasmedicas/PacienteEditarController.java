@@ -5,6 +5,7 @@ import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.function.Consumer;
 
 public class PacienteEditarController implements PanelControlado {
     @FXML private Label lblTitulo;
@@ -26,10 +28,14 @@ public class PacienteEditarController implements PanelControlado {
     @FXML private ComboBox<String> cbSexo;
     @FXML private TextField txtCorreo;
     @FXML private TextField txtDomicilio;
+    @FXML private Button btnCancelar;
 
     private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
     private Paciente pacienteActual;
+    private String panelRegreso = "pacientes-panel.fxml";
+    private Consumer<Paciente> alRegistrar;
+    private Runnable alCancelar;
 
     @Override
     public void setMainController(MainController mainController) {
@@ -37,6 +43,15 @@ public class PacienteEditarController implements PanelControlado {
     }
 
     public void modoNuevo() {
+        modoNuevo("pacientes-panel.fxml", null, null);
+    }
+
+    public void modoNuevo(String panelRegreso, Consumer<Paciente> alRegistrar, Runnable alCancelar) {
+        this.panelRegreso = panelRegreso == null || panelRegreso.trim().isEmpty()
+                ? "pacientes-panel.fxml" : panelRegreso;
+        this.alRegistrar = alRegistrar;
+        this.alCancelar = alCancelar;
+        actualizarBotonCancelar();
         pacienteActual = null;
         lblTitulo.setText("REGISTRAR NUEVO PACIENTE");
         txtCurp.setEditable(true);
@@ -54,6 +69,10 @@ public class PacienteEditarController implements PanelControlado {
 
     public void modoEditar(Paciente paciente) {
         pacienteActual = paciente;
+        panelRegreso = "pacientes-panel.fxml";
+        alRegistrar = null;
+        alCancelar = null;
+        actualizarBotonCancelar();
         lblTitulo.setText("ACTUALIZAR DATOS DEL PACIENTE");
         txtCurp.setEditable(false);
         txtNombre.setText(valor(paciente.getNombre()));
@@ -128,7 +147,35 @@ public class PacienteEditarController implements PanelControlado {
         } else {
             mostrarInformacion("Paciente actualizado", "Los datos del paciente se actualizaron correctamente.");
         }
-        mainController.ir("pacientes-panel.fxml");
+
+        Consumer<Paciente> registrar = esNuevo ? alRegistrar : null;
+        String destino = panelRegreso;
+        alRegistrar = null;
+        alCancelar = null;
+        if (registrar != null) {
+            registrar.accept(paciente);
+        }
+        mainController.ir(destino);
+    }
+
+    @FXML
+    private void onCancelar() {
+        Runnable cancelar = alCancelar;
+        alRegistrar = null;
+        alCancelar = null;
+        if (cancelar != null) {
+            cancelar.run();
+        }
+        mainController.ir(panelRegreso);
+    }
+
+    private void actualizarBotonCancelar() {
+        if (btnCancelar == null) {
+            return;
+        }
+        btnCancelar.setText("agenda-panel.fxml".equals(panelRegreso)
+                ? "Cancelar / Volver a la Agenda"
+                : "Cancelar / Volver a Pacientes");
     }
 
     private boolean crearExpediente(Paciente paciente) {
