@@ -34,7 +34,8 @@ public enum FlaticonIcons implements Ikon {
     EYE_CROSSED("fi-rr-eye-crossed", 0xE62F),
     TRIANGLE_WARNING("fi-rr-triangle-warning", 0xF047),
     ENVELOPE("fi-rr-envelope", 0xE5FE),
-    LOCK("fi-rr-lock", 0xE9C5);
+    LOCK("fi-rr-lock", 0xE9C5),
+    SETTINGS("fi-rr-settings", 0xEDA3);
 
     private final String description;
     private final int code;
