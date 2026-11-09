@@ -18,14 +18,14 @@ Plan técnico detallado de los pendientes: [Plan de implementación por entregas
 
 ## Revisión de integración del 2026-11-06
 
-**Resultado:** el camino principal de cita → consulta → guardado → historial está conectado y ambos generadores PDF funcionan con los datos de prueba. No se declara el flujo completamente cerrado: quedan los hallazgos de integración descritos abajo y la configuración real del profesional/establecimiento. Las 21 pruebas actuales pasan, pero no cubren todas las transiciones de recepción ni equivalen a una certificación normativa o a una validación del consultorio real.
+**Resultado:** el camino principal de cita → consulta → guardado → historial está conectado y ambos generadores PDF funcionan con los datos de prueba. No se declara el flujo completamente cerrado: quedan los hallazgos de integración descritos abajo y la configuración real del profesional/establecimiento. Las 22 pruebas actuales pasan, pero no cubren todas las transiciones de recepción ni equivalen a una certificación normativa o a una validación del consultorio real.
 
 ### Flujo declarado y comportamiento comprobado
 
 | Paso | Entrada y destino | Estado y observaciones |
 |---|---|---|
-| Alta del paciente | `PacienteEditarController` → `Paciente`; creación de `Expediente` vacío | Conectado. La creación de paciente y expediente son operaciones separadas; existe aviso si solo se registra el paciente. |
-| Agendar/reprogramar/cancelar | `AgendaController` → CRUD de `Cita` | Conectado. La cita referencia la CURP del paciente y conserva fecha/hora; no duplica sus datos demográficos. |
+| Alta del paciente | `PacienteEditarController` → `Paciente`; creación de `Expediente` vacío | Conectado. También puede iniciarse desde la agenda; al guardar se retoma la cita con fecha/hora y paciente preseleccionado. La creación de paciente y expediente son operaciones separadas; existe aviso si solo se registra el paciente. |
+| Agendar/reprogramar/cancelar | `AgendaController` → CRUD de `Cita` | Conectado. Si el paciente no está registrado, la agenda abre el alta y después reabre la cita. La cita referencia la CURP del paciente y conserva fecha/hora; no duplica sus datos demográficos. |
 | Iniciar atención | `AgendaController.onIniciarCita` → `CitaController.cargarCita` | Conectado para el rol administrador. Carga al paciente desde SQLite y signos de una receta previa, si existe. Las citas canceladas no se inician desde la ficha. |
 | Recepción y signos | `cita-panel.fxml` → `leerSignos()` → `ConsultaController.cargarConsulta` | Conectado para signos de una atención nueva. El motivo de recepción no se transfiere; revisar también la prioridad de signos al reabrir. |
 | Consulta y receta | `consulta-panel.fxml` → `guardarAtencion` del controlador | Conectado. Captura clínica separada, identidad automática de solo lectura y medicamentos estructurados. |
@@ -36,7 +36,7 @@ Plan técnico detallado de los pendientes: [Plan de implementación por entregas
 | Editar expediente | Botón Editar → panel integrado → guardar/cancelar | Conectado. Valida el formato de fecha/hora; guarda, recarga y muestra confirmación verde durante cinco segundos. Cancelar no persiste cambios. |
 | Exportar expediente | `exportarPdf` → selector de archivo → `generarExpediente` | Conectado. Usa el expediente cargado y permite elegir destino; no modifica el estado de la cita. |
 
-La navegación actual distingue los roles provisionales `admin` y `asis`: el administrador inicia atención y el asistente queda limitado a agenda. El login decide el rol por el texto ingresado, sin autenticar la contraseña contra SQLite. El menú no ofrece un listado independiente de recetas: el acceso operativo a la consulta parte de una cita.
+La navegación actual distingue los roles provisionales `admin` y `asis`: el administrador inicia atención y el asistente queda limitado a agenda, aunque ambos pueden abrir el alta de paciente desde el diálogo de cita. El login decide el rol por el texto ingresado, sin autenticar la contraseña contra SQLite. El menú no ofrece un listado independiente de recetas: el acceso operativo a la consulta parte de una cita.
 
 ### Hallazgos que impiden declarar el flujo cerrado
 
@@ -77,7 +77,8 @@ Estos hallazgos se documentan como pendientes; esta revisión no los marca corre
 
 ### Verificación realizada
 
-- Se ejecutó `./mvnw.cmd -q test` con JDK 25 y bases temporales: **21 pruebas aprobadas**, sin fallos ni errores.
+- Se ejecutó `.\mvnw.cmd test` con bases temporales: **22 pruebas aprobadas**, sin fallos ni errores.
+- `AgendaRegistroPacienteTest`: 1 prueba del alta de paciente desde la agenda, navegación al formulario y conservación de la CURP para retomar la cita.
 - `CitaRecetaTest`: 3 pruebas de citas/fecha-hora, guardado/actualización de receta y bajas.
 - `ConsultaTest`: 4 pruebas de CRUD, finalización, creación de expediente faltante y rollback.
 - `ExpedienteTest`: 6 pruebas de recarga, aislamiento de pacientes, fechas, PDF, panel de edición, guardar/cancelar y ocultamiento real de la confirmación a los cinco segundos. También comprueba captura/recarga/finalización de la consulta desde JavaFX y carga de datos fijos.
@@ -171,8 +172,9 @@ Interfaz conectada: `AsistentesController`, `AsistenteEditarController`.
 - `[x]` Eliminar paciente con advertencia de borrado en cascada.
 - `[x]` Validar CURP, fecha de nacimiento, teléfono y correo.
 - `[x]` Crear automáticamente el expediente vacío al registrar un paciente.
+- `[x]` Registrar un paciente nuevo desde el diálogo de cita y regresar a la agenda.
 
-Interfaz conectada: `PacientesController`, `PacienteEditarController`.
+Interfaz conectada: `PacientesController`, `PacienteEditarController`, `AgendaController`.
 
 ### Expediente
 
@@ -203,8 +205,9 @@ Interfaz conectada: `ExpedienteController`.
 - `[x]` Mostrar el resumen semanal con citas reales.
 - `[x]` Conservar la fecha y la hora de la cita en SQLite.
 - `[x]` Iniciar la cita clínica desde la ficha de la agenda.
+- `[x]` Registrar un paciente nuevo al agendar y reabrir la cita conservando fecha, hora y paciente.
 
-Interfaz conectada: `AgendaController`, `CitaController`, `agenda-panel.fxml`, `cita-panel.fxml`.
+Interfaz conectada: `AgendaController`, `CitaController`, `PacienteEditarController`, `agenda-panel.fxml`, `cita-panel.fxml`, `paciente-editar-panel.fxml`.
 
 ### Receta
 
@@ -311,6 +314,13 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 ## Registro de cambios
 
 Las entradas antiguas describen el estado de cada fecha. Para el estado actual y sus límites, prevalecen la revisión de integración y los pendientes de este documento.
+
+### 2026-11-08
+
+- Se agregó el alta de paciente desde el diálogo de cita para administradores y asistentes.
+- Al guardar el paciente, la agenda reabre la cita con la fecha, la hora y el paciente preseleccionado; al cancelar, vuelve a la agenda sin reabrir el diálogo.
+- El formulario de paciente conserva su retorno normal al listado cuando se abre desde el menú.
+- Se agregó `AgendaRegistroPacienteTest`; total 22 pruebas.
 
 ### 2026-11-06
 

@@ -49,7 +49,7 @@ public class MainController {
 
     private boolean destinoPermitido(String fxml) {
         if (!rolConfigurado || esAdmin) return true;
-        return "agenda-panel.fxml".equals(fxml);
+        return "agenda-panel.fxml".equals(fxml) || "paciente-editar-panel.fxml".equals(fxml);
     }
 
     @FXML

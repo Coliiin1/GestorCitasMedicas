@@ -123,7 +123,7 @@
 
                     <!-- Acciones -->
                     <HBox alignment="CENTER" spacing="12.0" styleClass="form-actions">
-                        <Button styleClass="btn-secondary, nav-link" text="Cancelar / Volver a Pacientes" userData="pacientes-panel.fxml">
+                        <Button fx:id="btnCancelar" onAction="#onCancelar" styleClass="btn-secondary" text="Cancelar / Volver a Pacientes">
                             <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
                         </Button>
                         <Button onAction="#onGuardar" prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">

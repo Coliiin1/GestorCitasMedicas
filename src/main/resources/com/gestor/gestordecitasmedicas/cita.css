@@ -17,16 +17,6 @@
 }
 
 /* Editor clínico: misma tipografía, colores y controles que los demás formularios. */
-.expediente-grupo-titulo {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #075985;
-    -fx-background-color: #f0f9ff;
-    -fx-border-color: #bae6fd;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-padding: 12 16;
-}
 
 .expediente-exito {
     -fx-background-color: #ecfdf5;
@@ -41,37 +31,14 @@
     -fx-icon-color: #047857;
 }
 
-.expediente-campo-titulo {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #0c4a6e;
-}
 
 .expediente-error {
     -fx-font-weight: bold;
     -fx-text-fill: #b91c1c;
 }
 
-.expediente-editor .expediente-editor-input {
-    -fx-font-size: 13px;
-    -fx-text-fill: #1e293b;
-    -fx-background-color: white;
-    -fx-border-color: #cbd5e1;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 8;
-}
 
-.expediente-editor-input .content {
-    -fx-background-color: white;
-    -fx-background-radius: 8;
-    -fx-padding: 10 12;
-}
 
-.expediente-editor-input:focused {
-    -fx-border-color: #0ea5e9;
-    -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
-}
 
 /* ---------------------------------------------------------------------
    Sidebar
@@ -1127,24 +1094,12 @@
     -fx-border-radius: 12;
 }
 
-/* Combo y selector de fecha dentro del diálogo de cita. */
-.expediente-editor .combo-box,
-.expediente-editor .date-picker {
-    -fx-font-size: 13px;
-    -fx-background-color: white;
-    -fx-border-color: #cbd5e1;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
+/* Combo y selector de fecha del diálogo de cita usan .combo-field / .date-field. */
+.expediente-editor .form-body {
+    -fx-padding: 20 24;
 }
 
-.expediente-editor .combo-box-base > .list-cell,
-.expediente-editor .date-picker > .text-field {
-    -fx-background-color: transparent;
-    -fx-padding: 8 12;
-}
-
-.expediente-editor .combo-box:focused,
-.expediente-editor .date-picker:focused {
-    -fx-border-color: #0ea5e9;
-    -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
+/* Botones inferiores alineados con los bordes izquierdo y derecho de los campos. */
+.expediente-editor > .button-bar > .container {
+    -fx-padding: 0 24 20 24;
 }

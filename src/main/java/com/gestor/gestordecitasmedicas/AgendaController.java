@@ -19,9 +19,12 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,6 +63,10 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private LocalDate seleccion = LocalDate.now();
     private Cita citaSeleccionada;
     private Paciente pacienteSeleccionado;
+    private LocalDate fechaPendienteAlta;
+    private LocalTime horaPendienteAlta;
+    private String curpPendienteAlta;
+    private boolean altaPendiente;
 
     private static final class Turno {
         final Cita cita;
@@ -100,6 +107,19 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                         actualizada.getFechaCita().toInstant(), ZoneId.systemDefault());
                 mostrarCita(new Turno(actualizada, pacienteSeleccionado),
                         fechaLarga(fecha.toLocalDate()), fecha.toLocalTime());
+            }
+        }
+        if (altaPendiente) {
+            altaPendiente = false;
+            String curp = curpPendienteAlta;
+            LocalDate fecha = fechaPendienteAlta;
+            LocalTime hora = horaPendienteAlta;
+            curpPendienteAlta = null;
+            fechaPendienteAlta = null;
+            horaPendienteAlta = null;
+            if (curp != null) {
+                dialogoCita(null, fecha == null ? seleccion : fecha,
+                        hora == null ? HORAS_T[0] : hora, curp);
             }
         }
     }
@@ -254,7 +274,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         Label l = new Label(texto);
         l.getStyleClass().add(estilo);
         l.setAlignment(Pos.CENTER);
-        l.setMinSize(32, 32);
+        l.setMinSize(0, 32);
+        l.setMaxWidth(Double.MAX_VALUE);
         return l;
     }
 
@@ -263,6 +284,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             Button libre = new Button("+ Disponible");
             libre.getStyleClass().add("slot-free");
             libre.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            libre.setMinWidth(0);
+            libre.setPrefWidth(0);
             libre.setOnAction(e -> dialogoCita(null, fecha, hora));
             return libre;
         }
@@ -270,12 +293,16 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         estado.getStyleClass().add("caption");
         Label paciente = new Label(nombrePaciente(turno.paciente, turno.cita.getCurp()));
         paciente.getStyleClass().add("info-value");
+        paciente.setWrapText(true);
         Label referencia = new Label("Cita #" + turno.cita.getIdCita());
         referencia.getStyleClass().add("hint");
         VBox contenido = new VBox(2, estado, paciente, referencia);
         contenido.setMaxWidth(Double.MAX_VALUE);
+        contenido.setMinWidth(0);
 
         Button celda = new Button();
+        celda.setMinWidth(0);
+        celda.setPrefWidth(0);
         celda.setGraphic(contenido);
         celda.getStyleClass().addAll("slot", "slot-" + turno.cita.getEstado().name().toLowerCase());
         celda.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
@@ -358,12 +385,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     }
 
     private void dialogoCita(Cita existente, LocalDate fechaInicial, LocalTime horaInicial) {
+        dialogoCita(existente, fechaInicial, horaInicial, null);
+    }
+
+    private void dialogoCita(Cita existente, LocalDate fechaInicial, LocalTime horaInicial,
+                             String curpPreseleccionada) {
         HashMap<String, Paciente> pacientesMapa = baseDatos.cargarPacientes();
-        if (pacientesMapa.isEmpty() && existente == null) {
-            aviso(Alert.AlertType.INFORMATION, "Sin pacientes",
-                    "Registra un paciente antes de agendar una cita.");
-            return;
-        }
 
         List<Paciente> pacientes = new ArrayList<>(pacientesMapa.values());
         pacientes.sort(Comparator.comparing(AgendaController::nombrePacienteOrden));
@@ -379,8 +406,10 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         tituloEncabezado.getStyleClass().add("field-label");
         Label subtitulo = new Label(fechaLarga(fechaInicial));
         subtitulo.getStyleClass().add("panel-title");
-        VBox encabezado = new VBox(8, tituloEncabezado, subtitulo);
-        encabezado.getStyleClass().add("expediente-editor-header");
+        Label descripcion = new Label("Selecciona paciente, fecha y hora");
+        descripcion.getStyleClass().add("card-subtitle");
+        VBox encabezado = new VBox(4, tituloEncabezado, subtitulo, descripcion);
+        encabezado.getStyleClass().add("edit-header");
         dialogo.getDialogPane().setHeader(encabezado);
 
         ComboBox<Paciente> comboPaciente = new ComboBox<>();
@@ -396,14 +425,20 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 return null;
             }
         });
+        comboPaciente.setPromptText(pacientes.isEmpty()
+                ? "No hay pacientes registrados"
+                : "Selecciona un paciente");
         comboPaciente.setMaxWidth(Double.MAX_VALUE);
+        comboPaciente.getStyleClass().add("combo-field");
 
         DatePicker selectorFecha = new DatePicker(fechaInicial);
         selectorFecha.setMaxWidth(Double.MAX_VALUE);
+        selectorFecha.getStyleClass().add("date-field");
 
         ComboBox<String> comboHora = new ComboBox<>();
         comboHora.getItems().setAll(HORAS);
         comboHora.setMaxWidth(Double.MAX_VALUE);
+        comboHora.getStyleClass().add("combo-field");
         comboHora.getSelectionModel().select(indiceHoraSeguro(horaInicial));
 
         if (existente != null) {
@@ -412,17 +447,41 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 comboPaciente.getSelectionModel().select(pacienteActual);
             }
             comboPaciente.setDisable(true);
+        } else if (curpPreseleccionada != null) {
+            Paciente preseleccionado = pacientesMapa.get(curpPreseleccionada);
+            if (preseleccionado != null) {
+                comboPaciente.getSelectionModel().select(preseleccionado);
+            }
         }
 
-        VBox contenido = new VBox(8,
-                etiqueta("PACIENTE"),
-                existente == null ? comboPaciente : new Label(nombrePaciente(
-                        pacientesMapa.get(existente.getCurp()), existente.getCurp())),
-                etiqueta("FECHA"),
-                selectorFecha,
-                etiqueta("HORA"),
-                comboHora);
-        contenido.getStyleClass().add("expediente-editor-fields");
+        final boolean[] registroPacienteSolicitado = {false};
+        Button registrarPaciente = new Button("Registrar nuevo paciente");
+        registrarPaciente.getStyleClass().add("btn-secondary");
+        registrarPaciente.setGraphic(new FontIcon("fi-rr-user-add"));
+        registrarPaciente.setMaxWidth(Double.MAX_VALUE);
+        registrarPaciente.setTooltip(new Tooltip("Registra al paciente y regresa a esta cita"));
+        registrarPaciente.setOnAction(e -> {
+            fechaPendienteAlta = selectorFecha.getValue() == null ? fechaInicial : selectorFecha.getValue();
+            int indiceHora = comboHora.getSelectionModel().getSelectedIndex();
+            horaPendienteAlta = indiceHora >= 0 ? HORAS_T[indiceHora] : horaInicial;
+            registroPacienteSolicitado[0] = true;
+            dialogo.setResult(ButtonType.CANCEL);
+            dialogo.close();
+        });
+
+        VBox campoPaciente = new VBox(8, etiquetaRequerida("PACIENTE"));
+        if (existente == null) {
+            campoPaciente.getChildren().addAll(comboPaciente, registrarPaciente);
+        } else {
+            Label nombreActual = new Label(nombrePaciente(
+                    pacientesMapa.get(existente.getCurp()), existente.getCurp()));
+            nombreActual.getStyleClass().add("info-value");
+            campoPaciente.getChildren().add(nombreActual);
+        }
+        VBox contenido = new VBox(16, campoPaciente,
+                new VBox(8, etiquetaRequerida("FECHA"), selectorFecha),
+                new VBox(8, etiquetaRequerida("HORA"), comboHora));
+        contenido.getStyleClass().addAll("expediente-editor-fields", "form-body");
         dialogo.getDialogPane().setContent(contenido);
         dialogo.getDialogPane().setPrefWidth(460);
 
@@ -433,6 +492,25 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn-secondary");
         Node botonBloquear = dialogo.getDialogPane().lookupButton(bloquear);
         botonBloquear.getStyleClass().add("btn-secondary");
+        // Mismo margen lateral que form-body (24) para que los botones queden al ras de los campos.
+        dialogo.setOnShown(e -> {
+            Node barraBotones = dialogo.getDialogPane().lookup(".button-bar");
+            if (barraBotones instanceof ButtonBar) {
+                // Orden fijo en cualquier plataforma: Bloquear (izquierda), Cancelar, Guardar.
+                ((ButtonBar) barraBotones).setButtonOrder("L+CO");
+            }
+            Node barra = dialogo.getDialogPane().lookup(".button-bar > .container");
+            if (barra != null) {
+                barra.setStyle("-fx-padding: 0 24 20 24;");
+            }
+            Node encabezadoNodo = dialogo.getDialogPane().getHeader();
+            if (encabezadoNodo != null && encabezadoNodo.getParent() != null) {
+                encabezadoNodo.getParent().setStyle("-fx-padding: 0;");
+            }
+        });
+        ((Button) botonBloquear).setGraphic(new FontIcon("fi-rr-lock"));
+        ((Button) dialogo.getDialogPane().lookupButton(guardar)).setGraphic(new FontIcon("fi-rr-check"));
+        ((Button) dialogo.getDialogPane().lookupButton(ButtonType.CANCEL)).setGraphic(new FontIcon("fi-rr-cross"));
         // Maqueta: sin lógica todavía, se consume el evento para no cerrar el diálogo.
         botonBloquear.addEventFilter(javafx.event.ActionEvent.ACTION, javafx.event.Event::consume);
 
@@ -488,8 +566,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             enviarConfirmacionAsync(pacienteCita, citaGuardada);
         });
 
-        if (dialogo.showAndWait().orElse(ButtonType.CANCEL).getButtonData()
-                == ButtonBar.ButtonData.OK_DONE) {
+        ButtonType resultado = dialogo.showAndWait().orElse(ButtonType.CANCEL);
+        if (registroPacienteSolicitado[0]) {
+            abrirRegistroPaciente();
+            return;
+        }
+        if (resultado.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
             seleccion = selectorFecha.getValue() == null ? seleccion : selectorFecha.getValue();
             mes = YearMonth.from(seleccion);
             citaSeleccionada = null;
@@ -499,6 +581,22 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                     existente == null ? "Cita agendada" : "Cita reprogramada",
                     "La agenda se actualizó correctamente.");
         }
+    }
+
+    private void abrirRegistroPaciente() {
+        if (mainController == null) {
+            return;
+        }
+        curpPendienteAlta = null;
+        altaPendiente = true;
+        PacienteEditarController editor = mainController.controlador("paciente-editar-panel.fxml");
+        editor.modoNuevo("agenda-panel.fxml",
+                paciente -> curpPendienteAlta = paciente.getCurp(),
+                () -> {
+                    altaPendiente = false;
+                    curpPendienteAlta = null;
+                });
+        mainController.ir("paciente-editar-panel.fxml");
     }
 
     private void enviarConfirmacionAsync(Paciente paciente, Cita cita) {
@@ -566,6 +664,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private static int indiceHoraSeguro(LocalTime hora) {
         int indice = indiceHora(hora);
         return indice < 0 ? 0 : indice;
+    }
+
+    private static HBox etiquetaRequerida(String texto) {
+        Label asterisco = new Label("*");
+        asterisco.getStyleClass().add("required");
+        return new HBox(4, etiqueta(texto), asterisco);
     }
 
     private static Label etiqueta(String texto) {
