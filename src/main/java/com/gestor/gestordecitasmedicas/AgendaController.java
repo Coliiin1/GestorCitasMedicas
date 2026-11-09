@@ -50,7 +50,7 @@ import java.util.TreeSet;
 public class AgendaController implements PanelControlado, PanelRefrescable {
     @FXML private GridPane calendario, semana;
     @FXML private TextField fichaNombre;
-    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel;
+    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel, hoyProgramadas, hoyCompletadas;
     @FXML private Button btnAgendar, btnIniciar, btnReprogramar, btnCancelar;
     @FXML private Button btnConfigHorario, btnBloquearDia, btnBloquearSemana;
 

@@ -112,8 +112,8 @@
                         </VBox>
 
                         <VBox spacing="8.0" styleClass="card">
-                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="8 pacientes" /></HBox>
-                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="2 de 8 (25%)" /></HBox>
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label fx:id="hoyProgramadas" styleClass="info-value" text="0 pacientes" /></HBox>
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label fx:id="hoyCompletadas" styleClass="info-value" text="0 de 0 (0%)" /></HBox>
                         </VBox>
                     </VBox>
 
