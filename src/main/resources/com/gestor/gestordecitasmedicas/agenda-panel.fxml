@@ -13,6 +13,9 @@
                 <Label minWidth="0.0" styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" wrapText="true" />
                 <Label minWidth="0.0" styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" wrapText="true" />
             </VBox>
+            <Button fx:id="btnConfigHorario" minWidth="-Infinity" onAction="#onConfigurarHorario" styleClass="btn-secondary" text="Horario y bloqueos">
+                <graphic><FontIcon iconLiteral="fi-rr-settings" /></graphic>
+            </Button>
             <Button fx:id="btnAgendar" minWidth="-Infinity" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
                 <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
             </Button>
@@ -34,7 +37,7 @@
                             <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                             <tooltip><Tooltip text="Semana siguiente" /></tooltip>
                         </Button>
-                        <Button minWidth="-Infinity" styleClass="btn-secondary" text="Bloquear semana">
+                        <Button fx:id="btnBloquearSemana" minWidth="-Infinity" onAction="#onBloquearSemana" styleClass="btn-secondary" text="Bloquear semana">
                             <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                         </Button>
                     </HBox>
@@ -83,7 +86,7 @@
                                     <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.32" />
                                 </columnConstraints>
                             </GridPane>
-                            <Button maxWidth="Infinity" styleClass="btn-secondary" text="Bloquear día">
+                            <Button fx:id="btnBloquearDia" maxWidth="Infinity" onAction="#onBloquearDia" styleClass="btn-secondary" text="Bloquear día">
                                 <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                             </Button>
                         </VBox>

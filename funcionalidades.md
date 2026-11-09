@@ -26,6 +26,7 @@ Plan técnico detallado de los pendientes: [Plan de implementación por entregas
 |---|---|---|
 | Alta del paciente | `PacienteEditarController` → `Paciente`; creación de `Expediente` vacío | Conectado. También puede iniciarse desde la agenda; al guardar se retoma la cita con fecha/hora y paciente preseleccionado. La creación de paciente y expediente son operaciones separadas; existe aviso si solo se registra el paciente. |
 | Agendar/reprogramar/cancelar | `AgendaController` → CRUD de `Cita` | Conectado. Si el paciente no está registrado, la agenda abre el alta y después reabre la cita. La cita referencia la CURP del paciente y conserva fecha/hora; no duplica sus datos demográficos. |
+| Horario y bloqueos | `AgendaController` → botón admin → `HorarioConfigController` | Conectado y visible solo para administrador. Configura tramos semanales con varios bloques por día y bloqueos por rango de fecha/hora. Las citas duran 60 minutos y no se agendan fuera de los tramos activos ni dentro de bloqueos. |
 | Iniciar atención | `AgendaController.onIniciarCita` → `CitaController.cargarCita` | Conectado para el rol administrador. Carga al paciente desde SQLite y signos de una receta previa, si existe. Las citas canceladas no se inician desde la ficha. |
 | Recepción y signos | `cita-panel.fxml` → `leerSignos()` → `ConsultaController.cargarConsulta` | Conectado para signos de una atención nueva. El motivo de recepción no se transfiere; revisar también la prioridad de signos al reabrir. |
 | Consulta y receta | `consulta-panel.fxml` → `guardarAtencion` del controlador | Conectado. Captura clínica separada, identidad automática de solo lectura y medicamentos estructurados. |
@@ -291,13 +292,21 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 
 ### Horarios
 
-- `[ ]` Implementar CRUD de horarios en `BaseDatos`.
-- `[ ]` Conectar la configuración de horarios con la agenda médica.
+- `[x]` Implementar CRUD de horarios en `BaseDatos`.
+- `[x]` Conectar la configuración de horarios con la agenda médica.
+- `[x]` Permitir varios tramos por día y generar citas de 60 minutos.
+- `[x]` Restringir la configuración al rol administrador y abrirla desde la agenda.
+
+Interfaz conectada: `HorarioConfigController`, `AgendaController`, `agenda-panel.fxml`.
 
 ### Horarios bloqueados
 
-- `[ ]` Implementar CRUD de horarios bloqueados en `BaseDatos`.
-- `[ ]` Bloquear periodos en la agenda y evitar citas en esos horarios.
+- `[x]` Implementar CRUD de horarios bloqueados en `BaseDatos`.
+- `[x]` Bloquear periodos en la agenda y evitar citas en esos horarios.
+- `[x]` Usar rangos de fecha y hora con motivo, independientes de un tramo semanal.
+- `[x]` Rechazar bloqueos o cambios de horario que dejen citas activas en el periodo.
+
+Interfaz conectada: `HorarioConfigController`, `AgendaController`, `PlanificadorAgenda`, `MigracionAgenda`.
 
 ## Roadmap por fases
 
@@ -309,11 +318,19 @@ Método existente sin uso en la interfaz: `eliminarExpediente`.
 | Fase 4 | Cita en curso y signos vitales | Parcial: captura y guardado con la receta; CRUD independiente pendiente |
 | Fase 5 | Consulta, receta y medicamentos | Parcial: captura, guardado transaccional y PDF conectados; pendientes de configuración, acceso, emisión y custodia detallados en Receta |
 | Fase 6 | Expediente completo | Parcial: edición, historial y PDF conectados; eliminación independiente pendiente |
-| Fase 7 | Administrador y horarios | Pendiente |
+| Fase 7 | Administrador y horarios | Parcial: horarios y bloqueos conectados; gestión de administradores pendiente |
 
 ## Registro de cambios
 
 Las entradas antiguas describen el estado de cada fecha. Para el estado actual y sus límites, prevalecen la revisión de integración y los pendientes de este documento.
+
+### 2026-11-09
+
+- Se agregó la configuración de horario semanal y bloqueos desde la agenda, visible solo para administradores.
+- La agenda pasó de horas fijas y citas de 45 minutos a tramos configurables con citas de 60 minutos.
+- Los bloqueos ahora son rangos independientes de fecha/hora con motivo y se migró la tabla anterior.
+- Se impide modificar horarios, eliminarlos o bloquear periodos cuando hay citas activas en el rango; las citas no se cancelan automáticamente.
+- Se agregaron `PlanificadorAgendaTest` (5 pruebas) y `HorarioBaseDatosTest` (3 pruebas); ambas clases pasan de forma aislada.
 
 ### 2026-11-08
 

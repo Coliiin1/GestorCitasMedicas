@@ -34,6 +34,7 @@ build/
 
 ### Credenciales de correo ###
 correo.properties
+db.properties
 
 ### Bases de datos locales y archivos auxiliares de SQLite ###
 *.db
