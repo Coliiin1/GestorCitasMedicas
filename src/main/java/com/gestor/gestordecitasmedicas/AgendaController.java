@@ -42,7 +42,7 @@ import java.util.List;
 public class AgendaController implements PanelControlado, PanelRefrescable {
     @FXML private GridPane calendario, semana;
     @FXML private TextField fichaNombre;
-    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel, hoyProgramadas, hoyCompletadas;
+    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel;
     @FXML private Button btnAgendar, btnIniciar, btnReprogramar, btnCancelar;
 
     private static final String[] DIAS_CAL = {"L", "M", "X", "J", "V", "S", "D"};
@@ -178,21 +178,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             }
         }
         resumenLabel.setText(resumen(datos));
-        renderResumenHoy();
-    }
-
-    /** Citas de hoy (sin canceladas) y cuántas ya fueron atendidas, leídas de la base de datos. */
-    private void renderResumenHoy() {
-        LocalDate hoy = LocalDate.now();
-        int programadas = 0, atendidas = 0;
-        for (Cita cita : baseDatos.cargarCitasEntre(hoy, hoy)) {
-            if (cita.getEstado() == Estado.CANCELADA) continue;
-            programadas++;
-            if (cita.getEstado() == Estado.ATENDIDA) atendidas++;
-        }
-        hoyProgramadas.setText(programadas + (programadas == 1 ? " paciente" : " pacientes"));
-        int porcentaje = programadas == 0 ? 0 : Math.round(atendidas * 100f / programadas);
-        hoyCompletadas.setText(atendidas + " de " + programadas + " (" + porcentaje + "%)");
     }
 
     private Turno[][] cargarTurnos(LocalDate lunes) {

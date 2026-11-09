@@ -21,6 +21,7 @@ import java.util.Properties;
 public class BaseDatos {
     private String contraseña;
     private static Connection conexion = null;
+    private static String urlActual = null;
 
     private static String url() {
         return System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
@@ -50,11 +51,12 @@ public class BaseDatos {
 
     public static Connection getConexion() {
         try {
-            if (conexion == null || conexion.isClosed()) {
+            String dbUrl = System.getProperty("gestor.db.url");
+            Properties connectionProps = new Properties();
 
+            if (dbUrl == null) {
                 Properties config = cargarConfig();
-
-                String dbUrl = config.getProperty("db.url");
+                dbUrl = config.getProperty("db.url");
                 String password = config.getProperty("db.password");
 
                 if (dbUrl == null || password == null || password.trim().isEmpty()) {
@@ -65,25 +67,35 @@ public class BaseDatos {
 
                     System.exit(1);
                 }
-
-                Properties connectionProps = new Properties();
                 connectionProps.setProperty("password", password);
-
-                Class.forName("org.sqlite.JDBC");
-
-                conexion = DriverManager.getConnection(dbUrl, connectionProps);
-                System.out.println("Conexión segura a la base de datos SQLite establecida con éxito.");
-
-                try (Statement stmt = conexion.createStatement()) {
-                    stmt.execute("PRAGMA foreign_keys = ON;");
-                }
-
-                inicializarBaseDatos();
             }
+
+            boolean mismaConexion = conexion != null && !conexion.isClosed()
+                    && dbUrl.equals(urlActual);
+            if (mismaConexion) {
+                return conexion;
+            }
+
+            if (conexion != null && !conexion.isClosed()) {
+                cerrarConexion();
+            }
+
+            Class.forName("org.sqlite.JDBC");
+
+            conexion = DriverManager.getConnection(dbUrl, connectionProps);
+            urlActual = dbUrl;
+            System.out.println("Conexión segura a la base de datos SQLite establecida con éxito.");
+
+            try (Statement stmt = conexion.createStatement()) {
+                stmt.execute("PRAGMA foreign_keys = ON;");
+            }
+
+            inicializarBaseDatos();
         } catch (SQLException | ClassNotFoundException e) {
             System.err.println("Error de conexión a la base de datos: " + e.getMessage());
             cerrarConexion();
             conexion = null;
+            urlActual = null;
         }
         return conexion;
     }
@@ -175,10 +187,10 @@ public class BaseDatos {
                         "hora_fin TIME, " +
                         "estado BOOLEAN)",
                 "CREATE TABLE IF NOT EXISTS Horario_bloqueado (" +
-                        "id_horario INTEGER PRIMARY KEY, " +
-                        "fecha_inicio TIMESTAMP, " +
-                        "fecha_fin TIMESTAMP, " +
-                        "FOREIGN KEY (id_horario) REFERENCES Horario(id_horario) ON DELETE CASCADE)"
+                        "id_bloqueo INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "fecha_inicio TIMESTAMP NOT NULL, " +
+                        "fecha_fin TIMESTAMP NOT NULL, " +
+                        "motivo TEXT)"
         };
 
         conexion.setAutoCommit(false);
@@ -187,6 +199,7 @@ public class BaseDatos {
                 stmt.execute(sentencia);
             }
             MigracionClinica.aplicar(conexion);
+            MigracionAgenda.aplicar(conexion);
             insertarAdministradorPorDefecto(stmt);
             conexion.commit();
         } catch (SQLException e) {
@@ -564,6 +577,419 @@ public class BaseDatos {
         resultado.sort(Comparator.comparing(Cita::getFechaCita, Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparingInt(Cita::getIdCita));
         return resultado;
+    }
+
+    public ArrayList<Horario> cargarHorarios() {
+        ArrayList<Horario> horarios = new ArrayList<>();
+        Connection con = getConexion();
+        if (con == null) {
+            return horarios;
+        }
+
+        String sql = "SELECT id_horario, dia, hora_inicio, hora_fin, estado FROM Horario " +
+                "ORDER BY dia, hora_inicio";
+
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Horario horario = new Horario();
+                horario.setIdHorario(rs.getInt("id_horario"));
+                horario.setDia(DiaSemana.desdeNumero(rs.getInt("dia")));
+                horario.setHoraInicio(leerHora(rs.getObject("hora_inicio")));
+                horario.setHoraFin(leerHora(rs.getObject("hora_fin")));
+                horario.setEstado(leerBooleano(rs.getObject("estado")));
+                if (horario.getDia() != null && horario.getHoraInicio() != null
+                        && horario.getHoraFin() != null) {
+                    horarios.add(horario);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al cargar horarios: " + e.getMessage());
+        }
+        return horarios;
+    }
+
+    public ArrayList<Horario> cargarHorariosActivos() {
+        ArrayList<Horario> activos = new ArrayList<>();
+        for (Horario horario : cargarHorarios()) {
+            if (horario.isEstado()) {
+                activos.add(horario);
+            }
+        }
+        return activos;
+    }
+
+    public boolean guardarHorario(Horario horario) {
+        if (!horarioValido(horario)) {
+            return false;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return false;
+        }
+
+        boolean confirmado = false;
+        try {
+            con.setAutoCommit(false);
+
+            if (existeTramoSuperpuesto(con, horario)) {
+                con.rollback();
+                return false;
+            }
+
+            boolean guardado;
+            if (horario.getIdHorario() > 0) {
+                String sql = "UPDATE Horario SET dia = ?, hora_inicio = ?, hora_fin = ?, estado = ? " +
+                        "WHERE id_horario = ?";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setInt(1, horario.getDia().getNumero());
+                    ps.setString(2, horaTexto(horario.getHoraInicio()));
+                    ps.setString(3, horaTexto(horario.getHoraFin()));
+                    ps.setInt(4, horario.isEstado() ? 1 : 0);
+                    ps.setInt(5, horario.getIdHorario());
+                    guardado = ps.executeUpdate() > 0;
+                }
+            } else {
+                String sql = "INSERT INTO Horario (dia, hora_inicio, hora_fin, estado) VALUES (?, ?, ?, ?)";
+                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, horario.getDia().getNumero());
+                    ps.setString(2, horaTexto(horario.getHoraInicio()));
+                    ps.setString(3, horaTexto(horario.getHoraFin()));
+                    ps.setInt(4, horario.isEstado() ? 1 : 0);
+                    guardado = ps.executeUpdate() > 0;
+                    if (guardado) {
+                        try (ResultSet rs = ps.getGeneratedKeys()) {
+                            if (rs.next()) {
+                                horario.setIdHorario(rs.getInt(1));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!guardado) {
+                con.rollback();
+                return false;
+            }
+
+            con.commit();
+            confirmado = true;
+            return true;
+        } catch (SQLException e) {
+            revertir(con, "guardar horario", e);
+        } finally {
+            if (!confirmado) {
+                // La transacción ya se revirtió o se revierte en el catch.
+            }
+            restaurarAutoCommit(con);
+        }
+        return false;
+    }
+
+    public boolean eliminarHorario(int idHorario) {
+        if (idHorario <= 0) {
+            return false;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return false;
+        }
+
+        boolean confirmado = false;
+        try {
+            con.setAutoCommit(false);
+            Horario horario = buscarHorario(con, idHorario);
+            if (horario == null || !citasActivasEnHorario(horario).isEmpty()) {
+                con.rollback();
+                return false;
+            }
+
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM Horario WHERE id_horario = ?")) {
+                ps.setInt(1, idHorario);
+                boolean eliminado = ps.executeUpdate() > 0;
+                if (!eliminado) {
+                    con.rollback();
+                    return false;
+                }
+            }
+
+            con.commit();
+            confirmado = true;
+            return true;
+        } catch (SQLException e) {
+            revertir(con, "eliminar horario", e);
+        } finally {
+            if (!confirmado) {
+                // Sin cambios confirmados.
+            }
+            restaurarAutoCommit(con);
+        }
+        return false;
+    }
+
+    public ArrayList<HorarioBloqueado> cargarBloqueos() {
+        ArrayList<HorarioBloqueado> bloqueos = new ArrayList<>();
+        Connection con = getConexion();
+        if (con == null) {
+            return bloqueos;
+        }
+
+        String sql = "SELECT id_bloqueo, fecha_inicio, fecha_fin, motivo FROM Horario_bloqueado " +
+                "ORDER BY fecha_inicio, id_bloqueo";
+
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                HorarioBloqueado bloqueo = new HorarioBloqueado();
+                bloqueo.setIdHorarioBloqueado(rs.getInt("id_bloqueo"));
+                bloqueo.setFechaInicio(leerLocalDateTime(rs.getObject("fecha_inicio")));
+                bloqueo.setFechaFin(leerLocalDateTime(rs.getObject("fecha_fin")));
+                bloqueo.setMotivo(rs.getString("motivo"));
+                if (bloqueo.getFechaInicio() != null && bloqueo.getFechaFin() != null) {
+                    bloqueos.add(bloqueo);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al cargar bloqueos: " + e.getMessage());
+        }
+        return bloqueos;
+    }
+
+    public ArrayList<HorarioBloqueado> cargarBloqueosEntre(LocalDateTime inicio, LocalDateTime fin) {
+        ArrayList<HorarioBloqueado> resultado = new ArrayList<>();
+        for (HorarioBloqueado bloqueo : cargarBloqueos()) {
+            if (PlanificadorAgenda.seSolapan(inicio, fin,
+                    bloqueo.getFechaInicio(), bloqueo.getFechaFin())) {
+                resultado.add(bloqueo);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean guardarBloqueo(HorarioBloqueado bloqueo) {
+        if (bloqueo == null || bloqueo.getFechaInicio() == null || bloqueo.getFechaFin() == null
+                || !bloqueo.getFechaInicio().isBefore(bloqueo.getFechaFin())) {
+            return false;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return false;
+        }
+
+        boolean confirmado = false;
+        try {
+            con.setAutoCommit(false);
+
+            if (existeBloqueoSuperpuesto(con, bloqueo)
+                    || !citasActivasEnRango(con, bloqueo.getFechaInicio(), bloqueo.getFechaFin()).isEmpty()) {
+                con.rollback();
+                return false;
+            }
+
+            boolean guardado;
+            if (bloqueo.getIdHorarioBloqueado() > 0) {
+                String sql = "UPDATE Horario_bloqueado SET fecha_inicio = ?, fecha_fin = ?, motivo = ? " +
+                        "WHERE id_bloqueo = ?";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
+                    ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
+                    ps.setString(3, bloqueo.getMotivo());
+                    ps.setInt(4, bloqueo.getIdHorarioBloqueado());
+                    guardado = ps.executeUpdate() > 0;
+                }
+            } else {
+                String sql = "INSERT INTO Horario_bloqueado (fecha_inicio, fecha_fin, motivo) VALUES (?, ?, ?)";
+                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
+                    ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
+                    ps.setString(3, bloqueo.getMotivo());
+                    guardado = ps.executeUpdate() > 0;
+                    if (guardado) {
+                        try (ResultSet rs = ps.getGeneratedKeys()) {
+                            if (rs.next()) {
+                                bloqueo.setIdHorarioBloqueado(rs.getInt(1));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!guardado) {
+                con.rollback();
+                return false;
+            }
+
+            con.commit();
+            confirmado = true;
+            return true;
+        } catch (SQLException e) {
+            revertir(con, "guardar bloqueo", e);
+        } finally {
+            if (!confirmado) {
+                // Sin cambios confirmados.
+            }
+            restaurarAutoCommit(con);
+        }
+        return false;
+    }
+
+    public boolean eliminarBloqueo(int idBloqueo) {
+        if (idBloqueo <= 0) {
+            return false;
+        }
+
+        Connection con = getConexion();
+        if (con == null) {
+            return false;
+        }
+
+        try (PreparedStatement ps = con.prepareStatement(
+                "DELETE FROM Horario_bloqueado WHERE id_bloqueo = ?")) {
+            ps.setInt(1, idBloqueo);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar bloqueo: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public ArrayList<Cita> citasActivasEnRango(LocalDateTime inicio, LocalDateTime fin) {
+        Connection con = getConexion();
+        if (con == null) {
+            return new ArrayList<>();
+        }
+        return citasActivasEnRango(con, inicio, fin);
+    }
+
+    public ArrayList<Cita> citasActivasEnHorario(Horario horario) {
+        ArrayList<Cita> resultado = new ArrayList<>();
+        if (horario == null || horario.getDia() == null || horario.getHoraInicio() == null
+                || horario.getHoraFin() == null) {
+            return resultado;
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        for (Cita cita : cargarCitas().values()) {
+            if (cita.getFechaCita() == null || cita.getEstado() == Estado.CANCELADA) {
+                continue;
+            }
+            LocalDateTime inicioCita = LocalDateTime.ofInstant(
+                    cita.getFechaCita().toInstant(), ZoneId.systemDefault());
+            if (inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS).isBefore(ahora)) {
+                continue;
+            }
+            DiaSemana dia = DiaSemana.desdeDayOfWeek(inicioCita.getDayOfWeek());
+            if (dia != horario.getDia()) {
+                continue;
+            }
+            LocalDateTime inicioTramo = inicioCita.toLocalDate().atTime(horario.getHoraInicio());
+            LocalDateTime finTramo = inicioCita.toLocalDate().atTime(horario.getHoraFin());
+            if (PlanificadorAgenda.seSolapan(inicioCita,
+                    inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS),
+                    inicioTramo, finTramo)) {
+                resultado.add(cita);
+            }
+        }
+        return resultado;
+    }
+
+    private ArrayList<Cita> citasActivasEnRango(Connection con, LocalDateTime inicio, LocalDateTime fin) {
+        ArrayList<Cita> resultado = new ArrayList<>();
+        if (inicio == null || fin == null) {
+            return resultado;
+        }
+
+        String sql = "SELECT id_cita, CURP, fecha, estado FROM Cita";
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Cita cita = new Cita();
+                cita.setIdCita(rs.getInt("id_cita"));
+                cita.setCurp(rs.getString("CURP"));
+                cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
+                cita.setEstado(parseEstado(rs.getString("estado")));
+                if (cita.getFechaCita() == null || cita.getEstado() == Estado.CANCELADA) {
+                    continue;
+                }
+                LocalDateTime inicioCita = LocalDateTime.ofInstant(
+                        cita.getFechaCita().toInstant(), ZoneId.systemDefault());
+                if (PlanificadorAgenda.seSolapan(inicioCita,
+                        inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS), inicio, fin)) {
+                    resultado.add(cita);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al cargar citas del rango: " + e.getMessage());
+        }
+        return resultado;
+    }
+
+    private static boolean horarioValido(Horario horario) {
+        return horario != null && horario.getDia() != null
+                && horario.getHoraInicio() != null && horario.getHoraFin() != null
+                && horario.getHoraInicio().isBefore(horario.getHoraFin());
+    }
+
+    private boolean existeTramoSuperpuesto(Connection con, Horario nuevo) throws SQLException {
+        for (Horario existente : buscarHorarios(con)) {
+            if (existente.getIdHorario() != nuevo.getIdHorario() && existente.isEstado()
+                    && PlanificadorAgenda.tramoSeSolapa(existente, nuevo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean existeBloqueoSuperpuesto(Connection con, HorarioBloqueado nuevo) throws SQLException {
+        String sql = "SELECT id_bloqueo, fecha_inicio, fecha_fin FROM Horario_bloqueado " +
+                "WHERE id_bloqueo <> ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, nuevo.getIdHorarioBloqueado());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    LocalDateTime inicio = leerLocalDateTime(rs.getObject("fecha_inicio"));
+                    LocalDateTime fin = leerLocalDateTime(rs.getObject("fecha_fin"));
+                    if (PlanificadorAgenda.seSolapan(nuevo.getFechaInicio(), nuevo.getFechaFin(),
+                            inicio, fin)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private Horario buscarHorario(Connection con, int idHorario) throws SQLException {
+        for (Horario horario : buscarHorarios(con)) {
+            if (horario.getIdHorario() == idHorario) {
+                return horario;
+            }
+        }
+        return null;
+    }
+
+    private ArrayList<Horario> buscarHorarios(Connection con) throws SQLException {
+        ArrayList<Horario> horarios = new ArrayList<>();
+        String sql = "SELECT id_horario, dia, hora_inicio, hora_fin, estado FROM Horario " +
+                "ORDER BY dia, hora_inicio";
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Horario horario = new Horario();
+                horario.setIdHorario(rs.getInt("id_horario"));
+                horario.setDia(DiaSemana.desdeNumero(rs.getInt("dia")));
+                horario.setHoraInicio(leerHora(rs.getObject("hora_inicio")));
+                horario.setHoraFin(leerHora(rs.getObject("hora_fin")));
+                horario.setEstado(leerBooleano(rs.getObject("estado")));
+                if (horario.getDia() != null) {
+                    horarios.add(horario);
+                }
+            }
+        }
+        return horarios;
     }
 
     public boolean insertarExpediente(Expediente expediente) {
@@ -1700,6 +2126,64 @@ public class BaseDatos {
         medicamento.setCantidad(rs.getString("cantidad"));
         medicamento.setGrupoRegulatorio(rs.getString("grupo_regulatorio"));
         return medicamento;
+    }
+
+    private static String horaTexto(java.time.LocalTime hora) {
+        return hora == null ? null : hora.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+    }
+
+    private static java.time.LocalTime leerHora(Object valor) {
+        if (valor == null) {
+            return null;
+        }
+        if (valor instanceof java.time.LocalTime) {
+            return (java.time.LocalTime) valor;
+        }
+        if (valor instanceof java.sql.Time) {
+            return ((java.sql.Time) valor).toLocalTime();
+        }
+        String texto = valor.toString().trim();
+        if (texto.isEmpty()) {
+            return null;
+        }
+        try {
+            return java.time.LocalTime.parse(texto.length() > 8 ? texto.substring(0, 8) : texto);
+        } catch (java.time.format.DateTimeParseException e) {
+            String[] partes = texto.split(":");
+            if (partes.length >= 2) {
+                try {
+                    return java.time.LocalTime.of(Integer.parseInt(partes[0].trim()),
+                            Integer.parseInt(partes[1].trim()));
+                } catch (NumberFormatException | java.time.DateTimeException ignored) {
+                    return null;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static boolean leerBooleano(Object valor) {
+        if (valor == null) {
+            return false;
+        }
+        if (valor instanceof Boolean) {
+            return (Boolean) valor;
+        }
+        if (valor instanceof Number) {
+            return ((Number) valor).intValue() != 0;
+        }
+        String texto = valor.toString().trim().toLowerCase();
+        return "1".equals(texto) || "true".equals(texto) || "si".equals(texto) || "sí".equals(texto);
+    }
+
+    private static java.time.LocalDateTime leerLocalDateTime(Object valor) {
+        java.util.Date fecha = leerFechaHora(valor);
+        return fecha == null ? null : java.time.LocalDateTime.ofInstant(
+                fecha.toInstant(), ZoneId.systemDefault());
+    }
+
+    private static java.sql.Timestamp toSqlTimestamp(java.time.LocalDateTime fecha) {
+        return fecha == null ? null : java.sql.Timestamp.valueOf(fecha);
     }
 
     private static java.sql.Date toSqlDate(java.util.Date fecha) {

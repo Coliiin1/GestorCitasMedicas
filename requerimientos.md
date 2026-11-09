@@ -117,16 +117,19 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 
 ### RF-13 Horarios de atención
 
-- **Estado:** Pendiente.
-- La tabla `Horario` y la clase `Horario` existen, pero no tienen CRUD ni conexión con la agenda.
-- Hoy la agenda usa horas de inicio fijas (ver RN-07).
-- Pendiente: CRUD de horarios y uso de los horarios configurados en la agenda.
+- **Estado:** Implementado (`HorarioConfigController` + `AgendaController` + `BaseDatos`).
+- El administrador configura tramos semanales por día, con varios tramos por día (por ejemplo, mañana y tarde) y estado activo/inactivo.
+- La agenda usa los tramos activos para generar las horas disponibles en intervalos de una hora (ver RN-07).
+- La configuración se abre desde el botón **Horario y bloqueos** de la agenda y solo es visible para el rol administrador.
+- La base existente se siembra una sola vez con lunes a viernes de 09:00 a 13:00 y de 16:00 a 18:00 para conservar el comportamiento previo.
 
 ### RF-14 Bloqueo de horarios
 
-- **Estado:** Pendiente.
-- La tabla `Horario_bloqueado` y la clase `HorarioBloqueado` existen, sin CRUD ni efecto en la agenda.
-- Pendiente: bloquear periodos y evitar citas dentro de ellos.
+- **Estado:** Implementado (`HorarioConfigController` + `AgendaController` + `BaseDatos`).
+- Los bloqueos son rangos independientes de fecha y hora, con motivo opcional, y ya no dependen de un tramo semanal.
+- La migración reconstruye la tabla anterior `Horario_bloqueado` al esquema `id_bloqueo`, `fecha_inicio`, `fecha_fin` y `motivo`.
+- La agenda marca los días bloqueados y no permite agendar dentro de un bloqueo.
+- Si existen citas activas en el periodo a bloquear, el bloqueo se rechaza y se pide reprogramar o cancelar primero; las citas no se cancelan automáticamente.
 
 ### RF-15 Confirmación de cita por correo
 
@@ -152,8 +155,8 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 
 ### Agenda y citas
 
-- **RN-07 Horarios.** Una cita dura 45 minutos. Las horas de inicio disponibles son 09:00, 10:00, 11:00, 12:00, 16:00 y 17:00. Este conjunto está fijo en `AgendaController`.
-- **RN-08 Horario ocupado.** No puede haber dos citas no canceladas en la misma fecha y en la misma hora. La comparación se hace por hora completa.
+- **RN-07 Horarios.** Una cita dura 60 minutos. Las horas de inicio se generan por hora completa dentro de cada tramo activo configurado; puede haber varios tramos por día. No se genera un inicio si la cita completa no cabe en el tramo.
+- **RN-08 Horario ocupado.** No puede haber dos citas no canceladas que se solapen en fecha y hora. Los intervalos se comparan como `[inicio, fin)`: se cruzan cuando `inicioA < finB` y `finA > inicioB`. Tampoco se puede agendar dentro de un bloqueo ni modificar un tramo o bloqueo que deje citas activas fuera de su horario.
 - **RN-09 Citas canceladas.** Una cita cancelada no ocupa su horario. Se puede reprogramar, y al hacerlo vuelve al estado `AGENDADA`.
 - **RN-10 Citas atendidas.** Una cita atendida no se puede cancelar ni reprogramar.
 - **RN-11 Citas canceladas en curso.** No se puede iniciar la consulta de una cita cancelada.
@@ -186,7 +189,6 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 |---|---|---|
 | Alta | Validar credenciales e imponer permisos por rol | RF-01, RNF-05 |
 | Alta | Conectar la finalización de consulta con `finalizarConsulta` | RF-07, RN-13 |
-| Media | CRUD de horarios y horarios bloqueados en la agenda | RF-13, RF-14 |
 | Media | Gestión de administradores | RF-12 |
 | Baja | Eliminar expediente desde la interfaz | RF-04 |
 | Baja | CRUD independiente de signos vitales y actualización individual de medicamentos | RF-10, RF-11 |
@@ -204,6 +206,6 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 | RF-07, RF-09, RF-11 | `ConsultaController`, `consulta-panel.fxml`, `Receta`, `Medicamento`, `SignosVitales` |
 | RF-08 | `ExpedienteController`, `Consulta` |
 | RF-12 | `Administrador` (métodos sin implementar) |
-| RF-13, RF-14 | `Horario`, `HorarioBloqueado`, `DiaSemana` (sin uso en la interfaz) |
+| RF-13, RF-14 | `HorarioConfigController`, `AgendaController`, `PlanificadorAgenda`, `MigracionAgenda`, `Horario`, `HorarioBloqueado`, `DiaSemana` |
 | RF-15 | `ControladorCorreo` |
 | Persistencia | `BaseDatos` |

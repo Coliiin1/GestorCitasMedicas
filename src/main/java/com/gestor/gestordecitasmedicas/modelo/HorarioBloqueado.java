@@ -6,6 +6,7 @@ public class HorarioBloqueado {
     private int idHorarioBloqueado;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
+    private String motivo;
 
     public int getIdHorarioBloqueado() {
         return idHorarioBloqueado;
@@ -29,5 +30,13 @@ public class HorarioBloqueado {
 
     public void setFechaFin(LocalDateTime fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    public String getMotivo() {
+        return motivo;
+    }
+
+    public void setMotivo(String motivo) {
+        this.motivo = motivo;
     }
 }
