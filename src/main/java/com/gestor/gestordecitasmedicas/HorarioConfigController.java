@@ -6,6 +6,7 @@ import com.gestor.gestordecitasmedicas.modelo.DiaSemana;
 import com.gestor.gestordecitasmedicas.modelo.Horario;
 import com.gestor.gestordecitasmedicas.modelo.HorarioBloqueado;
 import com.gestor.gestordecitasmedicas.modelo.PlanificadorAgenda;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
@@ -20,7 +21,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -62,7 +62,6 @@ public final class HorarioConfigController {
     private ComboBox<LocalTime> bloqueoHoraInicio;
     private ComboBox<LocalTime> bloqueoHoraFin;
     private CheckBox bloqueoTodoElDia;
-    private TextField bloqueoMotivo;
     private Button btnGuardarBloqueo;
     private HorarioBloqueado bloqueoEditando;
 
@@ -88,7 +87,7 @@ public final class HorarioConfigController {
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
 
         Label titulo = new Label("HORARIO DE TRABAJO Y FECHAS BLOQUEADAS");
-        titulo.getStyleClass().add("field-label");
+        titulo.getStyleClass().add("card-title");
         Label subtitulo = new Label("Define los tramos semanales y las excepciones de la agenda.");
         subtitulo.getStyleClass().add("card-subtitle");
         VBox encabezado = new VBox(4, titulo, subtitulo);
@@ -96,6 +95,8 @@ public final class HorarioConfigController {
         dialogo.getDialogPane().setHeader(encabezado);
 
         TabPane tabs = new TabPane();
+        tabs.getStyleClass().add("expediente-tabs");
+        tabs.setPadding(new Insets(16, 24, 0, 24));
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         Tab tabHorario = new Tab("Horario semanal", panelHorario());
         Tab tabBloqueos = new Tab("Fechas bloqueadas", panelBloqueos());
@@ -189,10 +190,6 @@ public final class HorarioConfigController {
             bloqueoHoraFin.setDisable(seleccionado);
         });
 
-        bloqueoMotivo = new TextField();
-        bloqueoMotivo.setPromptText("Motivo (opcional)");
-        bloqueoMotivo.getStyleClass().add("search-field");
-
         btnGuardarBloqueo = new Button("Agregar bloqueo");
         btnGuardarBloqueo.getStyleClass().add("btn-primary");
         btnGuardarBloqueo.setOnAction(e -> guardarBloqueo());
@@ -205,11 +202,10 @@ public final class HorarioConfigController {
         formulario.setHgap(12);
         formulario.setVgap(8);
         formulario.add(campo("DESDE", bloqueoDesde), 0, 0);
-        formulario.add(campo("HASTA", bloqueoHasta), 1, 0);
-        formulario.add(campo("HORA INICIO", bloqueoHoraInicio), 2, 0);
+        formulario.add(campo("HORA INICIO", bloqueoHoraInicio), 1, 0);
+        formulario.add(campo("HASTA", bloqueoHasta), 2, 0);
         formulario.add(campo("HORA FIN", bloqueoHoraFin), 3, 0);
         formulario.add(bloqueoTodoElDia, 0, 1);
-        formulario.add(campo("MOTIVO", bloqueoMotivo), 1, 1, 3, 1);
         HBox acciones = new HBox(8, btnGuardarBloqueo, limpiar);
         acciones.setAlignment(Pos.CENTER_LEFT);
 
@@ -305,12 +301,7 @@ public final class HorarioConfigController {
         Label nombre = new Label(PlanificadorAgenda.formatoRango(
                 bloqueo.getFechaInicio(), bloqueo.getFechaFin()));
         nombre.getStyleClass().add("row-name");
-        String motivoTexto = bloqueo.getMotivo() == null || bloqueo.getMotivo().trim().isEmpty()
-                ? "Sin motivo" : bloqueo.getMotivo().trim();
-        Label motivo = new Label(motivoTexto);
-        motivo.getStyleClass().add("hint");
-
-        VBox datos = new VBox(4, nombre, motivo);
+        VBox datos = new VBox(4, nombre);
 
         Region separador = new Region();
         HBox.setHgrow(separador, Priority.ALWAYS);
@@ -468,7 +459,6 @@ public final class HorarioConfigController {
         bloqueo.setIdHorarioBloqueado(idEditando);
         bloqueo.setFechaInicio(inicio);
         bloqueo.setFechaFin(fin);
-        bloqueo.setMotivo(bloqueoMotivo.getText() == null ? null : bloqueoMotivo.getText().trim());
 
         if (!baseDatos.guardarBloqueo(bloqueo)) {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar",
@@ -500,7 +490,6 @@ public final class HorarioConfigController {
             seleccionarHora(bloqueoHoraInicio, inicio.toLocalTime());
             seleccionarHora(bloqueoHoraFin, fin.toLocalTime());
         }
-        bloqueoMotivo.setText(bloqueo.getMotivo() == null ? "" : bloqueo.getMotivo());
         btnGuardarBloqueo.setText("Guardar cambios");
     }
 
@@ -530,7 +519,6 @@ public final class HorarioConfigController {
         bloqueoTodoElDia.setSelected(true);
         seleccionarHora(bloqueoHoraInicio, LocalTime.of(9, 0));
         seleccionarHora(bloqueoHoraFin, LocalTime.of(18, 0));
-        bloqueoMotivo.clear();
         btnGuardarBloqueo.setText("Agregar bloqueo");
     }
 

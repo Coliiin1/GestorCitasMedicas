@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
+import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -49,10 +50,16 @@ public class LoginController {
 
     @FXML
     private void onIngresar() {
-        // Provisional: el rol se decide por el texto del usuario ("admin" o "asis"), sin contraseña.
-        String rol = txtUsuario.getText() == null ? "" : txtUsuario.getText().trim().toLowerCase();
-        if (!rol.equals("admin") && !rol.equals("asis")) {
-            new Alert(Alert.AlertType.WARNING, "Usuario no válido. Usa \"admin\" o \"asis\".").showAndWait();
+        String rol = null;
+        try {
+            String id = txtUsuario.getText().trim().replaceFirst("^#", "");
+            rol = new BaseDatos().autenticar(Integer.parseInt(id), password.getText());
+        } catch (NumberFormatException ignorada) {
+            // usuario no numérico: se trata como credenciales incorrectas
+        }
+        if (rol == null) {
+            password.clear();
+            new Alert(Alert.AlertType.WARNING, "Usuario o contraseña incorrectos.").showAndWait();
             return;
         }
         try {

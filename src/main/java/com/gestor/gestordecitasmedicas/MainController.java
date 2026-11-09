@@ -57,6 +57,15 @@ public class MainController {
         ir((String) ((Button) e.getSource()).getUserData());
     }
 
+    @FXML
+    private void onCerrarSesion() {
+        try {
+            contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("login-view.fxml")).load());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public void ir(String fxml) {
         if (!destinoPermitido(fxml)) return;
         Node panel = obtenerPanel(fxml);

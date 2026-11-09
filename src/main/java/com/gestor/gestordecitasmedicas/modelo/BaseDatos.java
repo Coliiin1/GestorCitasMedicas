@@ -307,6 +307,32 @@ public class BaseDatos {
         return false;
     }
 
+    /** Devuelve "admin", "asis" o null si las credenciales no coinciden. */
+    public String autenticar(int id, String contrasena) {
+        Connection con = getConexion();
+        if (con == null || contrasena == null || contrasena.isEmpty()) {
+            return null;
+        }
+        String[][] tablas = {
+                {"Administrador", "id_administrador", "admin"},
+                {"Asistente", "id_asistente", "asis"}};
+        for (String[] t : tablas) {
+            String sql = "SELECT 1 FROM " + t[0] + " WHERE " + t[1] + " = ? AND \"contraseña\" = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setInt(1, id);
+                ps.setString(2, contrasena);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return t[2];
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Error al autenticar: " + e.getMessage());
+            }
+        }
+        return null;
+    }
+
     public ArrayList<Asistente> cargarAsistentes() {
         ArrayList<Asistente> asistentes = new ArrayList<>();
         Connection con = getConexion();
@@ -736,7 +762,7 @@ public class BaseDatos {
             return bloqueos;
         }
 
-        String sql = "SELECT id_bloqueo, fecha_inicio, fecha_fin, motivo FROM Horario_bloqueado " +
+        String sql = "SELECT id_bloqueo, fecha_inicio, fecha_fin FROM Horario_bloqueado " +
                 "ORDER BY fecha_inicio, id_bloqueo";
 
         try (PreparedStatement ps = con.prepareStatement(sql);
@@ -746,7 +772,6 @@ public class BaseDatos {
                 bloqueo.setIdHorarioBloqueado(rs.getInt("id_bloqueo"));
                 bloqueo.setFechaInicio(leerLocalDateTime(rs.getObject("fecha_inicio")));
                 bloqueo.setFechaFin(leerLocalDateTime(rs.getObject("fecha_fin")));
-                bloqueo.setMotivo(rs.getString("motivo"));
                 if (bloqueo.getFechaInicio() != null && bloqueo.getFechaFin() != null) {
                     bloqueos.add(bloqueo);
                 }
@@ -791,21 +816,19 @@ public class BaseDatos {
 
             boolean guardado;
             if (bloqueo.getIdHorarioBloqueado() > 0) {
-                String sql = "UPDATE Horario_bloqueado SET fecha_inicio = ?, fecha_fin = ?, motivo = ? " +
+                String sql = "UPDATE Horario_bloqueado SET fecha_inicio = ?, fecha_fin = ? " +
                         "WHERE id_bloqueo = ?";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
                     ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
-                    ps.setString(3, bloqueo.getMotivo());
-                    ps.setInt(4, bloqueo.getIdHorarioBloqueado());
+                    ps.setInt(3, bloqueo.getIdHorarioBloqueado());
                     guardado = ps.executeUpdate() > 0;
                 }
             } else {
-                String sql = "INSERT INTO Horario_bloqueado (fecha_inicio, fecha_fin, motivo) VALUES (?, ?, ?)";
+                String sql = "INSERT INTO Horario_bloqueado (fecha_inicio, fecha_fin) VALUES (?, ?)";
                 try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
                     ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
-                    ps.setString(3, bloqueo.getMotivo());
                     guardado = ps.executeUpdate() > 0;
                     if (guardado) {
                         try (ResultSet rs = ps.getGeneratedKeys()) {

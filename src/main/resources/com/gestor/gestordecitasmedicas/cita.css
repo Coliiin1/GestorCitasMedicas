@@ -106,6 +106,16 @@
     -fx-icon-color: white;
 }
 
+.nav-logout {
+    -fx-background-color: #e11d48;
+    -fx-text-fill: white;
+}
+
+.nav-logout:hover {
+    -fx-background-color: #be123c;
+    -fx-text-fill: white;
+}
+
 .live-dot {
     -fx-icon-color: #22c55e;
 }
@@ -844,7 +854,9 @@
 
 .cal-day,
 .cal-other,
-.cal-sel {
+.cal-sel,
+.cal-off,
+.cal-blocked {
     -fx-font-size: 12px;
     -fx-padding: 6;
     -fx-background-radius: 8;
@@ -1126,6 +1138,11 @@
 /* Combo y selector de fecha del diálogo de cita usan .combo-field / .date-field. */
 .expediente-editor .form-body {
     -fx-padding: 20 24;
+}
+
+/* Dentro de pestañas el TabPane ya aporta el margen lateral. */
+.expediente-tabs .form-body {
+    -fx-padding: 0 0 8 0;
 }
 
 /* Botones inferiores alineados con los bordes izquierdo y derecho de los campos. */

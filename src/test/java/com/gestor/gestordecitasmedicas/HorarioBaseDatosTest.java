@@ -95,7 +95,6 @@ class HorarioBaseDatosTest {
         HorarioBloqueado bloqueo = new HorarioBloqueado();
         bloqueo.setFechaInicio(LocalDateTime.of(2026, 12, 7, 9, 0));
         bloqueo.setFechaFin(LocalDateTime.of(2026, 12, 7, 13, 0));
-        bloqueo.setMotivo("Junta médica");
         assertFalse(bd.guardarBloqueo(bloqueo));
         assertTrue(bd.cargarBloqueos().isEmpty());
 
@@ -104,7 +103,6 @@ class HorarioBaseDatosTest {
 
         assertTrue(bd.guardarBloqueo(bloqueo));
         assertEquals(1, bd.cargarBloqueos().size());
-        assertEquals("Junta médica", bd.cargarBloqueos().get(0).getMotivo());
         assertTrue(bd.eliminarBloqueo(bloqueo.getIdHorarioBloqueado()));
     }
 
