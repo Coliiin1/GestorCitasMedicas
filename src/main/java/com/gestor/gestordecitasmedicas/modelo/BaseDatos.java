@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import javax.swing.*;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,14 +28,22 @@ public class BaseDatos {
 
     private static Properties cargarConfig() {
         Properties p = new Properties();
-        try (InputStream in = BaseDatos.class.getResourceAsStream("/db.properties")) {
-            if (in != null) {
-                p.load(in);
+        java.nio.file.Path archivo = java.nio.file.Paths.get("db.properties");
+
+        try {
+            if (java.nio.file.Files.exists(archivo)) {
+                // Lee desde la raíz del proyecto (donde lo tienes ahora)
+                try (InputStream in = java.nio.file.Files.newInputStream(archivo)) {
+                    p.load(in);
+                }
             } else {
-                System.err.println("Advertencia: No se encontró db.properties.");
+                // Plan de respaldo: busca en src/main/resources
+                try (InputStream in = BaseDatos.class.getResourceAsStream("/db.properties")) {
+                    if (in != null) p.load(in);
+                }
             }
-        } catch (Exception e) {
-            System.err.println("Error al cargar configuración: " + e.getMessage());
+        } catch (java.io.IOException e) {
+            System.err.println("No se pudo leer db.properties: " + e.getMessage());
         }
         return p;
     }
@@ -42,16 +51,23 @@ public class BaseDatos {
     public static Connection getConexion() {
         try {
             if (conexion == null || conexion.isClosed()) {
-                // A. Cargar la configuración
+
                 Properties config = cargarConfig();
 
-                String dbUrl = config.getProperty("db.url", url());
-                String password = config.getProperty("db.password", "");
+                String dbUrl = config.getProperty("db.url");
+                String password = config.getProperty("db.password");
+
+                if (dbUrl == null || password == null || password.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null,
+                            "Falta el archivo de configuración db.properties o la contraseña.\nEl sistema se cerrará por seguridad.",
+                            "Error Crítico de Seguridad",
+                            JOptionPane.ERROR_MESSAGE);
+
+                    System.exit(1);
+                }
 
                 Properties connectionProps = new Properties();
-                if (password != null && !password.trim().isEmpty()) {
-                    connectionProps.setProperty("password", password);
-                }
+                connectionProps.setProperty("password", password);
 
                 Class.forName("org.sqlite.JDBC");
 
