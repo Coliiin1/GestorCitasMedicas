@@ -60,10 +60,7 @@ public final class ValidacionClinica {
         List<String> errores = receta(r, requiereMedicamentos);
         if (c == null) { errores.add("Falta la nota de evolución."); return errores; }
         requerido(errores, "padecimiento actual", c.getPadecimiento());
-        requerido(errores, "evolución del cuadro clínico", c.getEvolucion());
         requerido(errores, "exploración física", c.getExploracionFisica());
-        requerido(errores, "resultados de estudios o constancia de que no se solicitaron", c.getResultadosEstudios());
-        requerido(errores, "pronóstico", c.getPronostico());
         requerido(errores, "tratamiento, indicaciones y seguimiento", c.getIndicaciones());
         requerido(errores, "nombre completo de quien elabora la nota", c.getNombreMedico());
         return errores;

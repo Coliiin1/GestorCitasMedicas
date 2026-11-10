@@ -81,7 +81,8 @@ class FormatoClinicoTest {
         Receta r = recetaCompleta(); r.getMedicamentos().clear(); Consulta c = nota(r);
         assertTrue(ValidacionClinica.atencion(c,r,false).isEmpty());
         assertFalse(ValidacionClinica.atencion(c,r,true).isEmpty());
-        c.setPronostico(""); assertTrue(ValidacionClinica.atencion(c,r,false).stream().anyMatch(e->e.contains("pronóstico")));
+        c.setEvolucion(""); c.setResultadosEstudios(""); c.setPronostico("");
+        assertTrue(ValidacionClinica.atencion(c,r,false).isEmpty());
     }
 
     @Test void guardaBorradorYFinalizaConSnapshotsYVersionesPersistentes() throws Exception {

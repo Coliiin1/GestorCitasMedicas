@@ -43,7 +43,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private VBox medicamentosBox;
     @FXML private Button btnHistorial, btnVolver, btnGuardarPdf, btnFinalizar, btnAgregarMedicamento;
 
-    @FXML private TextArea txtPadecimiento, txtExploracion, txtEstudios, txtPronostico;
+    @FXML private TextArea txtPadecimiento, txtExploracion, txtEstudios;
     @FXML private TextField txtNombrePaciente, txtEdadPaciente, txtSexoPaciente;
     private Consulta consulta;
 
@@ -104,7 +104,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         txtPadecimiento.clear();
         txtExploracion.clear();
         txtEstudios.clear();
-        txtPronostico.clear();
 
         if (receta != null) {
             if (receta.getSignosVitales() != null) {
@@ -127,7 +126,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             txtEvolucion.setText(consulta.getEvolucion());
             txtExploracion.setText(consulta.getExploracionFisica());
             txtEstudios.setText(consulta.getResultadosEstudios());
-            txtPronostico.setText(consulta.getPronostico());
             txtIndicaciones.setText(consulta.getIndicaciones());
         }
         if (filas.isEmpty()) {
@@ -171,7 +169,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         txtPadecimiento.clear();
         txtExploracion.clear();
         txtEstudios.clear();
-        txtPronostico.clear();
         txtNombrePaciente.clear();
         txtEdadPaciente.clear();
         txtSexoPaciente.clear();
@@ -376,7 +373,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         nota.setEvolucion(valor(txtEvolucion.getText()));
         nota.setExploracionFisica(valor(txtExploracion.getText()));
         nota.setResultadosEstudios(valor(txtEstudios.getText()));
-        nota.setPronostico(valor(txtPronostico.getText()));
         nota.setDiagnostico(destino.getDiagnostico());
         nota.setIndicaciones(destino.getIndicaciones());
         nota.setNombreMedico(destino.getNombreMedico());

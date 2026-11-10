@@ -77,11 +77,9 @@
                     <TextArea fx:id="txtPadecimiento" prefRowCount="2" wrapText="true" styleClass="reason-area" />
                     <Label styleClass="caption" text="Exploración física" />
                     <TextArea fx:id="txtExploracion" prefRowCount="2" wrapText="true" styleClass="reason-area" />
-                    <Label styleClass="caption" text="Resultados relevantes de estudios (o indicar que no se solicitaron)" />
+                    <Label styleClass="caption" text="Resultados relevantes de estudios (opcional)" />
                     <TextArea fx:id="txtEstudios" prefRowCount="2" wrapText="true" styleClass="reason-area" />
-                    <Label styleClass="caption" text="Pronóstico" />
-                    <TextArea fx:id="txtPronostico" prefRowCount="2" wrapText="true" styleClass="reason-area" />
-                    <Label styleClass="caption" text="EVOLUCIÓN Y ACTUALIZACIÓN DEL CUADRO CLÍNICO" />
+                    <Label styleClass="caption" text="EVOLUCIÓN Y ACTUALIZACIÓN DEL CUADRO CLÍNICO (OPCIONAL)" />
                     <TextArea fx:id="txtEvolucion" prefRowCount="4" promptText="Actualización del cuadro clínico, evolución y justificación del tratamiento..." styleClass="reason-area" wrapText="true" />
                 </VBox>
 

@@ -211,7 +211,7 @@ class ExpedienteTest {
             fecha.setText(fechaValida);
             vistaEditor.applyCss(); vistaEditor.layout();
             assertEquals(5, campos.lookupAll(".section-label").size());
-            assertEquals(23, campos.lookupAll(".field-label").size());
+            assertEquals(24, campos.lookupAll(".field-label").size());
             assertEquals("Tipo de Establecimiento", ((Label) campos.lookupAll(".field-label").iterator().next()).getText());
             assertEquals("Ej. Faringitis aguda.", ((javafx.scene.control.TextInputControl) campos.lookup("#diagnostico")).getPromptText());
             ImageIO.write(SwingFXUtils.fromFXImage(vistaEditor.snapshot(null, null), null), "png",
@@ -294,7 +294,7 @@ class ExpedienteTest {
         assertFalse(loader.getNamespace().containsKey("txtNombreEstablecimiento"));
         String[][] campos = {{"txtDiagnostico","Diagnóstico independiente"}, {"txtPadecimiento","Padecimiento actual"},
                 {"txtEvolucion","Evolución independiente"}, {"txtExploracion","Exploración física"}, {"txtEstudios","Sin estudios solicitados"},
-                {"txtPronostico","Pronóstico de prueba"}, {"txtIndicaciones","Indicaciones independientes"}};
+                {"txtIndicaciones","Indicaciones independientes"}};
         for(String[] campo:campos) {
             javafx.scene.control.TextInputControl entrada=(javafx.scene.control.TextInputControl) loader.getNamespace().get(campo[0]);
             assertNotNull(entrada,campo[0]); entrada.setText(campo[1]);

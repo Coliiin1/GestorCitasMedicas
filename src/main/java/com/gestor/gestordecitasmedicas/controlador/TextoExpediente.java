@@ -83,6 +83,10 @@ public final class TextoExpediente {
         return periodo.getYears() + " años, " + periodo.getMonths() + " meses, " + periodo.getDays() + " días";
     }
 
+    private static String opcional(String etiqueta, String texto) {
+        return texto == null || texto.trim().isEmpty() ? "" : "\n" + etiqueta + ": " + texto;
+    }
+
     public static String consultas(Expediente e) {
         StringBuilder texto = new StringBuilder();
         for (Consulta c : e.getConsultas()) {
@@ -95,11 +99,11 @@ public final class TextoExpediente {
                     .append(" | Expediente: ").append(c.getIdExpediente())
                     .append("\nMotivo: ").append(valor(c.getMotivo()))
                     .append("\nPadecimiento: ").append(valor(c.getPadecimiento()))
-                    .append("\nEvolución: ").append(valor(c.getEvolucion()))
+                    .append(opcional("Evolución", c.getEvolucion()))
                     .append("\nExploración física: ").append(valor(c.getExploracionFisica()))
-                    .append("\nResultados de estudios: ").append(valor(c.getResultadosEstudios()))
+                    .append(opcional("Resultados de estudios", c.getResultadosEstudios()))
                     .append("\nDiagnósticos: ").append(valor(c.getDiagnostico()))
-                    .append("\nPronóstico: ").append(valor(c.getPronostico()))
+                    .append(opcional("Pronóstico", c.getPronostico()))
                     .append("\nTratamiento e indicaciones: ").append(valor(c.getIndicaciones()))
                     .append("\nObservaciones previas: ").append(valor(c.getObservaciones()))
                     .append("\nAutor: ").append(valor(c.getNombreMedico()))
