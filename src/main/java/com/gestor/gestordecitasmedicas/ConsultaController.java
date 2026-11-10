@@ -161,6 +161,15 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         habilitar(cita != null);
     }
 
+    public boolean enCurso() {
+        return cita != null;
+    }
+
+    /** Descarta la atención en curso (sin guardar). */
+    public void abandonar() {
+        limpiar();
+    }
+
     @Override
     public void refrescar() {
         if (cita == null) {
@@ -290,7 +299,8 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         });
         Button eliminar = new Button("Eliminar medicamento");
         eliminar.getStyleClass().addAll("btn-icon", "btn-icon-danger");
-        eliminar.setOnAction(e -> {
+        // btn-icon fija 36 px de ancho (pensado para iconos); con texto se colapsaba, así que se libera el ancho.
+        eliminar.setStyle("-fx-min-width: USE_PREF_SIZE; -fx-pref-width: USE_COMPUTED_SIZE; -fx-max-width: USE_PREF_SIZE; -fx-padding: 0 12;");        eliminar.setOnAction(e -> {
             medicamentosBox.getChildren().remove(fila.contenedor);
             filas.remove(fila);
             actualizarContador();

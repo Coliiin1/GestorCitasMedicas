@@ -6,7 +6,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -82,11 +84,30 @@ public class MainController {
 
     @FXML
     private void onNavegar(ActionEvent e) {
-        ir((String) ((Button) e.getSource()).getUserData());
+        navegar((String) ((Button) e.getSource()).getUserData());
+    }
+
+    /** Navegación iniciada por el usuario: si hay una cita en curso pide confirmación antes de salir. */
+    private boolean confirmarSalidaDeCita(String destino) {
+        ConsultaController consulta = (ConsultaController) controladores.get("consulta-panel.fxml");
+        if (consulta == null || !consulta.enCurso() || "consulta-panel.fxml".equals(destino)) return true;
+        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION,
+                "Hay una cita en curso. ¿Desea salir de la cita y abrir el panel seleccionado? Se perderá el progreso no guardado.",
+                ButtonType.YES, ButtonType.NO);
+        alerta.setTitle("Cita en curso");
+        alerta.setHeaderText("¿Salir de la cita en curso?");
+        if (alerta.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) return false;
+        consulta.abandonar();
+        return true;
+    }
+
+    private void navegar(String fxml) {
+        if (confirmarSalidaDeCita(fxml)) ir(fxml);
     }
 
     @FXML
     private void onCerrarSesion() {
+        if (!confirmarSalidaDeCita(null)) return;
         try {
             contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("login-view.fxml")).load());
         } catch (IOException e) {
@@ -144,7 +165,7 @@ public class MainController {
                 if (e.getTarget() instanceof Button) {
                     Button boton = (Button) e.getTarget();
                     if (boton.getStyleClass().contains("nav-link")) {
-                        ir((String) boton.getUserData());
+                        navegar((String) boton.getUserData());
                     }
                 }
             });

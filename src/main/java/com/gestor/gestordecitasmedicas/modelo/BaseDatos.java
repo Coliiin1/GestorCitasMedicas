@@ -110,7 +110,7 @@ public class BaseDatos {
                         "contraseña VARCHAR(255) NOT NULL, " +
                         "cedula VARCHAR(8), " +
                         "institución VARCHAR(20), " +
-                        "domicilio VARCHAR(20))",
+                        "domicilio VARCHAR(100))",
                 "CREATE TABLE IF NOT EXISTS Asistente (" +
                         "id_asistente INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "nombre VARCHAR(20) NOT NULL, " +

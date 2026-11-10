@@ -402,14 +402,15 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         estado.getStyleClass().add("caption");
         Label paciente = new Label(nombrePaciente(turno.paciente, turno.cita.getCurp()));
         paciente.getStyleClass().add("info-value");
-        paciente.setWrapText(true);
         Label referencia = new Label("Cita #" + turno.cita.getIdCita());
         referencia.getStyleClass().add("hint");
         VBox contenido = new VBox(2, estado, paciente, referencia);
-        contenido.setMaxWidth(Double.MAX_VALUE);
         contenido.setMinWidth(0);
 
         Button celda = new Button();
+        // Sin wrapText: dentro de un Button la etiqueta calculaba su alto con un ancho casi nulo y la fila se disparaba.
+        // Se limita el ancho al de la celda para que el texto largo se recorte con "…".
+        contenido.maxWidthProperty().bind(celda.widthProperty().subtract(24));
         celda.setMinWidth(0);
         celda.setPrefWidth(0);
         celda.setGraphic(contenido);

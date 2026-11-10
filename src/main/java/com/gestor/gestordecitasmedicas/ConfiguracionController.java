@@ -26,8 +26,9 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
         final BiConsumer<Administrador, String> escribir;
         final TextField campo = new TextField();
 
-        Campo(String etiqueta, int max, boolean obligatorio,
+        Campo(String etiqueta, String ejemplo, int max, boolean obligatorio,
               Function<Administrador, String> leer, BiConsumer<Administrador, String> escribir) {
+            campo.setPromptText("Ej. " + ejemplo);
             this.etiqueta = etiqueta;
             this.max = max;
             this.obligatorio = obligatorio;
@@ -49,17 +50,17 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
 
     // Límites = tamaños de columna de la tabla Administrador (SQLite no los impone, así que se validan aquí).
     private final Campo[] campos = {
-            new Campo("NOMBRE (S)", 20, true, Administrador::getNombre, Administrador::setNombre),
-            new Campo("APELLIDO PATERNO", 20, true, Administrador::getApellidoPaterno, Administrador::setApellidoPaterno),
-            new Campo("APELLIDO MATERNO", 20, false, Administrador::getApellidoMaterno, Administrador::setApellidoMaterno),
-            new Campo("CÉDULA PROFESIONAL", 8, false, Administrador::getCedulaProfesional, Administrador::setCedulaProfesional),
-            new Campo("INSTITUCIÓN", 20, false, Administrador::getInstitucionAcademica, Administrador::setInstitucionAcademica),
-            new Campo("DOMICILIO", 20, false, Administrador::getDomicilio, Administrador::setDomicilio),
-            new Campo("PROFESIÓN", 100, false, Administrador::getProfesion, Administrador::setProfesion),
-            new Campo("ESPECIALIDAD", 100, false, Administrador::getEspecialidad, Administrador::setEspecialidad),
-            new Campo("REGISTRO DE ESPECIALIDAD", 100, false, Administrador::getRegistroEspecialidad, Administrador::setRegistroEspecialidad),
-            new Campo("NOMBRE DEL ESTABLECIMIENTO", 100, false, Administrador::getNombreEstablecimiento, Administrador::setNombreEstablecimiento),
-            new Campo("DOMICILIO DEL ESTABLECIMIENTO", 100, false, Administrador::getDomicilioEstablecimiento, Administrador::setDomicilioEstablecimiento),
+            new Campo("NOMBRE (S)", "Juan Carlos", 20, true, Administrador::getNombre, Administrador::setNombre),
+            new Campo("APELLIDO PATERNO", "Ramírez", 20, true, Administrador::getApellidoPaterno, Administrador::setApellidoPaterno),
+            new Campo("APELLIDO MATERNO", "López", 20, false, Administrador::getApellidoMaterno, Administrador::setApellidoMaterno),
+            new Campo("CÉDULA PROFESIONAL", "12345678", 8, false, Administrador::getCedulaProfesional, Administrador::setCedulaProfesional),
+            new Campo("INSTITUCIÓN", "UNAM", 20, false, Administrador::getInstitucionAcademica, Administrador::setInstitucionAcademica),
+            new Campo("DOMICILIO", "Av. Juárez 123, Col. Centro, Morelia, Mich.", 100, false, Administrador::getDomicilio, Administrador::setDomicilio),
+            new Campo("PROFESIÓN", "Médico Cirujano", 100, false, Administrador::getProfesion, Administrador::setProfesion),
+            new Campo("ESPECIALIDAD", "Medicina Familiar", 100, false, Administrador::getEspecialidad, Administrador::setEspecialidad),
+            new Campo("REGISTRO DE ESPECIALIDAD", "87654321", 100, false, Administrador::getRegistroEspecialidad, Administrador::setRegistroEspecialidad),
+            new Campo("NOMBRE DEL ESTABLECIMIENTO", "Consultorio Médico Dr. Ramírez", 100, false, Administrador::getNombreEstablecimiento, Administrador::setNombreEstablecimiento),
+            new Campo("DOMICILIO DEL ESTABLECIMIENTO", "Av. Madero 456, Col. Centro, Morelia, Mich.", 100, false, Administrador::getDomicilioEstablecimiento, Administrador::setDomicilioEstablecimiento),
     };
 
     @FXML
