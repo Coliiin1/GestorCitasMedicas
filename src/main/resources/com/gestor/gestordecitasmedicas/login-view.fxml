@@ -18,26 +18,26 @@
 
     <!-- Formulario -->
     <VBox alignment="CENTER" GridPane.columnIndex="1">
-        <VBox maxWidth="360.0" spacing="16.0">
-            <Label styleClass="h-title" text="Iniciar sesión" />
+        <VBox maxWidth="440.0" spacing="28.0">
+            <Label style="-fx-font-size: 28px;" styleClass="h-title" text="Iniciar sesión" />
 
             <VBox spacing="8.0">
-                <Label styleClass="field-label" text="USUARIO" />
-                <TextField fx:id="txtUsuario" onAction="#onIngresar" prefHeight="40.0" promptText="Usuario" styleClass="form-field" />
+                <Label style="-fx-font-size: 13px;" styleClass="field-label" text="USUARIO" />
+                <TextField fx:id="txtUsuario" onAction="#onIngresar" prefHeight="54.0" promptText="Usuario" style="-fx-font-size: 16px;" styleClass="form-field" />
             </VBox>
 
             <VBox spacing="8.0">
-                <Label styleClass="field-label" text="CONTRASEÑA" />
+                <Label style="-fx-font-size: 13px;" styleClass="field-label" text="CONTRASEÑA" />
                 <StackPane>
-                    <PasswordField fx:id="password" onAction="#onIngresar" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" />
-                    <TextField fx:id="passwordVisible" onAction="#onIngresar" prefHeight="40.0" promptText="Contraseña" styleClass="form-field, password-field" visible="false" />
+                    <PasswordField fx:id="password" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" style="-fx-font-size: 16px;" styleClass="form-field, password-field" />
+                    <TextField fx:id="passwordVisible" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" style="-fx-font-size: 16px;" styleClass="form-field, password-field" visible="false" />
                     <Button fx:id="btnTogglePassword" onAction="#onTogglePassword" styleClass="btn-icon" StackPane.alignment="CENTER_RIGHT">
                         <graphic><FontIcon iconLiteral="fi-rr-eye" /></graphic>
                     </Button>
                 </StackPane>
             </VBox>
 
-            <Button maxWidth="Infinity" onAction="#onIngresar" styleClass="btn-primary" text="Ingresar" />
+            <Button maxWidth="Infinity" onAction="#onIngresar" prefHeight="54.0" style="-fx-font-size: 16px;" styleClass="btn-primary" text="Ingresar" />
         </VBox>
     </VBox>
 </GridPane>

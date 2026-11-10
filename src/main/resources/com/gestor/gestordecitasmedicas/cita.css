@@ -1140,15 +1140,7 @@
 
 /* Login: panel visual con la paleta del sidebar */
 .login-hero {
-    -fx-background-color: #1e293b;
-    -fx-background-image: url("../../../Imagenes/FondoLogin.jpg");
-    -fx-background-size: cover;
-    -fx-background-position: center;
-    -fx-background-repeat: no-repeat;
     -fx-background-radius: 12;
-    -fx-border-color: #0369a1;
-    -fx-border-width: 4;
-    -fx-border-radius: 12;
 }
 
 /* Combo y selector de fecha del diálogo de cita usan .combo-field / .date-field. */
