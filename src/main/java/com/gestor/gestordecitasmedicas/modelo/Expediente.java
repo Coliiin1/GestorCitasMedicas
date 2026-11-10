@@ -64,6 +64,16 @@ public class Expediente {
         this.alergias = alergias;
     }
 
+    private String tipoSangre;
+
+    public String getTipoSangre() {
+        return tipoSangre;
+    }
+
+    public void setTipoSangre(String tipoSangre) {
+        this.tipoSangre = tipoSangre;
+    }
+
     public String getObservaciones() {
         return observaciones;
     }

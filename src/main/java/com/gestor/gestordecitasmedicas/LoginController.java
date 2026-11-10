@@ -51,9 +51,11 @@ public class LoginController {
     @FXML
     private void onIngresar() {
         String rol = null;
+        int idUsuario = 0;
         try {
             String id = txtUsuario.getText().trim().replaceFirst("^#", "");
-            rol = new BaseDatos().autenticar(Integer.parseInt(id), password.getText());
+            idUsuario = Integer.parseInt(id);
+            rol = new BaseDatos().autenticar(idUsuario, password.getText());
         } catch (NumberFormatException ignorada) {
             // usuario no numérico: se trata como credenciales incorrectas
         }
@@ -65,7 +67,7 @@ public class LoginController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
             Parent raiz = loader.load();
-            ((MainController) loader.getController()).configurarRol(rol);
+            ((MainController) loader.getController()).configurarRol(rol, idUsuario);
             txtUsuario.getScene().setRoot(raiz);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

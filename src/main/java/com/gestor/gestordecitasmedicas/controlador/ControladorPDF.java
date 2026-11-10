@@ -28,7 +28,11 @@ import java.util.List;
 
 public class ControladorPDF {
 
-    public static final String CARPETA_SALIDA = "pdf";
+    public static final String CLAVE_CARPETA = "directorio.pdf";
+
+    public static String carpetaSalida() {
+        return new com.gestor.gestordecitasmedicas.modelo.BaseDatos().obtenerConfig(CLAVE_CARPETA, "pdf");
+    }
 
     private static final BaseColor COLOR_PRIMARIO = new BaseColor(30, 64, 175);
     private static final Font FUENTE_TITULO = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, COLOR_PRIMARIO);
@@ -39,7 +43,7 @@ public class ControladorPDF {
 
     public boolean generarPDF(Receta receta) {
         if (!ValidacionClinica.receta(receta, true).isEmpty()) return false;
-        File carpeta = new File(CARPETA_SALIDA);
+        File carpeta = new File(carpetaSalida());
         if (!carpeta.exists() && !carpeta.mkdirs()) return false;
         try {
             generarReceta(archivoSalida(receta), receta);
@@ -230,7 +234,7 @@ public class ControladorPDF {
     }
 
     private File archivoSalida(Receta receta) {
-        return new File(new File(CARPETA_SALIDA), "receta_" + receta.getIdReceta() + ".pdf");
+        return new File(new File(carpetaSalida()), "receta_" + receta.getIdReceta() + ".pdf");
     }
 
 }

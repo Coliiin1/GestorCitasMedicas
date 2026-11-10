@@ -37,6 +37,7 @@
                             <Label styleClass="section-label" text="FICHA DE IDENTIDAD" />
                             <VBox spacing="4.0"><Label styleClass="field-label" text="NOMBRE COMPLETO" /><Label fx:id="nombreFicha" wrapText="true" styleClass="meta-value" /></VBox>
                             <VBox spacing="4.0"><Label styleClass="field-label" text="TELÉFONO DE CONTACTO" /><Label fx:id="telefono" styleClass="meta-value" /></VBox>
+                            <VBox spacing="4.0"><Label styleClass="field-label" text="TIPO DE SANGRE" /><Label fx:id="tipoSangre" styleClass="meta-value" /></VBox>
                             <VBox spacing="4.0"><Label styleClass="field-label" text="FECHA DE NACIMIENTO, SEXO Y DOMICILIO" wrapText="true" /><Label fx:id="datosPersonales" text="No disponibles" styleClass="patient-meta" wrapText="true" /></VBox>
                         </VBox>
                         <VBox spacing="12.0" styleClass="card">

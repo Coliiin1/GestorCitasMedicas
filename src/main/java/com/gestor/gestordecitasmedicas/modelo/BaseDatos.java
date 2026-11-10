@@ -190,7 +190,8 @@ public class BaseDatos {
                         "id_bloqueo INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "fecha_inicio TIMESTAMP NOT NULL, " +
                         "fecha_fin TIMESTAMP NOT NULL, " +
-                        "motivo TEXT)"
+                        "motivo TEXT)",
+                "CREATE TABLE IF NOT EXISTS Configuracion (clave TEXT PRIMARY KEY, valor TEXT)"
         };
 
         conexion.setAutoCommit(false);
@@ -303,6 +304,150 @@ public class BaseDatos {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al actualizar asistente: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public Administrador obtenerAdministrador(int id) {
+        Connection con = getConexion();
+        if (con == null) return null;
+        String sql = "SELECT nombre, apellido_paterno, apellido_materno, cedula, \"institución\", domicilio, " +
+                "profesion, especialidad, registro_especialidad, nombre_establecimiento, domicilio_establecimiento " +
+                "FROM Administrador WHERE id_administrador = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) return null;
+                Administrador a = new Administrador();
+                a.setIdAdministrador(id);
+                a.setNombre(rs.getString(1));
+                a.setApellidoPaterno(rs.getString(2));
+                a.setApellidoMaterno(rs.getString(3));
+                a.setCedulaProfesional(rs.getString(4));
+                a.setInstitucionAcademica(rs.getString(5));
+                a.setDomicilio(rs.getString(6));
+                a.setProfesion(rs.getString(7));
+                a.setEspecialidad(rs.getString(8));
+                a.setRegistroEspecialidad(rs.getString(9));
+                a.setNombreEstablecimiento(rs.getString(10));
+                a.setDomicilioEstablecimiento(rs.getString(11));
+                return a;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al leer administrador: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean actualizarAdministrador(Administrador a) {
+        Connection con = getConexion();
+        if (con == null || a == null) return false;
+        String sql = "UPDATE Administrador SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, cedula = ?, " +
+                "\"institución\" = ?, domicilio = ?, profesion = ?, especialidad = ?, registro_especialidad = ?, " +
+                "nombre_establecimiento = ?, domicilio_establecimiento = ? WHERE id_administrador = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, valor(a.getNombre()));
+            ps.setString(2, valor(a.getApellidoPaterno()));
+            ps.setString(3, a.getApellidoMaterno());
+            ps.setString(4, a.getCedulaProfesional());
+            ps.setString(5, a.getInstitucionAcademica());
+            ps.setString(6, a.getDomicilio());
+            ps.setString(7, a.getProfesion());
+            ps.setString(8, a.getEspecialidad());
+            ps.setString(9, a.getRegistroEspecialidad());
+            ps.setString(10, a.getNombreEstablecimiento());
+            ps.setString(11, a.getDomicilioEstablecimiento());
+            ps.setInt(12, a.getIdAdministrador());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar administrador: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /** Un id de acceso es libre si no lo usa ningún otro administrador ni asistente (el login busca en ambas tablas). */
+    public boolean idUsuarioLibre(int id, int idAdminActual) {
+        Connection con = getConexion();
+        if (con == null || id <= 0) return false;
+        String sql = "SELECT 1 FROM Asistente WHERE id_asistente = ? " +
+                "UNION SELECT 1 FROM Administrador WHERE id_administrador = ? AND id_administrador <> ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.setInt(2, id);
+            ps.setInt(3, idAdminActual);
+            try (ResultSet rs = ps.executeQuery()) {
+                return !rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al validar usuario: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Cambia el id de acceso y/o la contraseña del administrador. nuevaContrasena vacía/null la conserva.
+     * El id es clave foránea de Receta, por eso se actualiza ahí en la misma transacción.
+     */
+    public boolean actualizarCredencialesAdmin(int idActual, int nuevoId, String nuevaContrasena) {
+        Connection con = getConexion();
+        if (con == null || nuevoId <= 0) return false;
+        boolean cambiaPass = nuevaContrasena != null && !nuevaContrasena.isEmpty();
+        try {
+            con.setAutoCommit(false);
+            try (Statement st = con.createStatement()) {
+                st.execute("PRAGMA defer_foreign_keys = ON");
+            }
+            try (PreparedStatement ps = con.prepareStatement(
+                    "UPDATE Administrador SET id_administrador = ?" + (cambiaPass ? ", \"contraseña\" = ?" : "")
+                            + " WHERE id_administrador = ?")) {
+                int i = 1;
+                ps.setInt(i++, nuevoId);
+                if (cambiaPass) ps.setString(i++, nuevaContrasena);
+                ps.setInt(i, idActual);
+                if (ps.executeUpdate() == 0) throw new SQLException("Administrador no encontrado");
+            }
+            if (nuevoId != idActual) {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "UPDATE Receta SET id_administrador = ? WHERE id_administrador = ?")) {
+                    ps.setInt(1, nuevoId);
+                    ps.setInt(2, idActual);
+                    ps.executeUpdate();
+                }
+            }
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar credenciales: " + e.getMessage());
+            try { con.rollback(); } catch (SQLException ignorada) { }
+        } finally {
+            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+        }
+        return false;
+    }
+
+    public String obtenerConfig(String clave, String porDefecto) {
+        Connection con = getConexion();
+        if (con == null) return porDefecto;
+        try (PreparedStatement ps = con.prepareStatement("SELECT valor FROM Configuracion WHERE clave = ?")) {
+            ps.setString(1, clave);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getString(1) != null) return rs.getString(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al leer configuración: " + e.getMessage());
+        }
+        return porDefecto;
+    }
+
+    public boolean guardarConfig(String clave, String valor) {
+        Connection con = getConexion();
+        if (con == null) return false;
+        try (PreparedStatement ps = con.prepareStatement("INSERT OR REPLACE INTO Configuracion (clave, valor) VALUES (?, ?)")) {
+            ps.setString(1, clave);
+            ps.setString(2, valor);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al guardar configuración: " + e.getMessage());
         }
         return false;
     }
@@ -1031,7 +1176,7 @@ public class BaseDatos {
                 "institucion_establecimiento, propietario, grupo_etnico, antecedentes_no_patologicos, consumo_sustancias, " +
                 "padecimiento_actual, interrogatorio_sistemas, exploracion_fisica, resultados_estudios, diagnostico, " +
                 "pronostico, indicacion_terapeutica, autor_historia, cedula_historia, fecha_hora_historia, " +
-                "signos_historia) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "signos_historia, tipo_sangre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, expediente.getDatosPaciente().getCurp());
@@ -1061,6 +1206,7 @@ public class BaseDatos {
             ps.setString(23, expediente.getCedulaHistoria());
             ps.setString(24, expediente.getFechaHoraHistoria());
             ps.setString(25, expediente.getSignosHistoria());
+            ps.setString(26, expediente.getTipoSangre());
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -1117,7 +1263,7 @@ public class BaseDatos {
                 "antecedentes_no_patologicos = ?, consumo_sustancias = ?, padecimiento_actual = ?, interrogatorio_sistemas " +
                 "= ?, exploracion_fisica = ?, resultados_estudios = ?, diagnostico = ?, pronostico = ?, " +
                 "indicacion_terapeutica = ?, autor_historia = ?, cedula_historia = ?, fecha_hora_historia = ?, " +
-                "signos_historia = ? WHERE id_expediente = ?";
+                "signos_historia = ?, tipo_sangre = ? WHERE id_expediente = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, expediente.getDatosPaciente().getCurp());
@@ -1145,7 +1291,8 @@ public class BaseDatos {
             ps.setString(23, expediente.getCedulaHistoria());
             ps.setString(24, expediente.getFechaHoraHistoria());
             ps.setString(25, expediente.getSignosHistoria());
-            ps.setInt(26, expediente.getIdExpediente());
+            ps.setString(26, expediente.getTipoSangre());
+            ps.setInt(27, expediente.getIdExpediente());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al actualizar expediente: " + e.getMessage());
@@ -1176,6 +1323,7 @@ public class BaseDatos {
                     expediente.setAntecedentesFamiliares(rs.getString("antecedentes_familiares"));
                     expediente.setAntecedentesPersonales(rs.getString("antecedentes_personales"));
                     expediente.setAlergias(rs.getString("alergias"));
+                    expediente.setTipoSangre(rs.getString("tipo_sangre"));
                     expediente.setObservaciones(rs.getString("observaciones"));
                     expediente.setTipoEstablecimiento(rs.getString("tipo_establecimiento"));
                     expediente.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));

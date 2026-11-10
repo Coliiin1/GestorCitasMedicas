@@ -73,7 +73,8 @@ public class ExpedienteEditarController implements PanelControlado {
         campo(g1, 2, "antecedentesNoPatologicos", "Antecedentes personales no patológicos", expediente.getAntecedentesNoPatologicos(), true, "Esquema de vacunación completo; ejercicio tres veces por semana.");
         campo(g1, 3, "consumoSustancias", "Uso y dependencia de tabaco, alcohol y otras sustancias", expediente.getConsumoSustancias(), true, "Tabaquismo negado; consumo ocasional de alcohol.");
         campo(g1, 4, "alergiasEditor", "Alergias y advertencias", expediente.getAlergias(), true, "Penicilina: urticaria; sin otras alergias conocidas.");
-        campo(g1, 5, "grupoEtnico", "Grupo étnico (opcional)", expediente.getGrupoEtnico(), false, "Náhuatl");
+        campo(g1, 5, "tipoSangre", "Tipo de sangre (opcional)", expediente.getTipoSangre(), false, "O+");
+        campo(g1, 6, "grupoEtnico", "Grupo étnico (opcional)", expediente.getGrupoEtnico(), false, "Náhuatl");
 
         GridPane g2 = grupo("3. Padecimiento y exploración", true);
         campo(g2, 0, "padecimientoActual", "Padecimiento actual y tratamientos previos", expediente.getPadecimientoActual(), true, "Tos seca de tres días de evolución; tratamiento previo con paracetamol y miel.");
@@ -120,6 +121,7 @@ public class ExpedienteEditarController implements PanelControlado {
         c.setAntecedentesNoPatologicos(texto("antecedentesNoPatologicos"));
         c.setConsumoSustancias(texto("consumoSustancias"));
         c.setAlergias(texto("alergiasEditor"));
+        c.setTipoSangre(texto("tipoSangre").toUpperCase(ES));
         c.setGrupoEtnico(texto("grupoEtnico"));
         c.setPadecimientoActual(texto("padecimientoActual"));
         c.setInterrogatorioSistemas(texto("interrogatorioSistemas"));
@@ -133,6 +135,11 @@ public class ExpedienteEditarController implements PanelControlado {
         c.setAutorHistoria(texto("autorHistoria"));
         c.setCedulaHistoria(texto("cedulaHistoria"));
         c.setFechaHoraHistoria(texto("fechaHoraHistoria"));
+        if (!c.getTipoSangre().matches("|(A|B|AB|O)[+-]")) {
+            mostrarError("El tipo de sangre debe ser A, B, AB u O seguido de + o - (por ejemplo O+).");
+            campos.get("tipoSangre").requestFocus();
+            return;
+        }
         try {
             LocalDateTime.parse(c.getFechaHoraHistoria());
         } catch (DateTimeParseException ex) {

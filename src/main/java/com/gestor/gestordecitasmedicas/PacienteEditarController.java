@@ -29,6 +29,9 @@ public class PacienteEditarController implements PanelControlado {
     @FXML private TextField txtCorreo;
     @FXML private TextField txtDomicilio;
     @FXML private Button btnCancelar;
+    @FXML private javafx.scene.layout.GridPane boxClinico;
+    @FXML private ComboBox<String> cbTipoSangre;
+    @FXML private TextField txtAlergias;
 
     private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
@@ -64,6 +67,10 @@ public class PacienteEditarController implements PanelControlado {
         cbSexo.getSelectionModel().clearSelection();
         txtCorreo.clear();
         txtDomicilio.clear();
+        cbTipoSangre.getSelectionModel().clearSelection();
+        txtAlergias.clear();
+        boxClinico.setVisible(true);
+        boxClinico.setManaged(true);
         txtNombre.requestFocus();
     }
 
@@ -88,6 +95,8 @@ public class PacienteEditarController implements PanelControlado {
         }
         txtCorreo.setText(valor(paciente.getCorreo()));
         txtDomicilio.setText(valor(paciente.getDomicilio()));
+        boxClinico.setVisible(false);
+        boxClinico.setManaged(false);
         txtNombre.requestFocus();
     }
 
@@ -105,6 +114,9 @@ public class PacienteEditarController implements PanelControlado {
 
         String error = validar(nombre, apellidoPaterno, apellidoMaterno, curp, fechaNacimiento,
                 telefono, correo, domicilio);
+        if (error == null && texto(txtAlergias).length() > 200) {
+            error = "Las alergias no deben exceder 200 caracteres.";
+        }
         if (error != null) {
             mostrarError(error);
             return;
@@ -184,7 +196,8 @@ public class PacienteEditarController implements PanelControlado {
         expediente.setFechaApertura(new Date());
         expediente.setAntecedentesFamiliares("");
         expediente.setAntecedentesPersonales("");
-        expediente.setAlergias("");
+        expediente.setAlergias(texto(txtAlergias));
+        expediente.setTipoSangre(cbTipoSangre.getValue());
         expediente.setObservaciones("");
         return baseDatos.insertarExpediente(expediente);
     }

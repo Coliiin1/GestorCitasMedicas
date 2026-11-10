@@ -8,7 +8,23 @@ public class Administrador extends Personal {
     private String cedulaProfesional;
     private String institucionAcademica;
     private String domicilio;
+    private String profesion;
+    private String especialidad;
+    private String registroEspecialidad;
+    private String nombreEstablecimiento;
+    private String domicilioEstablecimiento;
     private ArrayList<Asistente> asistentes = new ArrayList<>();
+
+    public String getProfesion() { return profesion; }
+    public void setProfesion(String v) { this.profesion = v; }
+    public String getEspecialidad() { return especialidad; }
+    public void setEspecialidad(String v) { this.especialidad = v; }
+    public String getRegistroEspecialidad() { return registroEspecialidad; }
+    public void setRegistroEspecialidad(String v) { this.registroEspecialidad = v; }
+    public String getNombreEstablecimiento() { return nombreEstablecimiento; }
+    public void setNombreEstablecimiento(String v) { this.nombreEstablecimiento = v; }
+    public String getDomicilioEstablecimiento() { return domicilioEstablecimiento; }
+    public void setDomicilioEstablecimiento(String v) { this.domicilioEstablecimiento = v; }
     private ArrayList<Expediente> expedientes = new ArrayList<>();
 
     public int getIdAdministrador() {

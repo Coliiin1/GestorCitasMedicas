@@ -113,6 +113,34 @@
                             <Label styleClass="field-label" text="DOMICILIO" />
                             <TextField fx:id="txtDomicilio" prefHeight="40.0" promptText="Calle, número, colonia, ciudad" styleClass="form-field" />
                         </VBox>
+
+                        <GridPane fx:id="boxClinico" hgap="24.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="33.0" />
+                                <ColumnConstraints percentWidth="67.0" />
+                            </columnConstraints>
+                            <VBox spacing="8.0" GridPane.columnIndex="0">
+                                <Label styleClass="field-label" text="TIPO DE SANGRE (OPCIONAL)" />
+                                <ComboBox fx:id="cbTipoSangre" maxWidth="Infinity" prefHeight="40.0" promptText="Seleccionar" styleClass="form-field, combo-field">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="A+" />
+                                            <String fx:value="A-" />
+                                            <String fx:value="B+" />
+                                            <String fx:value="B-" />
+                                            <String fx:value="AB+" />
+                                            <String fx:value="AB-" />
+                                            <String fx:value="O+" />
+                                            <String fx:value="O-" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </VBox>
+                            <VBox spacing="8.0" GridPane.columnIndex="1">
+                                <Label styleClass="field-label" text="ALERGIAS (OPCIONAL)" />
+                                <TextField fx:id="txtAlergias" prefHeight="40.0" promptText="Ej. penicilina, látex" styleClass="form-field" />
+                            </VBox>
+                        </GridPane>
                     </VBox>
 
                     <!-- Aviso -->

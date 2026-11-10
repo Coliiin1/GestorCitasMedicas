@@ -15,6 +15,7 @@ import java.util.Date;
 
 public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML private Label nombre, folio, curp, telefono, nombreFicha, datosPersonales;
+    @FXML private Label tipoSangre;
     @FXML private Label alergias, antecedentes, historialConsultas, historialRecetas, historialSignos;
     @FXML private TabPane secciones;
     @FXML private Button btnEditar, btnExportar;
@@ -67,6 +68,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
                     + "\nSexo: " + TextoExpediente.valor(paciente.getSexo())
                     + "\nDomicilio: " + TextoExpediente.valor(paciente.getDomicilio()));
             alergias.setText(TextoExpediente.valor(expediente.getAlergias()));
+            tipoSangre.setText(TextoExpediente.valor(expediente.getTipoSangre()));
             antecedentes.setText(TextoExpediente.historia(expediente));
             historialConsultas.setText(TextoExpediente.consultas(expediente));
             historialRecetas.setText(TextoExpediente.recetas(expediente));
@@ -76,7 +78,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         } catch (IllegalStateException ex) {
             expedienteActual = null;
             folio.setText("NO SE PUDO CARGAR EL EXPEDIENTE");
-            for (Label label : new Label[]{nombre, nombreFicha, curp, telefono, datosPersonales, alergias,
+            for (Label label : new Label[]{nombre, nombreFicha, curp, telefono, datosPersonales, alergias, tipoSangre,
                     antecedentes, historialConsultas, historialRecetas, historialSignos}) label.setText("");
             aviso(Alert.AlertType.ERROR, "Error al cargar", ex.getMessage());
         }

@@ -310,7 +310,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             return;
         }
         if (controladorPDF.generarPDF(receta)) {
-            File archivo = new File(new File(ControladorPDF.CARPETA_SALIDA),
+            File archivo = new File(new File(ControladorPDF.carpetaSalida()),
                     "receta_" + receta.getIdReceta() + ".pdf");
             aviso(Alert.AlertType.INFORMATION, "Receta guardada",
                     "La receta se guardó y el PDF se generó en:\n" + archivo.getAbsolutePath());

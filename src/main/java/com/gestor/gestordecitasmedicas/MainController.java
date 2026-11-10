@@ -4,7 +4,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import com.gestor.gestordecitasmedicas.modelo.Administrador;
+import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -25,16 +28,41 @@ public class MainController {
     // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
     private Button ultimoActivo;
 
+    @FXML private Label lblConsultorio;
+    @FXML private Label lblMedico;
+
     private boolean esAdmin;
     private boolean rolConfigurado;
+    private int idAdmin;
+
+    public void setIdAdministrador(int id) {
+        idAdmin = id;
+    }
+
+    public int idAdministrador() {
+        return idAdmin;
+    }
+
+    /** Muestra en la barra lateral los datos del consultorio guardados en la tabla Administrador. */
+    public void aplicarConfiguracion() {
+        // Sin sesión de admin se toma el primer administrador (el consultorio es de un solo médico).
+        BaseDatos bd = new BaseDatos();
+        Administrador a = bd.obtenerAdministrador(esAdmin ? idAdmin : 1);
+        if (a == null) return;
+        if (a.getNombreEstablecimiento() != null && !a.getNombreEstablecimiento().trim().isEmpty())
+            lblConsultorio.setText(a.getNombreEstablecimiento());
+        lblMedico.setText(("Dr. " + a.getNombre() + " " + a.getApellidoPaterno()).trim());
+    }
 
     public boolean esAdministrador() {
         return esAdmin;
     }
 
     /** Ajusta menú y navegación según el rol ("admin" o "asis") y abre la pantalla inicial. */
-    public void configurarRol(String rol) {
+    public void configurarRol(String rol, int idUsuario) {
         esAdmin = "admin".equals(rol);
+        idAdmin = idUsuario;
+        aplicarConfiguracion();
         rolConfigurado = true;
         for (Node n : menu.getChildren()) {
             if (n instanceof Button) {

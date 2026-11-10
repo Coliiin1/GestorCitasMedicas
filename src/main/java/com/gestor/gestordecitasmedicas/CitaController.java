@@ -87,7 +87,7 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         lblCurp.setText(cita.getCurp() == null ? "--" : cita.getCurp());
         lblSexo.setText(pacienteActual == null || pacienteActual.getSexo() == null
                 ? "No registrado" : pacienteActual.getSexo());
-        lblSangre.setText("No registrado");
+        lblSangre.setText(tipoSangre(cita.getCurp()));
         lblAlergias.setText(alergias(cita.getCurp()));
 
         Receta existente = baseDatos.cargarRecetaPorCita(cita.getIdCita());
@@ -257,6 +257,16 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         float valor = decimal(texto, 0f);
         if (valor <= 0) return 0;
         return Math.round(valor > 3 ? valor : valor * 100);
+    }
+
+    private String tipoSangre(String curp) {
+        try {
+            Expediente expediente = baseDatos.cargarExpedientePorCurp(curp);
+            return expediente == null || expediente.getTipoSangre() == null
+                    || expediente.getTipoSangre().trim().isEmpty() ? "No registrado" : expediente.getTipoSangre();
+        } catch (IllegalStateException e) {
+            return "No disponible";
+        }
     }
 
     private String alergias(String curp) {

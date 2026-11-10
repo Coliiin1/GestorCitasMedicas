@@ -1149,3 +1149,8 @@
 .expediente-editor > .button-bar > .container {
     -fx-padding: 0 24 20 24;
 }
+
+/* Cuerpo de formularios dentro de pestañas de configuración (conserva el margen interno de la tarjeta). */
+.config-body {
+    -fx-padding: 24;
+}
