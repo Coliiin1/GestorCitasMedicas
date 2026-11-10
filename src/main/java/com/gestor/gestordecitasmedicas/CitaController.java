@@ -180,6 +180,12 @@ public class CitaController implements PanelControlado, PanelRefrescable {
                     "El paciente de esta cita ya no está registrado.");
             return;
         }
+        String faltantes = signosFaltantes();
+        if (!faltantes.isEmpty()) {
+            aviso(Alert.AlertType.WARNING, "Signos vitales incompletos",
+                    "Complete todos los signos vitales con valores válidos antes de continuar:\n" + faltantes);
+            return;
+        }
         ConsultaController controlador = mainController.controlador("consulta-panel.fxml");
         controlador.cargarConsulta(citaActual, pacienteActual, leerSignos());
         reloj.pause();
@@ -194,6 +200,20 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         ExpedienteController controlador = mainController.controlador("expediente-panel.fxml");
         controlador.mostrarPaciente(pacienteActual);
         mainController.ir("expediente-panel.fxml");
+    }
+
+    /** Lista los signos vitales vacíos o inválidos; cadena vacía si todos son obligatorios y válidos. */
+    private String signosFaltantes() {
+        StringBuilder sb = new StringBuilder();
+        String presion = txtPresion.getText() == null ? "" : txtPresion.getText().trim();
+        if (!presion.matches("\\d{2,3}/\\d{2,3}")) sb.append("- Presión arterial (ej. 120/80)\n");
+        if (entero(txtFrecuencia.getText(), 0) <= 0) sb.append("- Frecuencia cardíaca (ej. 72)\n");
+        if (entero(txtOxigeno.getText(), 0) <= 0) sb.append("- Saturación de oxígeno (ej. 98)\n");
+        if (decimal(txtTemperatura.getText(), 0f) <= 0) sb.append("- Temperatura (ej. 36.6)\n");
+        if (entero(txtFrecuenciaRespiratoria.getText(), 0) <= 0) sb.append("- Frecuencia respiratoria (ej. 18)\n");
+        if (decimal(txtPeso.getText(), 0f) <= 0) sb.append("- Peso (ej. 74.2)\n");
+        if (talla(txtTalla.getText()) <= 0) sb.append("- Talla (ej. 1.75)\n");
+        return sb.toString().trim();
     }
 
     private SignosVitales leerSignos() {

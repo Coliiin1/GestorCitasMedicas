@@ -223,9 +223,9 @@ class ExpedienteTest {
             assertEquals("Expediente actualizado correctamente.", confirmacion.getText());
             assertEquals("Penicilina", ((Label) loader.getNamespace().get("alergias")).getText());
             assertTrue(((Label) loader.getNamespace().get("antecedentes")).getText().contains("Cirugía previa"));
-            assertTrue(((Label) loader.getNamespace().get("historialConsultas")).getText().contains("Control local"));
+            assertFalse(((javafx.scene.layout.VBox) loader.getNamespace().get("listaConsultas")).getChildren().isEmpty());
             // Las pestañas no seleccionadas aún no tienen skin; el namespace permite verificar su contenido.
-            assertTrue(((Label) loader.getNamespace().get("historialRecetas")).getText().contains("Paracetamol"));
+            assertNull(loader.getNamespace().get("historialRecetas"));
             assertTrue(((Label) loader.getNamespace().get("historialSignos")).getText().contains("120/80"));
             vista.applyCss(); vista.layout();
             ImageIO.write(SwingFXUtils.fromFXImage(vista.snapshot(null, null), null), "png",
@@ -301,8 +301,7 @@ class ExpedienteTest {
         }
         java.lang.reflect.Field filas=ConsultaController.class.getDeclaredField("filas"); filas.setAccessible(true);
         Object fila=((java.util.List<?>)filas.get(controlador)).get(0);
-        for(String[] campo:new String[][]{{"nombre","Medicamento de prueba"},{"concentracion","10 mg"},{"presentacion","Tabletas"},
-                {"dosis","1 tableta"},{"via","Oral"},{"frecuencia","Cada 24 horas"},{"duracion","10 días"},{"cantidad","10 tabletas"}}) {
+        for(String[] campo:new String[][]{{"nombre","Medicamento de prueba"},{"dosis","1 tableta"},{"duracion","10 días"},{"cantidad","10 tabletas"}}) {
             java.lang.reflect.Field f=fila.getClass().getDeclaredField(campo[0]); f.setAccessible(true);
             ((javafx.scene.control.TextField)f.get(fila)).setText(campo[1]);
         }

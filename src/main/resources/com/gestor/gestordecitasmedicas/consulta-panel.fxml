@@ -11,11 +11,11 @@
             <VBox spacing="4.0" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT" spacing="8.0">
                     <Label fx:id="lblPaciente" styleClass="h-title" text="Sin cita seleccionada" />
-                    <Label styleClass="badge-active" text="En Atención" />
+                    <Label fx:id="lblEstado" styleClass="badge-active" text="En Atención" />
                 </HBox>
                 <Label fx:id="lblResumen" styleClass="card-subtitle" text="Selecciona una cita desde la agenda para iniciar la consulta" />
             </VBox>
-            <HBox alignment="CENTER" spacing="12.0" styleClass="timer-box">
+            <HBox fx:id="timerBox" alignment="CENTER" spacing="12.0" styleClass="timer-box">
                 <Label fx:id="lblTimer" styleClass="timer" text="00:00 min" />
             </HBox>
             <Button fx:id="btnHistorial" onAction="#onHistorial" styleClass="btn-secondary" text="Ver Historial">
@@ -74,11 +74,11 @@
                     <Label styleClass="caption" text="DIAGNÓSTICO PRINCIPAL / IMPRESIÓN DIAGNÓSTICA" />
                     <TextField fx:id="txtDiagnostico" promptText="Ej. Faringoamigdalitis aguda" styleClass="search-field" />
                     <Label styleClass="caption" text="Padecimiento actual y tratamientos previos" />
-                    <TextArea fx:id="txtPadecimiento" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <TextArea fx:id="txtPadecimiento" prefRowCount="2" promptText="Ej. Dolor de garganta y fiebre de 3 días de evolución; tomó paracetamol sin mejoría..." wrapText="true" styleClass="reason-area" />
                     <Label styleClass="caption" text="Exploración física" />
-                    <TextArea fx:id="txtExploracion" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <TextArea fx:id="txtExploracion" prefRowCount="2" promptText="Ej. Faringe hiperémica con exudado en amígdalas, adenopatía cervical, sin dificultad respiratoria..." wrapText="true" styleClass="reason-area" />
                     <Label styleClass="caption" text="Resultados relevantes de estudios (opcional)" />
-                    <TextArea fx:id="txtEstudios" prefRowCount="2" wrapText="true" styleClass="reason-area" />
+                    <TextArea fx:id="txtEstudios" prefRowCount="2" promptText="Ej. Biometría hemática: leucocitosis 14,500/µL. Sin estudios previos relevantes." wrapText="true" styleClass="reason-area" />
                     <Label styleClass="caption" text="EVOLUCIÓN Y ACTUALIZACIÓN DEL CUADRO CLÍNICO (OPCIONAL)" />
                     <TextArea fx:id="txtEvolucion" prefRowCount="4" promptText="Actualización del cuadro clínico, evolución y justificación del tratamiento..." styleClass="reason-area" wrapText="true" />
                 </VBox>

@@ -1007,7 +1007,23 @@
 
 .form-actions {
     -fx-border-color: #e2e8f0 transparent transparent transparent;
-    -fx-padding: 24 0 0 0;
+    -fx-padding: 24 0;
+}
+
+/* Variante resaltada del botón secundario (acción de regreso) */
+.btn-secondary.btn-back {
+    -fx-border-color: #0369a1;
+    -fx-text-fill: #0369a1;
+    -fx-font-weight: bold;
+}
+
+.btn-secondary.btn-back:hover {
+    -fx-background-color: #e0f2fe;
+    -fx-text-fill: #0369a1;
+}
+
+.btn-secondary.btn-back .ikonli-font-icon {
+    -fx-icon-color: #0369a1;
 }
 
 .notice-icon {

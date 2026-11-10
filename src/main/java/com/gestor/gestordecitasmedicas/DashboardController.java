@@ -226,6 +226,12 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         return fila;
     }
 
+    @FXML
+    private void onHorario() {
+        if (mainController == null || !mainController.esAdministrador()) return;
+        if (HorarioConfigController.abrir(lblFecha.getScene().getWindow(), baseDatos)) refrescar();
+    }
+
     private void iniciar(Cita cita) {
         if (mainController == null || !mainController.esAdministrador()) return;
         CitaController controlador = mainController.controlador("cita-panel.fxml");

@@ -8,6 +8,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -17,10 +18,12 @@ import javafx.scene.layout.VBox;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Optional;
 
 public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
+    @FXML private ComboBox<String> cmbOrden;
     @FXML private VBox listaAsistentes;
     @FXML private Label lblContador;
 
@@ -35,6 +38,10 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void initialize() {
+        cmbOrden.getItems().addAll("Nombre A–Z", "Nombre Z–A");
+        cmbOrden.setValue("Nombre A–Z");
+        cmbOrden.valueProperty().addListener((o, a, b) -> aplicarFiltro());
+        txtBuscar.textProperty().addListener((o, a, b) -> aplicarFiltro());
         refrescar();
     }
 
@@ -65,6 +72,8 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
                 filtrados.add(asistente);
             }
         }
+        Comparator<Asistente> orden = Comparator.comparing(a -> normalizar(nombreCompleto(a)));
+        filtrados.sort("Nombre Z–A".equals(cmbOrden.getValue()) ? orden.reversed() : orden);
         mostrarAsistentes(filtrados);
         lblContador.setText("Asistentes Registrados: " + asistentes.size());
     }

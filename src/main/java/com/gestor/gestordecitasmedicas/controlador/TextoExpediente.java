@@ -35,14 +35,13 @@ public final class TextoExpediente {
         List<String> pendientes = ValidacionClinica.historia(e);
         return (pendientes.isEmpty() ? "Captura completa para revisión y firma autógrafa."
                 : "BORRADOR: historia clínica incompleta (" + pendientes.size() + " datos pendientes).")
+                + "\n\n1. ESTABLECIMIENTO"
                 + "\nTipo de establecimiento: " + valor(e.getTipoEstablecimiento())
                 + "\nNombre del establecimiento: " + valor(e.getNombreEstablecimiento())
                 + "\nDomicilio completo del establecimiento: " + valor(e.getDomicilioEstablecimiento())
                 + "\nInstitución de pertenencia (si aplica): " + valor(e.getInstitucionEstablecimiento())
                 + "\nRazón o denominación social (si aplica): " + valor(e.getPropietario())
-                + "\nNombre completo de quien elabora la historia: " + valor(e.getAutorHistoria())
-                + "\nCédula profesional de quien elabora la historia: " + valor(e.getCedulaHistoria())
-                + "\nFecha y hora de elaboración (aaaa-mm-ddThh:mm): " + valor(e.getFechaHoraHistoria())
+                + "\n\n2. INTERROGATORIO Y ANTECEDENTES"
                 + "\nPaciente: " + (e.getDatosPaciente() == null ? "No registrado" : nombre(e.getDatosPaciente()))
                 + " | Edad a la elaboración: " + edadHistoria(e)
                 + " | Sexo: " + (e.getDatosPaciente() == null ? "No registrado" : valor(e.getDatosPaciente().getSexo()))
@@ -51,15 +50,24 @@ public final class TextoExpediente {
                 + "\nAntecedentes personales patológicos: " + valor(e.getAntecedentesPersonales())
                 + "\nAntecedentes personales no patológicos: " + valor(e.getAntecedentesNoPatologicos())
                 + "\nUso y dependencia de tabaco, alcohol y otras sustancias: " + valor(e.getConsumoSustancias())
+                + "\nAlergias y advertencias: " + valor(e.getAlergias())
+                + "\nTipo de sangre: " + valor(e.getTipoSangre())
+                + "\n\n3. PADECIMIENTO Y EXPLORACIÓN"
                 + "\nPadecimiento actual y tratamientos previos convencionales, alternativos y tradicionales: " + valor(e.getPadecimientoActual())
                 + "\nInterrogatorio por aparatos y sistemas: " + valor(e.getInterrogatorioSistemas())
                 + "\nExploración física: habitus exterior, cabeza, cuello, tórax, abdomen, miembros y genitales: " + valor(e.getExploracionFisica())
                 + "\nSignos vitales: temperatura, presión arterial, frecuencias cardíaca y respiratoria, peso y talla (con unidades): " + valor(e.getSignosHistoria())
+                + "\n\n4. ESTUDIOS, DIAGNÓSTICO Y TRATAMIENTO"
                 + "\nResultados previos y actuales de estudios de laboratorio, gabinete y otros: " + valor(e.getResultadosEstudios())
                 + "\nDiagnósticos o problemas clínicos: " + valor(e.getDiagnostico())
                 + "\nPronóstico: " + valor(e.getPronostico())
                 + "\nIndicación terapéutica: " + valor(e.getIndicacionTerapeutica())
                 + "\nObservaciones: " + valor(e.getObservaciones())
+                + "\n\n5. AUTOR Y FECHA DE ELABORACIÓN"
+                + "\nNombre completo de quien elabora la historia: " + valor(e.getAutorHistoria())
+                + "\nCédula profesional de quien elabora la historia: " + valor(e.getCedulaHistoria())
+                + "\nFecha y hora de elaboración (aaaa-mm-ddThh:mm): " + valor(e.getFechaHoraHistoria())
+                + "\n"
                 + "\nFirma autógrafa de quien elabora: ______________________________"
                 + "\nPendiente de firma autógrafa; la captura del nombre no constituye firma electrónica.";
     }
@@ -121,6 +129,10 @@ public final class TextoExpediente {
         return recetas;
     }
 
+    private static void extra(StringBuilder texto, String etiqueta, String v) {
+        if (v != null && !v.trim().isEmpty()) texto.append("\n").append(etiqueta).append(": ").append(v.trim());
+    }
+
     public static String recetas(Expediente e) {
         StringBuilder texto = new StringBuilder();
         for (Receta r : recetasOrdenadas(e)) {
@@ -129,15 +141,15 @@ public final class TextoExpediente {
             if (r.getMedicamentos().isEmpty()) texto.append("\nSin medicamentos registrados.");
             for (Medicamento m : r.getMedicamentos()) {
                 texto.append("\nMedicamento: ").append(valor(m.getNombreMedicamento()))
-                        .append("\nPresentación: ").append(valor(m.getPresentacion()))
-                        .append(" | Vía de administración: ").append(valor(m.getViaAdministracion()))
-                        .append("\nDenominación distintiva: ").append(valor(m.getDenominacionDistintiva()))
-                        .append(" | Cantidad: ").append(valor(m.getCantidad()))
-                        .append(" | Fracción: ").append(valor(m.getGrupoRegulatorio()))
-                        .append("\nConcentración: ").append(valor(m.getConcentracion()))
-                        .append(" | Dosis: ").append(valor(m.getDosis()))
-                        .append("\nFrecuencia: ").append(valor(m.getFrecuencia()))
+                        .append("\nDosis y posología: ").append(valor(m.getDosis()))
                         .append(" | Duración: ").append(valor(m.getDuradcion()));
+                extra(texto, "Marca", m.getDenominacionDistintiva());
+                extra(texto, "Cantidad", m.getCantidad());
+                extra(texto, "Tipo de receta", m.getGrupoRegulatorio());
+                extra(texto, "Concentración", m.getConcentracion());
+                extra(texto, "Presentación", m.getPresentacion());
+                extra(texto, "Vía", m.getViaAdministracion());
+                extra(texto, "Frecuencia", m.getFrecuencia());
             }
             texto.append("\n\n");
         }

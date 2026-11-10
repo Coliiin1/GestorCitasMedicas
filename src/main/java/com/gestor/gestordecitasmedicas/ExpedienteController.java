@@ -7,16 +7,20 @@ import com.itextpdf.text.DocumentException;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import org.kordamp.ikonli.javafx.FontIcon;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import java.io.File;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML private Label nombre, folio, curp, telefono, nombreFicha, datosPersonales;
     @FXML private Label tipoSangre;
-    @FXML private Label alergias, antecedentes, historialConsultas, historialRecetas, historialSignos;
+    @FXML private Label alergias, antecedentes, historialSignos;
+    @FXML private VBox listaConsultas;
     @FXML private TabPane secciones;
     @FXML private Button btnEditar, btnExportar;
 
@@ -70,8 +74,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
             alergias.setText(TextoExpediente.valor(expediente.getAlergias()));
             tipoSangre.setText(TextoExpediente.valor(expediente.getTipoSangre()));
             antecedentes.setText(TextoExpediente.historia(expediente));
-            historialConsultas.setText(TextoExpediente.consultas(expediente));
-            historialRecetas.setText(TextoExpediente.recetas(expediente));
+            mostrarConsultas(expediente);
             historialSignos.setText(TextoExpediente.signos(expediente));
             btnEditar.setDisable(false);
             btnExportar.setDisable(false);
@@ -79,9 +82,62 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
             expedienteActual = null;
             folio.setText("NO SE PUDO CARGAR EL EXPEDIENTE");
             for (Label label : new Label[]{nombre, nombreFicha, curp, telefono, datosPersonales, alergias, tipoSangre,
-                    antecedentes, historialConsultas, historialRecetas, historialSignos}) label.setText("");
+                    antecedentes, historialSignos}) label.setText("");
+            listaConsultas.getChildren().clear();
             aviso(Alert.AlertType.ERROR, "Error al cargar", ex.getMessage());
         }
+    }
+
+    private void mostrarConsultas(Expediente expediente) {
+        listaConsultas.getChildren().clear();
+        if (expediente.getConsultas().isEmpty()) {
+            Label vacio = new Label("Sin consultas registradas.");
+            vacio.getStyleClass().add("hint");
+            listaConsultas.getChildren().add(vacio);
+            return;
+        }
+        for (Consulta c : expediente.getConsultas()) {
+            String dx = c.getDiagnostico() == null || c.getDiagnostico().trim().isEmpty() ? "Sin diagnóstico" : c.getDiagnostico().trim();
+            String fecha = c.getFechaConsulta() == null ? "Sin fecha"
+                    : c.getFechaConsulta().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            Label titulo = new Label(dx + " — " + fecha);
+            titulo.setWrapText(true);
+            titulo.getStyleClass().add("row-name");
+            Region espacio = new Region();
+            HBox.setHgrow(espacio, Priority.ALWAYS);
+            Button imprimir = new Button("Imprimir receta");
+            imprimir.getStyleClass().add("btn-secondary");
+            imprimir.setGraphic(new FontIcon("fi-rr-file-pdf"));
+            imprimir.setDisable(c.getReceta() == null || c.getReceta().getMedicamentos().isEmpty());
+            imprimir.setOnAction(e -> imprimirReceta(c.getReceta()));
+            Button detalles = new Button("Ver detalles");
+            detalles.getStyleClass().add("btn-primary");
+            detalles.setOnAction(e -> verDetalles(c));
+            HBox fila = new HBox(12, titulo, espacio, imprimir, detalles);
+            fila.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            fila.getStyleClass().add("row-card");
+            listaConsultas.getChildren().add(fila);
+        }
+    }
+
+    private void imprimirReceta(Receta receta) {
+        if (receta == null) return;
+        if (new ControladorPDF().generarPDF(receta)) {
+            aviso(Alert.AlertType.INFORMATION, "Receta generada",
+                    new File(ControladorPDF.carpetaSalida(), "receta_" + receta.getIdReceta() + ".pdf").getAbsolutePath());
+        } else {
+            aviso(Alert.AlertType.ERROR, "PDF no generado", "No se pudo generar la receta. Revise que los datos estén completos.");
+        }
+    }
+
+    private void verDetalles(Consulta consulta) {
+        if (mainController == null) return;
+        ConsultaController editor = mainController.controlador("consulta-panel.fxml");
+        if (!editor.cargarConsultaParaEdicion(consulta, pacienteActual)) {
+            aviso(Alert.AlertType.ERROR, "No disponible", "No se encontró la cita vinculada a esta consulta.");
+            return;
+        }
+        mainController.ir("consulta-panel.fxml");
     }
 
     @FXML

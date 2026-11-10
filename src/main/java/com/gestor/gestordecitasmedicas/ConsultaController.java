@@ -37,6 +37,8 @@ import java.util.Date;
 import java.util.List;
 
 public class ConsultaController implements PanelControlado, PanelRefrescable {
+    @FXML private Label lblEstado;
+    @FXML private HBox timerBox;
     @FXML private Label lblPaciente, lblResumen, lblFechaEmision, lblMedicamentos, lblTimer;
     @FXML private TextField txtDiagnostico;
     @FXML private TextArea txtEvolucion, txtIndicaciones;
@@ -58,16 +60,13 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     private Paciente paciente;
     private SignosVitales signos;
     private Receta receta;
+    private boolean modoEdicion;
 
     private static final class FilaMedicamento {
         final VBox contenedor = new VBox(8);
         final TextField nombre = new TextField();
         final TextField distintiva = new TextField();
-        final TextField concentracion = new TextField();
-        final TextField presentacion = new TextField();
         final TextField dosis = new TextField();
-        final TextField via = new TextField();
-        final TextField frecuencia = new TextField();
         final TextField duracion = new TextField();
         final TextField cantidad = new TextField();
         final ComboBox<String> grupo = new ComboBox<>();
@@ -85,7 +84,27 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         limpiar();
     }
 
+    /** Abre una consulta ya registrada para editarla; conserva su vínculo con la cita, nota y receta. */
+    public boolean cargarConsultaParaEdicion(Consulta guardada, Paciente paciente) {
+        Cita citaGuardada = guardada == null ? null : baseDatos.cargarCitas().get(guardada.getIdCita());
+        if (citaGuardada == null) return false;
+        cargarConsulta(citaGuardada, paciente, guardada.getSignosVitales());
+        aplicarModoEdicion(true);
+        return true;
+    }
+
+    private void aplicarModoEdicion(boolean activo) {
+        modoEdicion = activo;
+        lblEstado.setText(activo ? "En edición" : "En Atención");
+        timerBox.setVisible(!activo);
+        timerBox.setManaged(!activo);
+        if (activo) reloj.stop();
+        btnFinalizar.setText(activo ? "Actualizar consulta" : "Finalizar y preparar para firma");
+        btnVolver.setText(activo ? "Volver al expediente" : "Volver a Signos Vitales");
+    }
+
     public void cargarConsulta(Cita cita, Paciente paciente, SignosVitales signos) {
+        aplicarModoEdicion(false);
         this.cita = cita;
         this.paciente = cita == null ? null : baseDatos.cargarPacientePorCurp(cita.getCurp());
         paciente = this.paciente;
@@ -154,6 +173,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     }
 
     private void limpiar() {
+        aplicarModoEdicion(false);
         cita = null;
         paciente = null;
         signos = null;
@@ -221,54 +241,53 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         campos.setVgap(8);
         fila.nombre.setText(valor(m.getNombreMedicamento()));
         fila.nombre.getStyleClass().add("search-field");
-        VBox col0 = new VBox(4, new Label("Denominación genérica"), fila.nombre);
+        fila.nombre.setPromptText("Ej. Amoxicilina 500 mg tabletas");
+        VBox col0 = new VBox(4, etiqueta("Nombre del medicamento"), fila.nombre);
         GridPane.setHgrow(col0, Priority.ALWAYS);
         campos.add(col0, 0, 0);
-        fila.distintiva.setText(valor(m.getDenominacionDistintiva()));
-        fila.distintiva.getStyleClass().add("search-field");
-        VBox col1 = new VBox(4, new Label("Marca (opcional)"), fila.distintiva);
+        // Recetas antiguas: se fusionan concentración, vía y frecuencia en el campo único para no perder datos.
+        fila.dosis.setText(String.join(" ", java.util.stream.Stream.of(m.getConcentracion(), m.getDosis(), m.getViaAdministracion(), m.getFrecuencia())
+                .map(ConsultaController::valor).filter(s -> !s.isEmpty()).toArray(String[]::new)));
+        fila.dosis.getStyleClass().add("search-field");
+        fila.dosis.setPromptText("Ej. 1 tableta de 500 mg por vía oral cada 8 horas");
+        VBox col1 = new VBox(4, etiqueta("Dosis y posología"), fila.dosis);
         GridPane.setHgrow(col1, Priority.ALWAYS);
         campos.add(col1, 1, 0);
-        fila.concentracion.setText(valor(m.getConcentracion()));
-        fila.concentracion.getStyleClass().add("search-field");
-        VBox col2 = new VBox(4, new Label("Concentración (con unidad)"), fila.concentracion);
-        GridPane.setHgrow(col2, Priority.ALWAYS);
-        campos.add(col2, 2, 0);
-        fila.presentacion.setText(valor(m.getPresentacion()));
-        fila.presentacion.getStyleClass().add("search-field");
-        VBox col3 = new VBox(4, new Label("Presentación / forma farmacéutica"), fila.presentacion);
-        GridPane.setHgrow(col3, Priority.ALWAYS);
-        campos.add(col3, 0, 1);
-        fila.dosis.setText(valor(m.getDosis()));
-        fila.dosis.getStyleClass().add("search-field");
-        VBox col4 = new VBox(4, new Label("Dosis (con unidad)"), fila.dosis);
-        GridPane.setHgrow(col4, Priority.ALWAYS);
-        campos.add(col4, 1, 1);
-        fila.via.setText(valor(m.getViaAdministracion()));
-        fila.via.getStyleClass().add("search-field");
-        VBox col5 = new VBox(4, new Label("Vía de administración"), fila.via);
-        GridPane.setHgrow(col5, Priority.ALWAYS);
-        campos.add(col5, 2, 1);
-        fila.frecuencia.setText(valor(m.getFrecuencia()));
-        fila.frecuencia.getStyleClass().add("search-field");
-        VBox col6 = new VBox(4, new Label("Frecuencia"), fila.frecuencia);
-        GridPane.setHgrow(col6, Priority.ALWAYS);
-        campos.add(col6, 0, 2);
         fila.duracion.setText(valor(m.getDuradcion()));
         fila.duracion.getStyleClass().add("search-field");
-        VBox col7 = new VBox(4, new Label("Duración del tratamiento"), fila.duracion);
-        GridPane.setHgrow(col7, Priority.ALWAYS);
-        campos.add(col7, 1, 2);
+        fila.duracion.setPromptText("Ej. 7 días");
+        VBox col2 = new VBox(4, etiqueta("Duración del tratamiento"), fila.duracion);
+        GridPane.setHgrow(col2, Priority.ALWAYS);
+        campos.add(col2, 2, 0);
+
+        fila.distintiva.setText(valor(m.getDenominacionDistintiva()));
+        fila.distintiva.getStyleClass().add("search-field");
+        fila.distintiva.setPromptText("Ej. Amoxil");
+        VBox colMarca = new VBox(4, etiqueta("Marca"), fila.distintiva);
         fila.cantidad.setText(valor(m.getCantidad()));
         fila.cantidad.getStyleClass().add("search-field");
-        VBox col8 = new VBox(4, new Label("Cantidad a dispensar (con unidad)"), fila.cantidad);
-        GridPane.setHgrow(col8, Priority.ALWAYS);
-        campos.add(col8, 2, 2);
+        fila.cantidad.setPromptText("Ej. 1 caja con 21 tabletas");
+        VBox colCantidad = new VBox(4, etiqueta("Cantidad a dispensar (con unidad)"), fila.cantidad);
         fila.grupo.getItems().addAll("I", "II", "III", "IV", "V", "VI");
-        fila.grupo.setPromptText("Seleccione la fracción del medicamento");
+        fila.grupo.setPromptText("Ej. IV (antibióticos y otros de receta ordinaria)");
+        fila.grupo.getStyleClass().add("combo-field");
+        fila.grupo.setMaxWidth(Double.MAX_VALUE);
         fila.grupo.setValue(m.getGrupoRegulatorio());
         Label alcance = new Label("Receta ordinaria: fracciones IV, V y VI. Para I, II o III use el procedimiento de control correspondiente fuera de este formato.");
         alcance.setWrapText(true);
+        alcance.getStyleClass().add("hint");
+        VBox extra = new VBox(8, colMarca, colCantidad, etiqueta("Tipo de receta (fracción, art. 226 de la Ley General de Salud)"), fila.grupo, alcance);
+        boolean hayExtra = !valor(m.getDenominacionDistintiva()).isEmpty() || !valor(m.getCantidad()).isEmpty() || m.getGrupoRegulatorio() != null;
+        extra.setVisible(hayExtra);
+        extra.setManaged(hayExtra);
+        Button toggle = new Button(hayExtra ? "Datos adicionales ▴" : "Datos adicionales ▾");
+        toggle.getStyleClass().add("btn-secondary");
+        toggle.setOnAction(e -> {
+            boolean mostrar = !extra.isVisible();
+            extra.setVisible(mostrar);
+            extra.setManaged(mostrar);
+            toggle.setText(mostrar ? "Datos adicionales ▴" : "Datos adicionales ▾");
+        });
         Button eliminar = new Button("Eliminar medicamento");
         eliminar.getStyleClass().addAll("btn-icon", "btn-icon-danger");
         eliminar.setOnAction(e -> {
@@ -276,16 +295,9 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             filas.remove(fila);
             actualizarContador();
         });
-        fila.contenedor.getChildren().addAll(campos, new Label("Fracción del artículo 226 de la Ley General de Salud"), fila.grupo, alcance, eliminar);
+        fila.contenedor.getChildren().addAll(campos, toggle, extra, eliminar);
         fila.nombre.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.distintiva.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.concentracion.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.presentacion.textProperty().addListener((o, a, b) -> actualizarContador());
         fila.dosis.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.via.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.frecuencia.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.duracion.textProperty().addListener((o, a, b) -> actualizarContador());
-        fila.cantidad.textProperty().addListener((o, a, b) -> actualizarContador());
         filas.add(fila);
         medicamentosBox.getChildren().add(fila.contenedor);
         actualizarContador();
@@ -320,6 +332,17 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML
     private void onFinalizar() {
         if (!guardarAtencion(true, false)) return;
+        if (modoEdicion) {
+            aviso(Alert.AlertType.INFORMATION, "Consulta actualizada", "Los cambios se guardaron en la consulta.");
+            Paciente actual = paciente;
+            limpiar();
+            if (mainController != null && actual != null) {
+                ExpedienteController expediente = mainController.controlador("expediente-panel.fxml");
+                expediente.mostrarPaciente(actual);
+                mainController.ir("expediente-panel.fxml");
+            }
+            return;
+        }
         aviso(Alert.AlertType.INFORMATION, "Consulta finalizada",
                 "La nota y la receta se guardaron. Imprima el expediente y la receta para que el profesional los firme de forma autógrafa.");
         limpiar();
@@ -340,6 +363,10 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onVolver() {
+        if (modoEdicion) {
+            onHistorial();
+            return;
+        }
         if (mainController != null) {
             mainController.ir("cita-panel.fxml");
         }
@@ -399,15 +426,11 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     private ArrayList<Medicamento> medicamentos() {
         ArrayList<Medicamento> lista = new ArrayList<>();
         for (FilaMedicamento fila : filas) {
-            if (valor(fila.nombre.getText()).isEmpty() && valor(fila.distintiva.getText()).isEmpty() && valor(fila.concentracion.getText()).isEmpty() && valor(fila.presentacion.getText()).isEmpty() && valor(fila.dosis.getText()).isEmpty() && valor(fila.via.getText()).isEmpty() && valor(fila.frecuencia.getText()).isEmpty() && valor(fila.duracion.getText()).isEmpty() && valor(fila.cantidad.getText()).isEmpty() && fila.grupo.getValue() == null) continue;
+            if (valor(fila.nombre.getText()).isEmpty() && valor(fila.distintiva.getText()).isEmpty() && valor(fila.dosis.getText()).isEmpty() && valor(fila.duracion.getText()).isEmpty() && valor(fila.cantidad.getText()).isEmpty() && fila.grupo.getValue() == null) continue;
             Medicamento m = new Medicamento();
             m.setNombreMedicamento(valor(fila.nombre.getText()));
             m.setDenominacionDistintiva(valor(fila.distintiva.getText()));
-            m.setConcentracion(valor(fila.concentracion.getText()));
-            m.setPresentacion(valor(fila.presentacion.getText()));
             m.setDosis(valor(fila.dosis.getText()));
-            m.setViaAdministracion(valor(fila.via.getText()));
-            m.setFrecuencia(valor(fila.frecuencia.getText()));
             m.setDuradcion(valor(fila.duracion.getText()));
             m.setCantidad(valor(fila.cantidad.getText()));
             m.setGrupoRegulatorio(fila.grupo.getValue());
@@ -432,6 +455,12 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         String nombre = (valor(paciente.getNombre()) + " " + valor(paciente.getApellidoPaterno())
                 + " " + valor(paciente.getApellidoMaterno())).trim();
         return nombre.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : nombre;
+    }
+
+    private static Label etiqueta(String texto) {
+        Label l = new Label(texto);
+        l.getStyleClass().add("caption");
+        return l;
     }
 
     private static String valor(String texto) {

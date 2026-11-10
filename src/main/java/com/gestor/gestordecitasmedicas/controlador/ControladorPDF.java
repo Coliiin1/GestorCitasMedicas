@@ -199,14 +199,25 @@ public class ControladorPDF {
             agregarFila(tabla, "Medicamento " + (++i) + " / denominación genérica", m.getNombreMedicamento());
             if (m.getDenominacionDistintiva() != null && !m.getDenominacionDistintiva().trim().isEmpty())
                 agregarFila(tabla, "Denominación distintiva", m.getDenominacionDistintiva());
-            agregarFila(tabla, "Concentración y presentación", m.getConcentracion() + " | " + m.getPresentacion());
-            agregarFila(tabla, "Dosis y vía de administración", m.getDosis() + " | " + m.getViaAdministracion());
-            agregarFila(tabla, "Frecuencia y duración", m.getFrecuencia() + " | " + m.getDuradcion());
-            agregarFila(tabla, "Cantidad a dispensar", m.getCantidad());
-            agregarFila(tabla, "Fracción regulatoria declarada", m.getGrupoRegulatorio());
+            // Campos heredados (concentración, presentación, vía, frecuencia) solo se imprimen si existen.
+            agregarFilaSiHay(tabla, "Concentración y presentación", m.getConcentracion(), m.getPresentacion());
+            agregarFilaSiHay(tabla, "Dosis y posología", m.getDosis(), m.getViaAdministracion(), m.getFrecuencia());
+            agregarFilaSiHay(tabla, "Duración del tratamiento", m.getDuradcion());
+            agregarFilaSiHay(tabla, "Cantidad a dispensar", m.getCantidad());
+            agregarFilaSiHay(tabla, "Tipo de receta (fracción)", m.getGrupoRegulatorio());
             tabla.setHeaderRows(1);
             documento.add(tabla);
         }
+    }
+
+    private void agregarFilaSiHay(PdfPTable tabla, String etiqueta, String... valores) {
+        StringBuilder sb = new StringBuilder();
+        for (String v : valores) {
+            if (v == null || v.trim().isEmpty()) continue;
+            if (sb.length() > 0) sb.append(" | ");
+            sb.append(v.trim());
+        }
+        if (sb.length() > 0) agregarFila(tabla, etiqueta, sb.toString());
     }
 
     private void agregarFila(PdfPTable tabla, String etiqueta, String valor) {

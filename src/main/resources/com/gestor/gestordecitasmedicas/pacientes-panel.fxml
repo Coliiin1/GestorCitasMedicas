@@ -25,6 +25,7 @@
                 <!-- Búsqueda -->
                 <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="card">
                     <TextField fx:id="txtBuscar" onAction="#onBuscar" maxWidth="Infinity" promptText="Buscar Paciente por Nombre o CURP..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+                    <ComboBox fx:id="cmbOrden" prefWidth="160.0" styleClass="combo-field" />
                     <Button onAction="#onBuscar" prefWidth="104.0" styleClass="btn-primary" text="Buscar">
                         <graphic><FontIcon iconLiteral="fi-rr-search" /></graphic>
                     </Button>

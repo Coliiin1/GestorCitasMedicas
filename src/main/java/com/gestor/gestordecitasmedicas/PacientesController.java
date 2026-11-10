@@ -8,6 +8,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -24,6 +25,7 @@ import java.util.Optional;
 
 public class PacientesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
+    @FXML private ComboBox<String> cmbOrden;
     @FXML private VBox listaPacientes;
     @FXML private Label lblContador;
 
@@ -38,6 +40,10 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void initialize() {
+        cmbOrden.getItems().addAll("Nombre A–Z", "Nombre Z–A");
+        cmbOrden.setValue("Nombre A–Z");
+        cmbOrden.valueProperty().addListener((o, a, b) -> aplicarFiltro());
+        txtBuscar.textProperty().addListener((o, a, b) -> aplicarFiltro());
         refrescar();
     }
 
@@ -45,10 +51,6 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
     public void refrescar() {
         pacientes.clear();
         pacientes.addAll(baseDatos.cargarPacientes().values());
-        pacientes.sort(Comparator
-                .comparing((Paciente p) -> valor(p.getApellidoPaterno()))
-                .thenComparing(p -> valor(p.getApellidoMaterno()))
-                .thenComparing(p -> valor(p.getNombre())));
         aplicarFiltro();
     }
 
@@ -74,6 +76,11 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
                 filtrados.add(paciente);
             }
         }
+        Comparator<Paciente> orden = Comparator
+                .comparing((Paciente p) -> normalizar(p.getApellidoPaterno()))
+                .thenComparing(p -> normalizar(p.getApellidoMaterno()))
+                .thenComparing(p -> normalizar(p.getNombre()));
+        filtrados.sort("Nombre Z–A".equals(cmbOrden.getValue()) ? orden.reversed() : orden);
         mostrarPacientes(filtrados);
         lblContador.setText("MOSTRANDO " + filtrados.size() + " DE " + pacientes.size() + " REGISTROS");
     }

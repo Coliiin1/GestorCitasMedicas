@@ -62,12 +62,12 @@ class FormatoClinicoTest {
     @Test void impideExportarRecetasIncompletasYFraccionesFueraDelAlcance() throws Exception {
         Receta r = recetaCompleta();
         assertTrue(ValidacionClinica.receta(r,true).isEmpty());
-        Medicamento m = r.getMedicamentos().get(0); m.setViaAdministracion(null);
+        Medicamento m = r.getMedicamentos().get(0); m.setDosis(null);
         Path salida = temporal.resolve("no-emitir.pdf");
         assertThrows(IllegalArgumentException.class, () -> new ControladorPDF().generarReceta(salida.toFile(),r));
         assertFalse(Files.exists(salida));
-        m.setViaAdministracion("Oral");
-        for (String grupo : new String[]{null, "I", "II", "III"}) {
+        m.setDosis("1 tableta oral cada 8 horas");
+        for (String grupo : new String[]{"I", "II", "III"}) {
             m.setGrupoRegulatorio(grupo);
             assertFalse(ValidacionClinica.receta(r,true).isEmpty());
         }

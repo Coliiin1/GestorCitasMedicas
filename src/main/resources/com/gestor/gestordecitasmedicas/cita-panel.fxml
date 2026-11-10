@@ -94,41 +94,41 @@
                         </columnConstraints>
 
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Label styleClass="caption" text="PRESIÓN ART." />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtPresion" styleClass="vital-input" text="120/80" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" mmHg" /></HBox>
+                            <Label styleClass="caption" text="PRESIÓN ART. *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtPresion" styleClass="vital-input" promptText="Ej. 120/80" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" mmHg" /></HBox>
                             <Label styleClass="hint" text="Sistólica / Diastólica" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Label styleClass="caption" text="FREC. CARDÍACA" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtFrecuencia" styleClass="vital-input" text="72" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" lpm" /></HBox>
+                            <Label styleClass="caption" text="FREC. CARDÍACA *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtFrecuencia" styleClass="vital-input" promptText="Ej. 72" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" lpm" /></HBox>
                             <Label styleClass="hint" text="Latidos por minuto" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                            <Label styleClass="caption" text="OXÍGENO SPO2" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtOxigeno" styleClass="vital-input" text="98" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" %" /></HBox>
+                            <Label styleClass="caption" text="OXÍGENO SPO2 *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtOxigeno" styleClass="vital-input" promptText="Ej. 98" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" %" /></HBox>
                             <Label styleClass="hint" text="Saturación de oxígeno" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="3" GridPane.rowIndex="0">
-                            <Label styleClass="caption" text="TEMPERATURA" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtTemperatura" styleClass="vital-input" text="36.6" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" °C" /></HBox>
+                            <Label styleClass="caption" text="TEMPERATURA *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtTemperatura" styleClass="vital-input" promptText="Ej. 36.6" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" °C" /></HBox>
                             <Label styleClass="hint" text="Grados Celsius" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <Label styleClass="caption" text="FREC. RESPIRATORIA" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtFrecuenciaRespiratoria" styleClass="vital-input" text="18" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" rpm" /></HBox>
+                            <Label styleClass="caption" text="FREC. RESPIRATORIA *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtFrecuenciaRespiratoria" styleClass="vital-input" promptText="Ej. 18" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" rpm" /></HBox>
                             <Label styleClass="hint" text="Respiraciones por minuto" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                            <Label styleClass="caption" text="PESO CORPORAL" />
-                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtPeso" styleClass="vital-input" text="74.2" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" kg" /></HBox>
+                            <Label styleClass="caption" text="PESO CORPORAL *" />
+                            <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtPeso" styleClass="vital-input" promptText="Ej. 74.2" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" kg" /></HBox>
                             <Label styleClass="hint" text="Kilogramos" />
                         </VBox>
                         <VBox spacing="4.0" styleClass="vital-tile" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="1">
-                            <Label styleClass="caption" text="ESTATURA &amp; IMC" />
+                            <Label styleClass="caption" text="ESTATURA &amp; IMC *" />
                             <HBox alignment="CENTER" spacing="16.0">
                                 <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                                     <Label styleClass="hint" text="Talla" />
-                                    <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtTalla" styleClass="vital-input" text="1.75" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" m" /></HBox>
+                                    <HBox alignment="CENTER_RIGHT"><TextField fx:id="txtTalla" styleClass="vital-input" promptText="Ej. 1.75" HBox.hgrow="ALWAYS" /><Label styleClass="unit" text=" m" /></HBox>
                                 </VBox>
                                 <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                                     <Label styleClass="hint" text="IMC Calculado" />

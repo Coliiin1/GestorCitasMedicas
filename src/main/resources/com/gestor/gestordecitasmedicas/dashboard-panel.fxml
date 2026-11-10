@@ -58,8 +58,8 @@
                         <Button maxWidth="Infinity" styleClass="btn-secondary, nav-link" text="Administración de Asistentes" userData="asistentes-panel.fxml">
                             <graphic><FontIcon iconLiteral="fi-rr-user-md" /></graphic>
                         </Button>
-                        <Button maxWidth="Infinity" styleClass="btn-secondary, nav-link" text="Recetas e Indicaciones" userData="consulta-panel.fxml">
-                            <graphic><FontIcon iconLiteral="fi-rr-notes-medical" /></graphic>
+                        <Button fx:id="btnHorario" maxWidth="Infinity" onAction="#onHorario" styleClass="btn-secondary" text="Horario y bloqueos laborales">
+                            <graphic><FontIcon iconLiteral="fi-rr-settings" /></graphic>
                         </Button>
                     </VBox>
                 </GridPane>

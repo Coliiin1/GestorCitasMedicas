@@ -42,14 +42,9 @@ public final class ValidacionClinica {
                 String prefijo = "medicamento " + (++i) + ": ";
                 if (m == null) { errores.add(prefijo + "datos ausentes."); continue; }
                 requerido(errores, prefijo + "denominación genérica", m.getNombreMedicamento());
-                requerido(errores, prefijo + "concentración y unidad", m.getConcentracion());
-                requerido(errores, prefijo + "presentación", m.getPresentacion());
-                requerido(errores, prefijo + "dosis y unidad", m.getDosis());
-                requerido(errores, prefijo + "vía de administración", m.getViaAdministracion());
-                requerido(errores, prefijo + "frecuencia", m.getFrecuencia());
+                requerido(errores, prefijo + "dosis y posología", m.getDosis());
                 requerido(errores, prefijo + "duración", m.getDuradcion());
-                requerido(errores, prefijo + "cantidad a dispensar y unidad", m.getCantidad());
-                if (!Arrays.asList("IV", "V", "VI").contains(m.getGrupoRegulatorio()))
+                if (m.getGrupoRegulatorio() != null && !Arrays.asList("IV", "V", "VI").contains(m.getGrupoRegulatorio()))
                     errores.add(prefijo + "seleccione IV, V o VI para receta ordinaria. Las fracciones I, II y III requieren otro procedimiento de control y no se emiten en este formato.");
             }
         }
