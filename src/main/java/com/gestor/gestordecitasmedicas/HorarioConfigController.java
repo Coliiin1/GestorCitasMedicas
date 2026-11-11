@@ -215,8 +215,8 @@ public final class HorarioConfigController {
         scroll.setPrefViewportHeight(240);
 
         VBox contenido = new VBox(12,
-                new Label("Los bloqueos impiden agendar en ese periodo. Si hay citas activas, "
-                        + "debes reprogramarlas o cancelarlas antes de bloquear."),
+                new Label("Los bloqueos impiden agendar en ese periodo. Si hay citas agendadas, "
+                        + "se cancelarán al bloquear (se te mostrarán antes de confirmar)."),
                 formulario,
                 acciones,
                 scroll);
@@ -448,10 +448,7 @@ public final class HorarioConfigController {
         }
 
         ArrayList<Cita> conflictos = baseDatos.citasActivasEnRango(inicio, fin);
-        if (!conflictos.isEmpty()) {
-            aviso(Alert.AlertType.WARNING, "Hay citas en el rango",
-                    "No se puede bloquear porque hay " + conflictos.size()
-                            + " cita(s) activa(s). Reprograma o cancela primero.");
+        if (!confirmarCancelacionCitas(baseDatos, conflictos)) {
             return;
         }
 
@@ -587,6 +584,35 @@ public final class HorarioConfigController {
         alerta.setContentText(mensaje);
         alerta.getButtonTypes().setAll(aceptar, cancelar);
         return alerta.showAndWait().orElse(cancelar) == aceptar;
+    }
+
+    /** Lista las citas que se cancelarán al bloquear y pide confirmación; true si no hay citas o se acepta. */
+    static boolean confirmarCancelacionCitas(BaseDatos baseDatos, List<Cita> citas) {
+        if (citas.isEmpty()) {
+            return true;
+        }
+        java.util.Map<String, com.gestor.gestordecitasmedicas.modelo.Paciente> pacientes = baseDatos.cargarPacientes();
+        java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        StringBuilder texto = new StringBuilder();
+        citas.stream().sorted(Comparator.comparing(Cita::getFechaCita)).forEach(cita -> {
+            com.gestor.gestordecitasmedicas.modelo.Paciente p = pacientes.get(cita.getCurp());
+            String nombre = p == null ? cita.getCurp()
+                    : (p.getNombre() + " " + p.getApellidoPaterno() + " " + p.getApellidoMaterno()).replace("null", "").trim();
+            texto.append(formato.format(LocalDateTime.ofInstant(cita.getFechaCita().toInstant(), ZoneId.systemDefault())))
+                    .append(" · ").append(nombre).append('\n');
+        });
+        javafx.scene.control.TextArea lista = new javafx.scene.control.TextArea(texto.toString());
+        lista.setEditable(false);
+        lista.setPrefRowCount(Math.min(citas.size(), 10) + 1);
+
+        ButtonType aceptar = new ButtonType("Cancelar citas y bloquear", ButtonBar.ButtonData.OK_DONE);
+        ButtonType volver = new ButtonType("Volver", ButtonBar.ButtonData.CANCEL_CLOSE);
+        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
+        alerta.setTitle("Citas que se cancelarán");
+        alerta.setHeaderText("Se cancelarán " + citas.size() + " cita(s) agendada(s) en este periodo:");
+        alerta.getDialogPane().setContent(lista);
+        alerta.getButtonTypes().setAll(aceptar, volver);
+        return alerta.showAndWait().orElse(volver) == aceptar;
     }
 
     private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {

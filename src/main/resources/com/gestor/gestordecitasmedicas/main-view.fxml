@@ -44,14 +44,14 @@
                 <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Administracion de Asistentes" userData="asistentes-panel.fxml">
                     <graphic><FontIcon iconLiteral="fi-rr-user-md" /></graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Configuración" userData="configuracion-panel.fxml">
-                    <graphic><FontIcon iconLiteral="fi-rr-settings" /></graphic>
-                </Button>
             </VBox>
         </VBox>
-        <!-- Fuera de "menu" para que configurarRol no lo oculte ni lo trate como módulo -->
-        <VBox>
+        <!-- Configuración es un módulo (rol y resaltado se manejan en MainController.modulos()) pero va sobre "Cerrar sesión" -->
+        <VBox spacing="4.0">
             <padding><Insets bottom="4.0" left="12.0" right="12.0" top="0.0" /></padding>
+            <Button fx:id="btnConfig" maxWidth="Infinity" onAction="#onNavegar" prefHeight="36.0" styleClass="nav-item" text="Configuración" userData="configuracion-panel.fxml">
+                <graphic><FontIcon iconLiteral="fi-rr-settings" /></graphic>
+            </Button>
             <Button maxWidth="Infinity" onAction="#onCerrarSesion" prefHeight="36.0" styleClass="nav-item, nav-logout" text="Cerrar sesión">
                 <graphic><FontIcon iconLiteral="fi-rr-arrow-left" /></graphic>
             </Button>

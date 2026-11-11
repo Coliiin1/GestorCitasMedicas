@@ -953,10 +953,17 @@ public class BaseDatos {
         try {
             con.setAutoCommit(false);
 
-            if (existeBloqueoSuperpuesto(con, bloqueo)
-                    || !citasActivasEnRango(con, bloqueo.getFechaInicio(), bloqueo.getFechaFin()).isEmpty()) {
+            if (existeBloqueoSuperpuesto(con, bloqueo)) {
                 con.rollback();
                 return false;
+            }
+
+            // El bloqueo cancela las citas agendadas del intervalo en la misma transacción.
+            for (Cita cita : citasActivasEnRango(con, bloqueo.getFechaInicio(), bloqueo.getFechaFin())) {
+                if (!actualizarEstadoCita(con, cita.getIdCita(), Estado.CANCELADA)) {
+                    con.rollback();
+                    return false;
+                }
             }
 
             boolean guardado;
@@ -1079,7 +1086,8 @@ public class BaseDatos {
                 cita.setCurp(rs.getString("CURP"));
                 cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
                 cita.setEstado(parseEstado(rs.getString("estado")));
-                if (cita.getFechaCita() == null || cita.getEstado() == Estado.CANCELADA) {
+                // Solo AGENDADA: las ATENDIDA son historial y las CANCELADA ya no ocupan.
+                if (cita.getFechaCita() == null || cita.getEstado() != Estado.AGENDADA) {
                     continue;
                 }
                 LocalDateTime inicioCita = LocalDateTime.ofInstant(

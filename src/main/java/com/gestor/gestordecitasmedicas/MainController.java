@@ -23,6 +23,14 @@ public class MainController {
     @FXML private Pane menu;
     @FXML private Button btnCita;
     @FXML private Button btnDashboard;
+    @FXML private Button btnConfig;
+
+    /** Botones de módulo: los del menú más Configuración, que está junto a "Cerrar sesión". */
+    private java.util.List<Node> modulos() {
+        java.util.List<Node> l = new java.util.ArrayList<>(menu.getChildren());
+        l.add(btnConfig);
+        return l;
+    }
 
     // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
     private final Map<String, Node> paneles = new HashMap<>();
@@ -66,7 +74,7 @@ public class MainController {
         idAdmin = idUsuario;
         aplicarConfiguracion();
         rolConfigurado = true;
-        for (Node n : menu.getChildren()) {
+        for (Node n : modulos()) {
             if (n instanceof Button) {
                 boolean permitido = destinoPermitido((String) n.getUserData())
                         && n != btnCita && (esAdmin || n != btnDashboard) && !"consulta-panel.fxml".equals(n.getUserData());
@@ -126,7 +134,7 @@ public class MainController {
         }
 
         Button activo = null;
-        for (Node n : menu.getChildren()) {
+        for (Node n : modulos()) {
             n.getStyleClass().remove("nav-item-active");
             if (n instanceof Button && fxml.equals(n.getUserData())) activo = (Button) n;
         }

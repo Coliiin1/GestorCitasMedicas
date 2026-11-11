@@ -854,11 +854,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             }
 
             ArrayList<Cita> conflictos = baseDatos.citasActivasEnRango(inicio, fin);
-            if (!conflictos.isEmpty()) {
+            if (!HorarioConfigController.confirmarCancelacionCitas(baseDatos, conflictos)) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Hay citas en el rango",
-                        "No se puede bloquear porque hay " + conflictos.size()
-                                + " cita(s) activa(s) en ese periodo. Reprograma o cancela primero.");
                 return;
             }
 

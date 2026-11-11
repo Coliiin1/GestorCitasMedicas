@@ -21,16 +21,18 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
     private static final class Campo {
         final String etiqueta;
         final int max;
+        final int span; // columnas de 12 que ocupa en la rejilla
         final boolean obligatorio;
         final Function<Administrador, String> leer;
         final BiConsumer<Administrador, String> escribir;
         final TextField campo = new TextField();
 
-        Campo(String etiqueta, String ejemplo, int max, boolean obligatorio,
+        Campo(String etiqueta, String ejemplo, int max, int span, boolean obligatorio,
               Function<Administrador, String> leer, BiConsumer<Administrador, String> escribir) {
             campo.setPromptText("Ej. " + ejemplo);
             this.etiqueta = etiqueta;
             this.max = max;
+            this.span = span;
             this.obligatorio = obligatorio;
             this.leer = leer;
             this.escribir = escribir;
@@ -50,28 +52,30 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
 
     // Límites = tamaños de columna de la tabla Administrador (SQLite no los impone, así que se validan aquí).
     private final Campo[] campos = {
-            new Campo("NOMBRE (S)", "Juan Carlos", 20, true, Administrador::getNombre, Administrador::setNombre),
-            new Campo("APELLIDO PATERNO", "Ramírez", 20, true, Administrador::getApellidoPaterno, Administrador::setApellidoPaterno),
-            new Campo("APELLIDO MATERNO", "López", 20, false, Administrador::getApellidoMaterno, Administrador::setApellidoMaterno),
-            new Campo("CÉDULA PROFESIONAL", "12345678", 8, false, Administrador::getCedulaProfesional, Administrador::setCedulaProfesional),
-            new Campo("INSTITUCIÓN", "UNAM", 20, false, Administrador::getInstitucionAcademica, Administrador::setInstitucionAcademica),
-            new Campo("DOMICILIO", "Av. Juárez 123, Col. Centro, Morelia, Mich.", 100, false, Administrador::getDomicilio, Administrador::setDomicilio),
-            new Campo("PROFESIÓN", "Médico Cirujano", 100, false, Administrador::getProfesion, Administrador::setProfesion),
-            new Campo("ESPECIALIDAD", "Medicina Familiar", 100, false, Administrador::getEspecialidad, Administrador::setEspecialidad),
-            new Campo("REGISTRO DE ESPECIALIDAD", "87654321", 100, false, Administrador::getRegistroEspecialidad, Administrador::setRegistroEspecialidad),
-            new Campo("NOMBRE DEL ESTABLECIMIENTO", "Consultorio Médico Dr. Ramírez", 100, false, Administrador::getNombreEstablecimiento, Administrador::setNombreEstablecimiento),
-            new Campo("DOMICILIO DEL ESTABLECIMIENTO", "Av. Madero 456, Col. Centro, Morelia, Mich.", 100, false, Administrador::getDomicilioEstablecimiento, Administrador::setDomicilioEstablecimiento),
+            new Campo("NOMBRE (S)", "Juan Carlos", 20, 4, true, Administrador::getNombre, Administrador::setNombre),
+            new Campo("APELLIDO PATERNO", "Ramírez", 20, 4, true, Administrador::getApellidoPaterno, Administrador::setApellidoPaterno),
+            new Campo("APELLIDO MATERNO", "López", 20, 4, false, Administrador::getApellidoMaterno, Administrador::setApellidoMaterno),
+            new Campo("CÉDULA PROFESIONAL", "12345678", 8, 3, false, Administrador::getCedulaProfesional, Administrador::setCedulaProfesional),
+            new Campo("INSTITUCIÓN", "UNAM", 20, 3, false, Administrador::getInstitucionAcademica, Administrador::setInstitucionAcademica),
+            new Campo("PROFESIÓN", "Médico Cirujano", 100, 6, false, Administrador::getProfesion, Administrador::setProfesion),
+            new Campo("ESPECIALIDAD", "Medicina Familiar", 100, 6, false, Administrador::getEspecialidad, Administrador::setEspecialidad),
+            new Campo("REGISTRO DE ESPECIALIDAD", "87654321", 100, 6, false, Administrador::getRegistroEspecialidad, Administrador::setRegistroEspecialidad),
+            new Campo("NOMBRE DEL ESTABLECIMIENTO", "Consultorio Médico Dr. Ramírez", 100, 12, false, Administrador::getNombreEstablecimiento, Administrador::setNombreEstablecimiento),
+            new Campo("DOMICILIO", "Av. Juárez 123, Col. Centro, Morelia, Mich.", 100, 12, false, Administrador::getDomicilio, Administrador::setDomicilio),
+            new Campo("DOMICILIO DEL ESTABLECIMIENTO", "Av. Madero 456, Col. Centro, Morelia, Mich.", 100, 12, false, Administrador::getDomicilioEstablecimiento, Administrador::setDomicilioEstablecimiento),
     };
 
     @FXML
     private void initialize() {
-        for (int i = 0; i < campos.length; i++) {
-            Campo c = campos[i];
+        int col = 0, fila = 0;
+        for (Campo c : campos) {
             c.campo.setPrefHeight(40);
             c.campo.getStyleClass().add("form-field");
             VBox caja = new VBox(8, new Label(c.etiqueta + (c.obligatorio ? " *" : "")), c.campo);
             caja.getChildren().get(0).getStyleClass().add("field-label");
-            gridDatos.add(caja, i % 2, i / 2);
+            gridDatos.add(caja, col, fila, c.span, 1);
+            col += c.span;
+            if (col >= 12) { col = 0; fila++; }
         }
     }
 

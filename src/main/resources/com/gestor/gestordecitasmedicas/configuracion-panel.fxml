@@ -28,8 +28,18 @@
                             <VBox spacing="24.0" styleClass="config-body">
                                 <GridPane fx:id="gridDatos" hgap="24.0" vgap="16.0">
                                     <columnConstraints>
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.333" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="8.337" />
                                     </columnConstraints>
                                 </GridPane>
                                 <HBox alignment="CENTER" styleClass="form-actions">

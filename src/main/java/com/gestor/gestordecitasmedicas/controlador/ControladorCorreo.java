@@ -108,10 +108,8 @@ public class ControladorCorreo {
         ControladorCorreo controlador = new ControladorCorreo();
         String destino = controlador.remitente;
         String asunto = "Prueba de correo - Gestor de Citas Médicas";
-        String cuerpo = "<html><body style=\"font-family: Arial, sans-serif;\">"
-                + "<h2 style=\"color: #1e40af;\">Prueba de correo</h2>"
-                + "<p>La configuración SMTP funciona correctamente.</p>"
-                + "</body></html>";
+        String cuerpo = controlador.plantilla("Prueba de correo",
+                "<p style=\"margin:0;font-size:15px;color:#475569;\">La configuración SMTP funciona correctamente.</p>");
         return controlador.enviarCorreo(destino, asunto, cuerpo);
     }
 
@@ -165,29 +163,69 @@ public class ControladorCorreo {
 
     private String construirCuerpoConfirmacion(Paciente paciente, Cita cita) {
         String nombre = unirNombre(paciente);
-        String estado = cita.getEstado() == null ? "-" : cita.getEstado().name();
 
-        return "<!DOCTYPE html>"
-                + "<html><body style=\"font-family: Arial, Helvetica, sans-serif; color: #1f2937; line-height: 1.5;\">"
-                + "<h2 style=\"color: #1e40af;\">Confirmación de cita médica</h2>"
-                + "<p>Hola <strong>" + escaparHtml(nombre) + "</strong>,</p>"
-                + "<p>Tu cita ha sido agendada correctamente.</p>"
-                + "<table style=\"border-collapse: collapse; margin: 16px 0;\">"
-                + fila("Folio", String.valueOf(cita.getIdCita()))
-                + fila("Fecha y hora", formatearFecha(cita.getFechaCita()))
-                + fila("Estado", estado)
-                + fila("CURP", texto(paciente.getCurp()))
+        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
+                + escaparHtml(nombre) + "</strong>,</p>"
+                + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
+                + "Tu cita fue agendada correctamente. Estos son los detalles:</p>"
+                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
+                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+                + fila("Fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
+                + escaparHtml(formatearFecha(cita.getFechaCita())) + "</span>", true)
+                + fila("Folio", "#" + cita.getIdCita(), true)
+                + fila("Estado", pastillaEstado(cita.getEstado()), true)
+                + fila("CURP", escaparHtml(texto(paciente.getCurp())), false)
                 + "</table>"
-                + "<p>Si no reconoces esta cita, comunícate con el consultorio.</p>"
-                + "<p>Gestor de Citas Médicas</p>"
-                + "</body></html>";
+                + "<p style=\"margin:22px 0 0;font-size:13px;color:#64748b;line-height:1.6;\">"
+                + "Si no reconoces esta cita, comunícate con el consultorio.</p>";
+        return plantilla("Cita confirmada", contenido);
     }
 
-    private String fila(String etiqueta, String valor) {
-        return "<tr>"
-                + "<td style=\"padding: 6px 12px; background: #dbeafe; font-weight: bold;\">" + escaparHtml(etiqueta) + "</td>"
-                + "<td style=\"padding: 6px 12px; border: 1px solid #dbeafe;\">" + escaparHtml(valor) + "</td>"
-                + "</tr>";
+    /** Envoltorio común: fondo gris, tarjeta redondeada, cabecera oscura y pie (mismos colores que cita.css). */
+    private String plantilla(String titulo, String contenidoHtml) {
+        String fuente = "'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif";
+        return "<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\">"
+                + "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head>"
+                + "<body style=\"margin:0;padding:0;background:#f1f5f9;font-family:" + fuente + ";\">"
+                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
+                + "style=\"background:#f1f5f9;padding:28px 12px;\"><tr><td align=\"center\">"
+                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
+                + "style=\"max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;\">"
+                + "<tr><td style=\"background:#1e293b;padding:26px 32px;\">"
+                + "<div style=\"font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#38bdf8;font-weight:600;\">"
+                + "✚ Gestor de Citas Médicas</div>"
+                + "<div style=\"margin-top:8px;font-size:24px;font-weight:600;color:#ffffff;\">" + escaparHtml(titulo) + "</div>"
+                + "</td></tr>"
+                + "<tr><td style=\"padding:30px 32px;\">" + contenidoHtml + "</td></tr>"
+                + "<tr><td style=\"padding:18px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;"
+                + "font-size:12px;color:#94a3b8;text-align:center;\">Gestor de Citas Médicas · Mensaje automático, no respondas a este correo</td></tr>"
+                + "</table></td></tr></table></body></html>";
+    }
+
+    /** valorHtml ya debe venir escapado. */
+    private String fila(String etiqueta, String valorHtml, boolean separador) {
+        return "<tr><td style=\"padding:14px 20px;" + (separador ? "border-bottom:1px solid #e2e8f0;" : "") + "\">"
+                + "<div style=\"font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#64748b;\">"
+                + escaparHtml(etiqueta) + "</div>"
+                + "<div style=\"margin-top:4px;font-size:15px;font-weight:600;color:#0f172a;\">" + valorHtml + "</div>"
+                + "</td></tr>";
+    }
+
+    private String pastillaEstado(Estado estado) {
+        String texto = "Agendada";
+        String fondo = "#ecfdf5";
+        String color = "#065f46";
+        if (estado == Estado.CANCELADA) {
+            texto = "Cancelada";
+            fondo = "#fff1f2";
+            color = "#be123c";
+        } else if (estado == Estado.ATENDIDA) {
+            texto = "Atendida";
+            fondo = "#e0f2fe";
+            color = "#0369a1";
+        }
+        return "<span style=\"display:inline-block;padding:3px 12px;border-radius:999px;font-size:13px;"
+                + "background:" + fondo + ";color:" + color + ";\">" + texto + "</span>";
     }
 
     private String unirNombre(Paciente paciente) {
@@ -234,7 +272,7 @@ public class ControladorCorreo {
     }
 
     public static void main(String[] args) {
-        String correoPaciente = ""; //aqui va el correo del destinatario
+        String correoPaciente = "carlosdanielavilacolin@gmail.com"; //aqui va el correo del destinatario
 
         ControladorCorreo controlador = new ControladorCorreo();
         if (!controlador.estaConfigurado()) {
