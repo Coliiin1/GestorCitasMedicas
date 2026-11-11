@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -19,13 +18,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 public class BaseDatos {
-    private String contraseña;
     private static Connection conexion = null;
     private static String urlActual = null;
-
-    private static String url() {
-        return System.getProperty("gestor.db.url", "jdbc:sqlite:citas_medicas.db");
-    }
 
     private static Properties cargarConfig() {
         Properties p = new Properties();
@@ -718,11 +712,7 @@ public class BaseDatos {
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Cita cita = new Cita();
-                cita.setIdCita(rs.getInt("id_cita"));
-                cita.setCurp(rs.getString("CURP"));
-                cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
-                cita.setEstado(parseEstado(rs.getString("estado")));
+                Cita cita = crearCita(rs);
                 citas.put(cita.getIdCita(), cita);
             }
         } catch (SQLException e) {
@@ -757,20 +747,9 @@ public class BaseDatos {
             return horarios;
         }
 
-        String sql = "SELECT id_horario, dia, hora_inicio, hora_fin, estado FROM Horario " +
-                "ORDER BY dia, hora_inicio";
-
-        try (PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Horario horario = new Horario();
-                horario.setIdHorario(rs.getInt("id_horario"));
-                horario.setDia(DiaSemana.desdeNumero(rs.getInt("dia")));
-                horario.setHoraInicio(leerHora(rs.getObject("hora_inicio")));
-                horario.setHoraFin(leerHora(rs.getObject("hora_fin")));
-                horario.setEstado(leerBooleano(rs.getObject("estado")));
-                if (horario.getDia() != null && horario.getHoraInicio() != null
-                        && horario.getHoraFin() != null) {
+        try {
+            for (Horario horario : buscarHorarios(con)) {
+                if (horario.getHoraInicio() != null && horario.getHoraFin() != null) {
                     horarios.add(horario);
                 }
             }
@@ -800,7 +779,6 @@ public class BaseDatos {
             return false;
         }
 
-        boolean confirmado = false;
         try {
             con.setAutoCommit(false);
 
@@ -845,14 +823,10 @@ public class BaseDatos {
             }
 
             con.commit();
-            confirmado = true;
             return true;
         } catch (SQLException e) {
             revertir(con, "guardar horario", e);
         } finally {
-            if (!confirmado) {
-                // La transacción ya se revirtió o se revierte en el catch.
-            }
             restaurarAutoCommit(con);
         }
         return false;
@@ -868,7 +842,6 @@ public class BaseDatos {
             return false;
         }
 
-        boolean confirmado = false;
         try {
             con.setAutoCommit(false);
             Horario horario = buscarHorario(con, idHorario);
@@ -887,14 +860,10 @@ public class BaseDatos {
             }
 
             con.commit();
-            confirmado = true;
             return true;
         } catch (SQLException e) {
             revertir(con, "eliminar horario", e);
         } finally {
-            if (!confirmado) {
-                // Sin cambios confirmados.
-            }
             restaurarAutoCommit(con);
         }
         return false;
@@ -949,7 +918,6 @@ public class BaseDatos {
             return false;
         }
 
-        boolean confirmado = false;
         try {
             con.setAutoCommit(false);
 
@@ -998,14 +966,10 @@ public class BaseDatos {
             }
 
             con.commit();
-            confirmado = true;
             return true;
         } catch (SQLException e) {
             revertir(con, "guardar bloqueo", e);
         } finally {
-            if (!confirmado) {
-                // Sin cambios confirmados.
-            }
             restaurarAutoCommit(con);
         }
         return false;
@@ -1081,11 +1045,7 @@ public class BaseDatos {
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Cita cita = new Cita();
-                cita.setIdCita(rs.getInt("id_cita"));
-                cita.setCurp(rs.getString("CURP"));
-                cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
-                cita.setEstado(parseEstado(rs.getString("estado")));
+                Cita cita = crearCita(rs);
                 // Solo AGENDADA: las ATENDIDA son historial y las CANCELADA ya no ocupan.
                 if (cita.getFechaCita() == null || cita.getEstado() != Estado.AGENDADA) {
                     continue;
@@ -1147,6 +1107,16 @@ public class BaseDatos {
         return null;
     }
 
+    private static Cita crearCita(ResultSet rs) throws SQLException {
+        Cita cita = new Cita();
+        cita.setIdCita(rs.getInt("id_cita"));
+        cita.setCurp(rs.getString("CURP"));
+        cita.setFechaCita(leerFechaHora(rs.getObject("fecha")));
+        cita.setEstado(parseEstado(rs.getString("estado")));
+        return cita;
+    }
+
+    /** Horarios con día válido, ordenados por día y hora de inicio. */
     private ArrayList<Horario> buscarHorarios(Connection con) throws SQLException {
         ArrayList<Horario> horarios = new ArrayList<>();
         String sql = "SELECT id_horario, dia, hora_inicio, hora_fin, estado FROM Horario " +
@@ -1187,34 +1157,8 @@ public class BaseDatos {
                 "signos_historia, tipo_sangre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, expediente.getDatosPaciente().getCurp());
-            ps.setDate(2, toSqlDate(expediente.getFechaApertura() != null
-                    ? expediente.getFechaApertura()
-                    : new java.util.Date()));
-            ps.setString(3, expediente.getAntecedentesFamiliares());
-            ps.setString(4, expediente.getAntecedentesPersonales());
-            ps.setString(5, expediente.getAlergias());
-            ps.setString(6, expediente.getObservaciones());
-            ps.setString(7, expediente.getTipoEstablecimiento());
-            ps.setString(8, expediente.getNombreEstablecimiento());
-            ps.setString(9, expediente.getDomicilioEstablecimiento());
-            ps.setString(10, expediente.getInstitucionEstablecimiento());
-            ps.setString(11, expediente.getPropietario());
-            ps.setString(12, expediente.getGrupoEtnico());
-            ps.setString(13, expediente.getAntecedentesNoPatologicos());
-            ps.setString(14, expediente.getConsumoSustancias());
-            ps.setString(15, expediente.getPadecimientoActual());
-            ps.setString(16, expediente.getInterrogatorioSistemas());
-            ps.setString(17, expediente.getExploracionFisica());
-            ps.setString(18, expediente.getResultadosEstudios());
-            ps.setString(19, expediente.getDiagnostico());
-            ps.setString(20, expediente.getPronostico());
-            ps.setString(21, expediente.getIndicacionTerapeutica());
-            ps.setString(22, expediente.getAutorHistoria());
-            ps.setString(23, expediente.getCedulaHistoria());
-            ps.setString(24, expediente.getFechaHoraHistoria());
-            ps.setString(25, expediente.getSignosHistoria());
-            ps.setString(26, expediente.getTipoSangre());
+            parametrosExpediente(ps, expediente, expediente.getFechaApertura() != null
+                    ? expediente.getFechaApertura() : new java.util.Date());
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -1254,6 +1198,37 @@ public class BaseDatos {
         return false;
     }
 
+    /** Parámetros 1-26 comunes a INSERT y UPDATE de Expediente. */
+    private static void parametrosExpediente(PreparedStatement ps, Expediente expediente, java.util.Date fechaApertura)
+            throws SQLException {
+        ps.setString(1, expediente.getDatosPaciente().getCurp());
+        ps.setDate(2, toSqlDate(fechaApertura));
+        ps.setString(3, expediente.getAntecedentesFamiliares());
+        ps.setString(4, expediente.getAntecedentesPersonales());
+        ps.setString(5, expediente.getAlergias());
+        ps.setString(6, expediente.getObservaciones());
+        ps.setString(7, expediente.getTipoEstablecimiento());
+        ps.setString(8, expediente.getNombreEstablecimiento());
+        ps.setString(9, expediente.getDomicilioEstablecimiento());
+        ps.setString(10, expediente.getInstitucionEstablecimiento());
+        ps.setString(11, expediente.getPropietario());
+        ps.setString(12, expediente.getGrupoEtnico());
+        ps.setString(13, expediente.getAntecedentesNoPatologicos());
+        ps.setString(14, expediente.getConsumoSustancias());
+        ps.setString(15, expediente.getPadecimientoActual());
+        ps.setString(16, expediente.getInterrogatorioSistemas());
+        ps.setString(17, expediente.getExploracionFisica());
+        ps.setString(18, expediente.getResultadosEstudios());
+        ps.setString(19, expediente.getDiagnostico());
+        ps.setString(20, expediente.getPronostico());
+        ps.setString(21, expediente.getIndicacionTerapeutica());
+        ps.setString(22, expediente.getAutorHistoria());
+        ps.setString(23, expediente.getCedulaHistoria());
+        ps.setString(24, expediente.getFechaHoraHistoria());
+        ps.setString(25, expediente.getSignosHistoria());
+        ps.setString(26, expediente.getTipoSangre());
+    }
+
     public boolean actualizarExpediente(Expediente expediente) {
         if (expediente == null || expediente.getIdExpediente() <= 0 ||
                 expediente.getDatosPaciente() == null || expediente.getDatosPaciente().getCurp() == null) {
@@ -1274,32 +1249,7 @@ public class BaseDatos {
                 "signos_historia = ?, tipo_sangre = ? WHERE id_expediente = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, expediente.getDatosPaciente().getCurp());
-            ps.setDate(2, toSqlDate(expediente.getFechaApertura()));
-            ps.setString(3, expediente.getAntecedentesFamiliares());
-            ps.setString(4, expediente.getAntecedentesPersonales());
-            ps.setString(5, expediente.getAlergias());
-            ps.setString(6, expediente.getObservaciones());
-            ps.setString(7, expediente.getTipoEstablecimiento());
-            ps.setString(8, expediente.getNombreEstablecimiento());
-            ps.setString(9, expediente.getDomicilioEstablecimiento());
-            ps.setString(10, expediente.getInstitucionEstablecimiento());
-            ps.setString(11, expediente.getPropietario());
-            ps.setString(12, expediente.getGrupoEtnico());
-            ps.setString(13, expediente.getAntecedentesNoPatologicos());
-            ps.setString(14, expediente.getConsumoSustancias());
-            ps.setString(15, expediente.getPadecimientoActual());
-            ps.setString(16, expediente.getInterrogatorioSistemas());
-            ps.setString(17, expediente.getExploracionFisica());
-            ps.setString(18, expediente.getResultadosEstudios());
-            ps.setString(19, expediente.getDiagnostico());
-            ps.setString(20, expediente.getPronostico());
-            ps.setString(21, expediente.getIndicacionTerapeutica());
-            ps.setString(22, expediente.getAutorHistoria());
-            ps.setString(23, expediente.getCedulaHistoria());
-            ps.setString(24, expediente.getFechaHoraHistoria());
-            ps.setString(25, expediente.getSignosHistoria());
-            ps.setString(26, expediente.getTipoSangre());
+            parametrosExpediente(ps, expediente, expediente.getFechaApertura());
             ps.setInt(27, expediente.getIdExpediente());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -1653,23 +1603,7 @@ public class BaseDatos {
         }
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, idAdministrador);
-            ps.setInt(2, receta.getIdCita());
-            ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
-            ps.setString(4, receta.getDiagnostico());
-            ps.setString(5, receta.getNombreMedico());
-            ps.setString(6, receta.getCedulaMedico());
-            ps.setString(7, receta.getProfesion());
-            ps.setString(8, receta.getInstitucionTitulo());
-            ps.setString(9, receta.getDomicilioMedico());
-            ps.setString(10, receta.getEspecialidad());
-            ps.setString(11, receta.getRegistroEspecialidad());
-            ps.setString(12, receta.getNombreEstablecimiento());
-            ps.setString(13, receta.getDomicilioEstablecimiento());
-            ps.setString(14, receta.getNombrePaciente());
-            ps.setString(15, receta.getEdadPaciente());
-            ps.setString(16, receta.getSexoPaciente());
-            ps.setString(17, receta.getIndicaciones());
+            parametrosReceta(ps, receta, idAdministrador);
 
             if (ps.executeUpdate() == 0) {
                 return -1;
@@ -1729,23 +1663,7 @@ public class BaseDatos {
         }
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idAdministrador);
-            ps.setInt(2, receta.getIdCita());
-            ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
-            ps.setString(4, receta.getDiagnostico());
-            ps.setString(5, receta.getNombreMedico());
-            ps.setString(6, receta.getCedulaMedico());
-            ps.setString(7, receta.getProfesion());
-            ps.setString(8, receta.getInstitucionTitulo());
-            ps.setString(9, receta.getDomicilioMedico());
-            ps.setString(10, receta.getEspecialidad());
-            ps.setString(11, receta.getRegistroEspecialidad());
-            ps.setString(12, receta.getNombreEstablecimiento());
-            ps.setString(13, receta.getDomicilioEstablecimiento());
-            ps.setString(14, receta.getNombrePaciente());
-            ps.setString(15, receta.getEdadPaciente());
-            ps.setString(16, receta.getSexoPaciente());
-            ps.setString(17, receta.getIndicaciones());
+            parametrosReceta(ps, receta, idAdministrador);
             ps.setInt(18, receta.getIdReceta());
 
             if (ps.executeUpdate() == 0) {
@@ -1806,26 +1724,7 @@ public class BaseDatos {
             ps.setInt(1, idCita);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Receta receta = new Receta();
-                    receta.setIdReceta(rs.getInt("id_receta"));
-                    receta.setIdAdministrador(rs.getInt("id_administrador"));
-                    receta.setIdCita(rs.getInt("id_cita"));
-                    receta.setFecha(leerFechaHora(rs.getObject("fecha")));
-                    receta.setDiagnostico(rs.getString("diagnostico"));
-                    receta.setCurp(rs.getString("CURP"));
-                    receta.setNombreMedico(rs.getString("nombre_medico"));
-                    receta.setCedulaMedico(rs.getString("cedula_medico"));
-                    receta.setProfesion(rs.getString("profesion"));
-                    receta.setInstitucionTitulo(rs.getString("institucion_titulo"));
-                    receta.setDomicilioMedico(rs.getString("domicilio_medico"));
-                    receta.setEspecialidad(rs.getString("especialidad"));
-                    receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
-                    receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
-                    receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
-                    receta.setNombrePaciente(rs.getString("nombre_paciente"));
-                    receta.setEdadPaciente(rs.getString("edad_paciente"));
-                    receta.setSexoPaciente(rs.getString("sexo_paciente"));
-                    receta.setIndicaciones(rs.getString("indicaciones"));
+                    Receta receta = crearReceta(rs);
                     receta.setMedicamentos(cargarMedicamentosPorReceta(con, receta.getIdReceta()));
                     receta.setSignosVitales(cargarSignosVitalesPorReceta(con, receta.getIdReceta()));
                     return receta;
@@ -1854,26 +1753,7 @@ public class BaseDatos {
             }
             try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Receta receta = new Receta();
-                receta.setIdReceta(rs.getInt("id_receta"));
-                receta.setIdAdministrador(rs.getInt("id_administrador"));
-                receta.setIdCita(rs.getInt("id_cita"));
-                receta.setFecha(leerFechaHora(rs.getObject("fecha")));
-                receta.setDiagnostico(rs.getString("diagnostico"));
-                receta.setCurp(rs.getString("CURP"));
-                    receta.setNombreMedico(rs.getString("nombre_medico"));
-                    receta.setCedulaMedico(rs.getString("cedula_medico"));
-                    receta.setProfesion(rs.getString("profesion"));
-                    receta.setInstitucionTitulo(rs.getString("institucion_titulo"));
-                    receta.setDomicilioMedico(rs.getString("domicilio_medico"));
-                    receta.setEspecialidad(rs.getString("especialidad"));
-                    receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
-                    receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
-                    receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
-                    receta.setNombrePaciente(rs.getString("nombre_paciente"));
-                    receta.setEdadPaciente(rs.getString("edad_paciente"));
-                    receta.setSexoPaciente(rs.getString("sexo_paciente"));
-                    receta.setIndicaciones(rs.getString("indicaciones"));
+                Receta receta = crearReceta(rs);
                 recetas.put(receta.getIdReceta(), receta);
             }
             }
@@ -1953,10 +1833,46 @@ public class BaseDatos {
         return medicamentos;
     }
 
-    public void convertirHoras(LocalTime hora) {
-        if (hora != null) {
-            System.out.println(hora.format(DateTimeFormatter.ofPattern("HH:mm")));
-        }
+    /** Parámetros 1-17 comunes a INSERT y UPDATE de Receta. */
+    private static void parametrosReceta(PreparedStatement ps, Receta receta, int idAdministrador) throws SQLException {
+        ps.setInt(1, idAdministrador);
+        ps.setInt(2, receta.getIdCita());
+        ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
+        ps.setString(4, receta.getDiagnostico());
+        ps.setString(5, receta.getNombreMedico());
+        ps.setString(6, receta.getCedulaMedico());
+        ps.setString(7, receta.getProfesion());
+        ps.setString(8, receta.getInstitucionTitulo());
+        ps.setString(9, receta.getDomicilioMedico());
+        ps.setString(10, receta.getEspecialidad());
+        ps.setString(11, receta.getRegistroEspecialidad());
+        ps.setString(12, receta.getNombreEstablecimiento());
+        ps.setString(13, receta.getDomicilioEstablecimiento());
+        ps.setString(14, receta.getNombrePaciente());
+        ps.setString(15, receta.getEdadPaciente());
+        ps.setString(16, receta.getSexoPaciente());
+        ps.setString(17, receta.getIndicaciones());
+    }
+
+    /** Parámetros 1-17 comunes a INSERT y UPDATE de Consulta. */
+    private static void parametrosConsulta(PreparedStatement ps, Consulta consulta, LocalDateTime fecha) throws SQLException {
+        ps.setInt(1, consulta.getIdCita());
+        ps.setInt(2, consulta.getIdExpediente());
+        ps.setTimestamp(3, java.sql.Timestamp.valueOf(fecha));
+        ps.setString(4, consulta.getPadecimiento());
+        ps.setString(5, consulta.getMotivo());
+        ps.setString(6, consulta.getObservaciones());
+        ps.setString(7, consulta.getEvolucion());
+        ps.setString(8, consulta.getExploracionFisica());
+        ps.setString(9, consulta.getResultadosEstudios());
+        ps.setString(10, consulta.getDiagnostico());
+        ps.setString(11, consulta.getPronostico());
+        ps.setString(12, consulta.getIndicaciones());
+        ps.setString(13, consulta.getNombreMedico());
+        ps.setString(14, consulta.getCedulaMedico());
+        ps.setString(15, consulta.getNombrePaciente());
+        ps.setString(16, consulta.getEdadPaciente());
+        ps.setString(17, consulta.getSexoPaciente());
     }
 
     private static boolean insertarConsultaInterna(Connection con, Consulta consulta) throws SQLException {
@@ -1972,23 +1888,7 @@ public class BaseDatos {
         }
 
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, consulta.getIdCita());
-            ps.setInt(2, consulta.getIdExpediente());
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(fecha));
-            ps.setString(4, consulta.getPadecimiento());
-            ps.setString(5, consulta.getMotivo());
-            ps.setString(6, consulta.getObservaciones());
-            ps.setString(7, consulta.getEvolucion());
-            ps.setString(8, consulta.getExploracionFisica());
-            ps.setString(9, consulta.getResultadosEstudios());
-            ps.setString(10, consulta.getDiagnostico());
-            ps.setString(11, consulta.getPronostico());
-            ps.setString(12, consulta.getIndicaciones());
-            ps.setString(13, consulta.getNombreMedico());
-            ps.setString(14, consulta.getCedulaMedico());
-            ps.setString(15, consulta.getNombrePaciente());
-            ps.setString(16, consulta.getEdadPaciente());
-            ps.setString(17, consulta.getSexoPaciente());
+            parametrosConsulta(ps, consulta, fecha);
 
             if (ps.executeUpdate() == 0) {
                 return false;
@@ -2015,23 +1915,7 @@ public class BaseDatos {
         consulta.setFechaConsulta(fecha);
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, consulta.getIdCita());
-            ps.setInt(2, consulta.getIdExpediente());
-            ps.setTimestamp(3, java.sql.Timestamp.valueOf(fecha));
-            ps.setString(4, consulta.getPadecimiento());
-            ps.setString(5, consulta.getMotivo());
-            ps.setString(6, consulta.getObservaciones());
-            ps.setString(7, consulta.getEvolucion());
-            ps.setString(8, consulta.getExploracionFisica());
-            ps.setString(9, consulta.getResultadosEstudios());
-            ps.setString(10, consulta.getDiagnostico());
-            ps.setString(11, consulta.getPronostico());
-            ps.setString(12, consulta.getIndicaciones());
-            ps.setString(13, consulta.getNombreMedico());
-            ps.setString(14, consulta.getCedulaMedico());
-            ps.setString(15, consulta.getNombrePaciente());
-            ps.setString(16, consulta.getEdadPaciente());
-            ps.setString(17, consulta.getSexoPaciente());
+            parametrosConsulta(ps, consulta, fecha);
             ps.setInt(18, consulta.getIdConsulta());
             return ps.executeUpdate() > 0;
         }
@@ -2059,16 +1943,37 @@ public class BaseDatos {
         }
     }
 
+    private static Receta crearReceta(ResultSet rs) throws SQLException {
+        Receta receta = new Receta();
+        receta.setIdReceta(rs.getInt("id_receta"));
+        receta.setIdAdministrador(rs.getInt("id_administrador"));
+        receta.setIdCita(rs.getInt("id_cita"));
+        receta.setFecha(leerFechaHora(rs.getObject("fecha")));
+        receta.setDiagnostico(rs.getString("diagnostico"));
+        receta.setCurp(rs.getString("CURP"));
+        receta.setNombreMedico(rs.getString("nombre_medico"));
+        receta.setCedulaMedico(rs.getString("cedula_medico"));
+        receta.setProfesion(rs.getString("profesion"));
+        receta.setInstitucionTitulo(rs.getString("institucion_titulo"));
+        receta.setDomicilioMedico(rs.getString("domicilio_medico"));
+        receta.setEspecialidad(rs.getString("especialidad"));
+        receta.setRegistroEspecialidad(rs.getString("registro_especialidad"));
+        receta.setNombreEstablecimiento(rs.getString("nombre_establecimiento"));
+        receta.setDomicilioEstablecimiento(rs.getString("domicilio_establecimiento"));
+        receta.setNombrePaciente(rs.getString("nombre_paciente"));
+        receta.setEdadPaciente(rs.getString("edad_paciente"));
+        receta.setSexoPaciente(rs.getString("sexo_paciente"));
+        receta.setIndicaciones(rs.getString("indicaciones"));
+        return receta;
+    }
+
     private static Consulta crearConsulta(ResultSet rs) throws SQLException {
         Consulta consulta = new Consulta();
         consulta.setIdConsulta(rs.getInt("id_consulta"));
         consulta.setIdCita(rs.getInt("id_cita"));
         consulta.setIdExpediente(rs.getInt("id_expediente"));
 
-        java.util.Date fecha = leerFechaHora(rs.getObject("fecha"));
-        consulta.setFechaConsulta(fecha == null
-                ? null
-                : LocalDateTime.ofInstant(fecha.toInstant(), ZoneId.systemDefault()));
+        consulta.setFechaConsulta(leerLocalDateTime(rs.getObject("fecha")));
 
         consulta.setPadecimiento(rs.getString("padecimiento"));
         consulta.setMotivo(rs.getString("motivo"));

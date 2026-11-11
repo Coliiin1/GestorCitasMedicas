@@ -1,6 +1,5 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
@@ -16,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.function.Consumer;
+import javafx.scene.layout.GridPane;
 
 public class PacienteEditarController implements PanelControlado {
     @FXML private Label lblTitulo;
@@ -29,11 +29,10 @@ public class PacienteEditarController implements PanelControlado {
     @FXML private TextField txtCorreo;
     @FXML private TextField txtDomicilio;
     @FXML private Button btnCancelar;
-    @FXML private javafx.scene.layout.GridPane boxClinico;
+    @FXML private GridPane boxClinico;
     @FXML private ComboBox<String> cbTipoSangre;
     @FXML private TextField txtAlergias;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
     private Paciente pacienteActual;
     private String panelRegreso = "pacientes-panel.fxml";
@@ -112,7 +111,7 @@ public class PacienteEditarController implements PanelControlado {
         String correo = texto(txtCorreo);
         String domicilio = texto(txtDomicilio);
 
-        String error = validar(nombre, apellidoPaterno, apellidoMaterno, curp, fechaNacimiento,
+        String error = Paciente.validar(nombre, apellidoPaterno, apellidoMaterno, curp, fechaNacimiento,
                 telefono, correo, domicilio);
         if (error == null && texto(txtAlergias).length() > 200) {
             error = "Las alergias no deben exceder 200 caracteres.";
@@ -136,9 +135,7 @@ public class PacienteEditarController implements PanelControlado {
         paciente.setTelefono(valorNulo(telefono));
         paciente.setCorreo(valorNulo(correo));
 
-        boolean guardado = esNuevo
-                ? baseDatos.insertarPaciente(paciente)
-                : baseDatos.actualizarPaciente(paciente);
+        boolean guardado = esNuevo ? paciente.registrar() : paciente.actualizar();
 
         if (!guardado) {
             mostrarError(esNuevo
@@ -199,40 +196,7 @@ public class PacienteEditarController implements PanelControlado {
         expediente.setAlergias(texto(txtAlergias));
         expediente.setTipoSangre(cbTipoSangre.getValue());
         expediente.setObservaciones("");
-        return baseDatos.insertarExpediente(expediente);
-    }
-
-    private static String validar(String nombre, String apellidoPaterno, String apellidoMaterno,
-                                  String curp, LocalDate fechaNacimiento, String telefono,
-                                  String correo, String domicilio) {
-        if (nombre.isEmpty() || apellidoPaterno.isEmpty()) {
-            return "El nombre y el apellido paterno son obligatorios.";
-        }
-        if (nombre.length() > 20 || apellidoPaterno.length() > 20 || apellidoMaterno.length() > 20) {
-            return "El nombre y los apellidos no deben exceder 20 caracteres.";
-        }
-        if (!curp.matches("[A-Z0-9]{18}")) {
-            return "La CURP debe tener 18 caracteres alfanuméricos.";
-        }
-        if (fechaNacimiento == null) {
-            return "La fecha de nacimiento es obligatoria.";
-        }
-        if (fechaNacimiento.isAfter(LocalDate.now())) {
-            return "La fecha de nacimiento no puede ser futura.";
-        }
-        if (!telefono.isEmpty() && !telefono.matches("\\d{10}")) {
-            return "El teléfono debe contener 10 dígitos.";
-        }
-        if (!correo.isEmpty() && !correo.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
-            return "El correo electrónico no tiene un formato válido.";
-        }
-        if (correo.length() > 50) {
-            return "El correo electrónico no debe exceder 50 caracteres.";
-        }
-        if (domicilio.length() > 100) {
-            return "El domicilio no debe exceder 100 caracteres.";
-        }
-        return null;
+        return expediente.guardar();
     }
 
     private static String texto(TextField campo) {
@@ -262,18 +226,10 @@ public class PacienteEditarController implements PanelControlado {
     }
 
     private void mostrarError(String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.WARNING);
-        alerta.setTitle("Datos incompletos");
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.WARNING, "Datos incompletos", mensaje);
     }
 
     private void mostrarInformacion(String titulo, String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.INFORMATION, titulo, mensaje);
     }
 }

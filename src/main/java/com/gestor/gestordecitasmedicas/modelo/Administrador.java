@@ -1,7 +1,5 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
-import java.util.ArrayList;
-
 public class Administrador extends Personal {
 
     private int idAdministrador;
@@ -13,7 +11,6 @@ public class Administrador extends Personal {
     private String registroEspecialidad;
     private String nombreEstablecimiento;
     private String domicilioEstablecimiento;
-    private ArrayList<Asistente> asistentes = new ArrayList<>();
 
     public String getProfesion() { return profesion; }
     public void setProfesion(String v) { this.profesion = v; }
@@ -25,7 +22,6 @@ public class Administrador extends Personal {
     public void setNombreEstablecimiento(String v) { this.nombreEstablecimiento = v; }
     public String getDomicilioEstablecimiento() { return domicilioEstablecimiento; }
     public void setDomicilioEstablecimiento(String v) { this.domicilioEstablecimiento = v; }
-    private ArrayList<Expediente> expedientes = new ArrayList<>();
 
     public int getIdAdministrador() {
         return idAdministrador;
@@ -59,92 +55,24 @@ public class Administrador extends Personal {
         this.domicilio = domicilio;
     }
 
-    public ArrayList<Asistente> getAsistentes() {
-        return asistentes;
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    public static Administrador buscar(int idAdministrador) {
+        return new BaseDatos().obtenerAdministrador(idAdministrador);
     }
 
-    public void setAsistentes(ArrayList<Asistente> asistentes) {
-        this.asistentes = asistentes;
+    /** Guarda los datos personales y del consultorio. */
+    public boolean actualizar() {
+        return new BaseDatos().actualizarAdministrador(this);
     }
 
-    public ArrayList<Expediente> getExpedientes() {
-        return expedientes;
+    /** true si {@code nuevoId} no lo usa otra cuenta distinta de {@code idActual}. */
+    public static boolean usuarioDisponible(int nuevoId, int idActual) {
+        return new BaseDatos().idUsuarioLibre(nuevoId, idActual);
     }
 
-    public void setExpedientes(ArrayList<Expediente> expedientes) {
-        this.expedientes = expedientes;
-    }
-
-    public boolean registrarAsistente(Asistente asistente) {
-        return asistentes.add(asistente);
-    }
-
-    public boolean eliminarAsistente(Asistente asistente) {
-        return asistentes.remove(asistente);
-    }
-
-    public boolean editarAsistente(Asistente asistente) {
-        return false;
-    }
-
-    public Estado iniciarCita(Cita cita) {
-        return null;
-    }
-
-    public boolean generarReceta(Cita cita) {
-        return false;
-    }
-
-    public boolean registrarExpediente() {
-        return false;
-    }
-
-    public boolean actualizarExpediente() {
-        return false;
-    }
-
-    public boolean eliminarExpediente() {
-        return false;
-    }
-
-    public boolean registrarPaciente() {
-        return false;
-    }
-
-    public boolean actualizarPaciente() {
-        return false;
-    }
-
-    public boolean eliminarPaciente() {
-        return false;
-    }
-
-    public Paciente consultarDatosPaciente() {
-        return null;
-    }
-
-    @Override
-    public Cita[] listadoSemanal() {
-        return new Cita[0];
-    }
-
-    @Override
-    public boolean cancelarCita() {
-        return false;
-    }
-
-    @Override
-    public boolean agendarCita() {
-        return false;
-    }
-
-    @Override
-    public boolean reprogramarCita() {
-        return false;
-    }
-
-    @Override
-    public boolean validarHorario() {
-        return false;
+    /** Cambia el usuario (id) y, si {@code nuevaContrasena} no está vacía, la contraseña. */
+    public static boolean cambiarCredenciales(int idActual, int nuevoId, String nuevaContrasena) {
+        return new BaseDatos().actualizarCredencialesAdmin(idActual, nuevoId, nuevaContrasena);
     }
 }

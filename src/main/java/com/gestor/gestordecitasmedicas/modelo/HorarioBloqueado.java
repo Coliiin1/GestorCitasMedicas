@@ -1,6 +1,7 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class HorarioBloqueado {
     private int idHorarioBloqueado;
@@ -29,5 +30,20 @@ public class HorarioBloqueado {
 
     public void setFechaFin(LocalDateTime fechaFin) {
         this.fechaFin = fechaFin;
+    }
+
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    /** Guarda el bloqueo y, en la misma transacción, cancela las citas agendadas del periodo. */
+    public boolean guardar() {
+        return new BaseDatos().guardarBloqueo(this);
+    }
+
+    public boolean eliminar() {
+        return new BaseDatos().eliminarBloqueo(getIdHorarioBloqueado());
+    }
+
+    public static ArrayList<HorarioBloqueado> todos() {
+        return new BaseDatos().cargarBloqueos();
     }
 }

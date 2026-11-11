@@ -172,4 +172,17 @@ public class Expediente {
     private String signosHistoria;
     public String getSignosHistoria() { return signosHistoria; }
     public void setSignosHistoria(String valor) { this.signosHistoria = valor; }
+
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    /** Inserta el expediente si es nuevo (sin id) o actualiza el existente. */
+    public boolean guardar() {
+        BaseDatos bd = new BaseDatos();
+        return getIdExpediente() > 0 ? bd.actualizarExpediente(this) : bd.insertarExpediente(this);
+    }
+
+    /** Expediente más reciente del paciente con sus consultas, o null si no tiene. */
+    public static Expediente dePaciente(String curp) {
+        return new BaseDatos().cargarExpedientePorCurp(curp);
+    }
 }

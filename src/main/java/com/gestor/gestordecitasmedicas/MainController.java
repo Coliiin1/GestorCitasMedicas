@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -57,8 +56,7 @@ public class MainController {
     /** Muestra en la barra lateral los datos del consultorio guardados en la tabla Administrador. */
     public void aplicarConfiguracion() {
         // Sin sesión de admin se toma el primer administrador (el consultorio es de un solo médico).
-        BaseDatos bd = new BaseDatos();
-        Administrador a = bd.obtenerAdministrador(esAdmin ? idAdmin : 1);
+        Administrador a = Administrador.buscar(esAdmin ? idAdmin : 1);
         if (a == null) return;
         if (a.getNombreEstablecimiento() != null && !a.getNombreEstablecimiento().trim().isEmpty())
             lblConsultorio.setText(a.getNombreEstablecimiento());

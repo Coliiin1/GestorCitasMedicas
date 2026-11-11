@@ -1,9 +1,10 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
+import com.gestor.gestordecitasmedicas.modelo.PlanificadorAgenda;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -23,7 +24,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.time.temporal.ChronoUnit;
+import javafx.util.StringConverter;
 
 /** Panel de inicio del administrador: indicadores, citas del día y gráficas calculadas desde la base de datos. */
 public class DashboardController implements PanelControlado, PanelRefrescable {
@@ -40,13 +42,8 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     @FXML private StackPane graficaSemana, graficaEstado, graficaMeses;
 
     private static final String[] DIAS = {"Lun", "Mar", "Mié", "Jue", "Vie"};
-    private static final String[] MESES = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
-            "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
-    private static final String[] MESES_CORTO = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep",
-            "Oct", "Nov", "Dic"};
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("hh:mm a");
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
 
     @Override
@@ -62,15 +59,15 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     @Override
     public void refrescar() {
         LocalDate hoy = LocalDate.now();
-        lblFecha.setText("Resumen general · " + hoy.getDayOfMonth() + " de " + MESES[hoy.getMonthValue() - 1]
+        lblFecha.setText("Resumen general · " + hoy.getDayOfMonth() + " de " + PlanificadorAgenda.MESES[hoy.getMonthValue() - 1]
                 + " de " + hoy.getYear());
 
-        HashMap<String, Paciente> pacientes = baseDatos.cargarPacientes();
-        List<Cita> citas = new ArrayList<>(baseDatos.cargarCitas().values());
+        HashMap<String, Paciente> pacientes = Paciente.todos();
+        List<Cita> citas = new ArrayList<>(Cita.todas().values());
         citas.sort(Comparator.comparing(Cita::getFechaCita, Comparator.nullsLast(Comparator.naturalOrder())));
-        int asistentes = baseDatos.cargarAsistentes().size();
+        int asistentes = Asistente.todos().size();
 
-        LocalDate lunes = hoy.minusDays(hoy.getDayOfWeek().getValue() - 1);
+        LocalDate lunes = PlanificadorAgenda.lunesDe(hoy);
         YearMonth mesActual = YearMonth.from(hoy);
 
         List<Cita> deHoy = new ArrayList<>();
@@ -82,7 +79,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         LocalDateTime ahora = LocalDateTime.now();
 
         for (Cita c : citas) {
-            LocalDateTime f = fecha(c);
+            LocalDateTime f = c.fechaHora();
             if (f == null) continue;
             LocalDate d = f.toLocalDate();
             Estado e = c.getEstado() == null ? Estado.AGENDADA : c.getEstado();
@@ -92,14 +89,14 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
                 if (e == Estado.ATENDIDA) atendidasHoy++;
             }
             if (!d.isBefore(lunes) && !d.isAfter(lunes.plusDays(6)) && e == Estado.AGENDADA) pendientesSemana++;
-            int idxDia = (int) java.time.temporal.ChronoUnit.DAYS.between(lunes, d);
+            int idxDia = (int) ChronoUnit.DAYS.between(lunes, d);
             if (idxDia >= 0 && idxDia < 5 && e != Estado.CANCELADA) porDia[idxDia]++;
             if (YearMonth.from(d).equals(mesActual)) {
                 porEstado[e.ordinal()]++;
                 if (e == Estado.ATENDIDA) atendidasMes++;
             }
             if (e == Estado.ATENDIDA) {
-                int atras = (int) java.time.temporal.ChronoUnit.MONTHS.between(YearMonth.from(d), mesActual);
+                int atras = (int) ChronoUnit.MONTHS.between(YearMonth.from(d), mesActual);
                 if (atras >= 0 && atras < 6) porMes[5 - atras]++;
             }
             if (e == Estado.AGENDADA && f.isBefore(ahora.minusHours(1))) vencidas.add(c);
@@ -179,7 +176,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         Cita proxima = null;
         for (Cita c : deHoy) {
             citasHoy.getChildren().add(filaCita(c, pacientes.get(c.getCurp())));
-            if (proxima == null && c.getEstado() == Estado.AGENDADA && !fecha(c).isBefore(ahora.minusMinutes(45))) {
+            if (proxima == null && c.getEstado() == Estado.AGENDADA && !c.fechaHora().isBefore(ahora.minusMinutes(45))) {
                 proxima = c;
             }
         }
@@ -188,9 +185,9 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
             return;
         }
         Paciente p = pacientes.get(proxima.getCurp());
-        Label nombre = new Label(nombre(p, proxima.getCurp()));
+        Label nombre = new Label(Paciente.nombreParaMostrar(p, proxima.getCurp()));
         nombre.getStyleClass().add("row-name");
-        Label hora = new Label(fecha(proxima).format(HORA));
+        Label hora = new Label(proxima.fechaHora().format(HORA));
         hora.getStyleClass().addAll("chip", "chip-amber");
         Label ref = new Label("Cita #" + proxima.getIdCita());
         ref.getStyleClass().add("hint");
@@ -204,14 +201,14 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     }
 
     private HBox filaCita(Cita cita, Paciente paciente) {
-        Label hora = new Label(fecha(cita).format(HORA));
+        Label hora = new Label(cita.fechaHora().format(HORA));
         hora.getStyleClass().add("info-value");
         hora.setMinWidth(80);
-        Label nombre = new Label(nombre(paciente, cita.getCurp()));
+        Label nombre = new Label(Paciente.nombreParaMostrar(paciente, cita.getCurp()));
         nombre.getStyleClass().add("row-name");
         Region espacio = new Region();
         HBox.setHgrow(espacio, Priority.ALWAYS);
-        Label estado = new Label(etiqueta(cita.getEstado()));
+        Label estado = new Label(Estado.etiqueta(cita.getEstado()));
         estado.getStyleClass().addAll("chip", estiloEstado(cita.getEstado()));
         HBox fila = new HBox(12, hora, nombre, espacio, estado);
         if (cita.getEstado() == Estado.AGENDADA) {
@@ -229,7 +226,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     @FXML
     private void onHorario() {
         if (mainController == null || !mainController.esAdministrador()) return;
-        if (HorarioConfigController.abrir(lblFecha.getScene().getWindow(), baseDatos)) refrescar();
+        if (HorarioConfigController.abrir(lblFecha.getScene().getWindow())) refrescar();
     }
 
     private void iniciar(Cita cita) {
@@ -265,7 +262,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         XYChart.Series<String, Number> meses = new XYChart.Series<>();
         for (int i = 0; i < 6; i++) {
             YearMonth m = mesActual.minusMonths(5 - i);
-            meses.getData().add(new XYChart.Data<>(MESES_CORTO[m.getMonthValue() - 1], porMes[i]));
+            meses.getData().add(new XYChart.Data<>(PlanificadorAgenda.MESES_CORTO[m.getMonthValue() - 1], porMes[i]));
         }
         graficaMeses.getChildren().setAll(barras(meses));
     }
@@ -275,7 +272,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         y.setMinorTickVisible(false);
         y.setForceZeroInRange(true);
         y.setTickUnit(1);
-        y.setTickLabelFormatter(new javafx.util.StringConverter<Number>() {
+        y.setTickLabelFormatter(new StringConverter<Number>() {
             @Override public String toString(Number n) { return n.doubleValue() % 1 == 0 ? String.valueOf(n.intValue()) : ""; }
             @Override public Number fromString(String s) { return null; }
         });
@@ -292,7 +289,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
 
     private void renderActividad(HashMap<String, Paciente> pacientes) {
         actividad.getChildren().clear();
-        List<Receta> recetas = new ArrayList<>(baseDatos.cargarRecetas().values());
+        List<Receta> recetas = new ArrayList<>(Receta.todas().values());
         recetas.sort(Comparator.comparing(Receta::getFecha, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparingInt(Receta::getIdReceta).reversed());
         if (recetas.isEmpty()) {
@@ -304,7 +301,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
                     .atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             fecha.getStyleClass().add("info-value");
             fecha.setMinWidth(90);
-            Label nombre = new Label(nombre(pacientes.get(r.getCurp()), r.getCurp()));
+            Label nombre = new Label(Paciente.nombreParaMostrar(pacientes.get(r.getCurp()), r.getCurp()));
             nombre.getStyleClass().add("row-name");
             nombre.setMinWidth(220);
             String dx = r.getDiagnostico() == null || r.getDiagnostico().trim().isEmpty()
@@ -325,27 +322,6 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         l.getStyleClass().add("hint");
         l.setWrapText(true);
         return l;
-    }
-
-    private static LocalDateTime fecha(Cita c) {
-        return c.getFechaCita() == null ? null
-                : LocalDateTime.ofInstant(c.getFechaCita().toInstant(), ZoneId.systemDefault());
-    }
-
-    private static String nombre(Paciente p, String curp) {
-        if (p == null) return curp == null ? "Paciente no registrado" : curp;
-        String n = (v(p.getNombre()) + " " + v(p.getApellidoPaterno()) + " " + v(p.getApellidoMaterno())).trim();
-        return n.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : n;
-    }
-
-    private static String v(String s) {
-        return s == null ? "" : s.trim();
-    }
-
-    private static String etiqueta(Estado e) {
-        if (e == Estado.ATENDIDA) return "Atendida";
-        if (e == Estado.CANCELADA) return "Cancelada";
-        return "Agendada";
     }
 
     private static String estiloEstado(Estado e) {

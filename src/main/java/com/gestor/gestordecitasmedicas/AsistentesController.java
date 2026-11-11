@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -21,13 +20,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
+
 public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
     @FXML private ComboBox<String> cmbOrden;
     @FXML private VBox listaAsistentes;
     @FXML private Label lblContador;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Asistente> asistentes = new ArrayList<>();
     private MainController mainController;
 
@@ -48,7 +48,7 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
     @Override
     public void refrescar() {
         asistentes.clear();
-        asistentes.addAll(baseDatos.cargarAsistentes());
+        asistentes.addAll(Asistente.todos());
         aplicarFiltro();
     }
 
@@ -142,12 +142,12 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
             return;
         }
 
-        if (baseDatos.eliminarAsistente(asistente.getIdAsistente())) {
+        if (asistente.eliminar()) {
             refrescar();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Asistente eliminado",
+            aviso(Alert.AlertType.INFORMATION, "Asistente eliminado",
                     "El asistente se eliminó correctamente.");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo eliminar",
+            aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
                     "Ocurrió un error al eliminar el asistente. Inténtalo de nuevo.");
         }
     }
@@ -177,13 +177,5 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
         String sinAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
         return sinAcentos.trim().toLowerCase();
-    }
-
-    private static void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

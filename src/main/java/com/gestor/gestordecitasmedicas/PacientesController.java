@@ -1,6 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -13,15 +13,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.text.Normalizer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Optional;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
 
 public class PacientesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
@@ -29,7 +28,6 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
     @FXML private VBox listaPacientes;
     @FXML private Label lblContador;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Paciente> pacientes = new ArrayList<>();
     private MainController mainController;
 
@@ -50,7 +48,7 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
     @Override
     public void refrescar() {
         pacientes.clear();
-        pacientes.addAll(baseDatos.cargarPacientes().values());
+        pacientes.addAll(Paciente.todos().values());
         aplicarFiltro();
     }
 
@@ -116,7 +114,7 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
 
         HBox contacto = new HBox(0,
                 etiqueta("Nacimiento: ", "patient-meta"),
-                etiqueta(fecha(paciente.getFechaNacimiento()), "meta-value"),
+                etiqueta(TextoExpediente.fecha(paciente.getFechaNacimiento()), "meta-value"),
                 etiqueta("   •   Sexo: ", "patient-meta"),
                 etiqueta(valor(paciente.getSexo(), "No especificado"), "meta-value"),
                 etiqueta("   •   Correo: ", "patient-meta"),
@@ -175,12 +173,12 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
             return;
         }
 
-        if (baseDatos.eliminarPaciente(paciente.getCurp())) {
+        if (paciente.eliminar()) {
             refrescar();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Paciente eliminado",
+            aviso(Alert.AlertType.INFORMATION, "Paciente eliminado",
                     "El paciente se eliminó correctamente.");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo eliminar",
+            aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
                     "Ocurrió un error al eliminar el paciente. Inténtalo de nuevo.");
         }
     }
@@ -222,10 +220,6 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
         texto.append(parte.trim());
     }
 
-    private static String fecha(Date fecha) {
-        return fecha == null ? "No registrada" : new SimpleDateFormat("dd/MM/yyyy").format(fecha);
-    }
-
     private static String valor(String texto) {
         return valor(texto, "");
     }
@@ -241,13 +235,5 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
         String sinAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
         return sinAcentos.trim().toLowerCase();
-    }
-
-    private static void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

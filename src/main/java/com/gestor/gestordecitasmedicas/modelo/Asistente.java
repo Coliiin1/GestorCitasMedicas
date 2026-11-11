@@ -1,5 +1,7 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import java.util.ArrayList;
+
 public class Asistente extends Personal {
 
     private int idAsistente;
@@ -35,28 +37,39 @@ public class Asistente extends Personal {
         this.contrasena = contrasena;
     }
 
-    @Override
-    public Cita[] listadoSemanal() {
-        return new Cita[0];
+    /**
+     * Reglas de captura del asistente; devuelve el mensaje del primer error o null si es válido.
+     * La contraseña solo es obligatoria al registrar (al editar, vacía conserva la actual).
+     */
+    public static String validar(String nombre, String apellidoPaterno, String apellidoMaterno,
+                                 String contrasena, boolean esNuevo) {
+        if (nombre.isEmpty() || apellidoPaterno.isEmpty()) {
+            return "El nombre y el apellido paterno son obligatorios.";
+        }
+        if (nombre.length() > 20 || apellidoPaterno.length() > 20 || apellidoMaterno.length() > 20) {
+            return "El nombre y los apellidos no deben exceder 20 caracteres.";
+        }
+        if (contrasena.isEmpty() && esNuevo) {
+            return "La contraseña es obligatoria para registrar un asistente.";
+        }
+        return null;
     }
 
-    @Override
-    public boolean cancelarCita() {
-        return false;
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    public boolean registrar() {
+        return new BaseDatos().insertarAsistente(this);
     }
 
-    @Override
-    public boolean agendarCita() {
-        return false;
+    public boolean actualizar() {
+        return new BaseDatos().actualizarAsistente(this);
     }
 
-    @Override
-    public boolean reprogramarCita() {
-        return false;
+    public boolean eliminar() {
+        return new BaseDatos().eliminarAsistente(idAsistente);
     }
 
-    @Override
-    public boolean validarHorario() {
-        return false;
+    public static ArrayList<Asistente> todos() {
+        return new BaseDatos().cargarAsistentes();
     }
 }

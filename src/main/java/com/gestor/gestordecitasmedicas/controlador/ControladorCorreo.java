@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -110,12 +109,7 @@ public class ControladorCorreo {
         if (paciente == null || cita == null || vacio(paciente.getCorreo())) {
             return false;
         }
-        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
-                + escaparHtml(unirNombre(paciente)) + "</strong>,</p>"
-                + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
-                + "Tu cita cambió de horario. Estos son los nuevos detalles:</p>"
-                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
-                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+        String contenido = saludoYTabla(paciente, "Tu cita cambió de horario. Estos son los nuevos detalles:")
                 + fila("Fecha anterior", "<span style=\"font-weight:400;color:#94a3b8;text-decoration:line-through;\">"
                 + escaparHtml(formatearFecha(fechaAnterior)) + "</span>", true)
                 + fila("Nueva fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
@@ -133,12 +127,7 @@ public class ControladorCorreo {
         if (paciente == null || cita == null || vacio(paciente.getCorreo())) {
             return false;
         }
-        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
-                + escaparHtml(unirNombre(paciente)) + "</strong>,</p>"
-                + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
-                + "Lamentamos informarte que tu cita fue cancelada:</p>"
-                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
-                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+        String contenido = saludoYTabla(paciente, "Lamentamos informarte que tu cita fue cancelada:")
                 + fila("Fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
                 + escaparHtml(formatearFecha(cita.getFechaCita())) + "</span>", true)
                 + fila("Folio", "#" + cita.getIdCita(), true)
@@ -177,19 +166,6 @@ public class ControladorCorreo {
 
     public boolean estaConfigurado() {
         return !vacio(servidor) && !vacio(puerto) && !vacio(usuario) && !vacio(contrasena) && !vacio(remitente);
-    }
-
-    public static boolean mandarCorreoElectronico() {
-        ControladorCorreo controlador = new ControladorCorreo();
-        String destino = controlador.remitente;
-        String asunto = "Prueba de correo - Gestor de Citas Médicas";
-        String cuerpo = controlador.plantilla("Prueba de correo",
-                "<p style=\"margin:0;font-size:15px;color:#475569;\">La configuración SMTP funciona correctamente.</p>");
-        return controlador.enviarCorreo(destino, asunto, cuerpo);
-    }
-
-    public static boolean mandarCorreoElectronico(Paciente paciente, Cita cita) {
-        return new ControladorCorreo().enviarConfirmacionCita(paciente, cita);
     }
 
     private void cargarConfiguracion() {
@@ -236,15 +212,18 @@ public class ControladorCorreo {
         return valor == null ? "" : valor.trim();
     }
 
-    private String construirCuerpoConfirmacion(Paciente paciente, Cita cita) {
-        String nombre = unirNombre(paciente);
-
-        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
-                + escaparHtml(nombre) + "</strong>,</p>"
+    /** Saludo, frase introductoria y apertura de la tabla de detalles comunes a todos los correos de cita. */
+    private String saludoYTabla(Paciente paciente, String introduccion) {
+        return "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
+                + escaparHtml(unirNombre(paciente)) + "</strong>,</p>"
                 + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
-                + "Tu cita fue agendada correctamente. Estos son los detalles:</p>"
+                + introduccion + "</p>"
                 + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
-                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">";
+    }
+
+    private String construirCuerpoConfirmacion(Paciente paciente, Cita cita) {
+        String contenido = saludoYTabla(paciente, "Tu cita fue agendada correctamente. Estos son los detalles:")
                 + fila("Fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
                 + escaparHtml(formatearFecha(cita.getFechaCita())) + "</span>", true)
                 + fila("Folio", "#" + cita.getIdCita(), true)

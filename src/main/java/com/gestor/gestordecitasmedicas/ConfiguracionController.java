@@ -2,7 +2,6 @@ package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -15,6 +14,7 @@ import javafx.stage.DirectoryChooser;
 import java.io.File;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import com.gestor.gestordecitasmedicas.modelo.Personal;
 
 public class ConfiguracionController implements PanelControlado, PanelRefrescable {
     /** Un campo del formulario: etiqueta, longitud máxima (columna VARCHAR), obligatorio, lectura y escritura. */
@@ -46,7 +46,6 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
     @FXML private PasswordField pwdNueva;
     @FXML private PasswordField pwdConfirmar;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
     private Administrador admin;
 
@@ -86,7 +85,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
 
     @Override
     public void refrescar() {
-        admin = baseDatos.obtenerAdministrador(mainController.idAdministrador());
+        admin = Administrador.buscar(mainController.idAdministrador());
         for (Campo c : campos) {
             c.campo.setText(admin == null || c.leer.apply(admin) == null ? "" : c.leer.apply(admin));
         }
@@ -115,7 +114,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             }
         }
         for (Campo c : campos) c.escribir.accept(admin, c.campo.getText().trim());
-        if (!baseDatos.actualizarAdministrador(admin)) {
+        if (!admin.actualizar()) {
             aviso(Alert.AlertType.ERROR, "No se pudieron guardar los datos. Inténtalo de nuevo.");
             return;
         }
@@ -135,7 +134,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             aviso(Alert.AlertType.WARNING, "No hay permiso de escritura en esa carpeta.");
             return;
         }
-        if (baseDatos.guardarConfig(ControladorPDF.CLAVE_CARPETA, carpeta.getAbsolutePath())) {
+        if (ControladorPDF.guardarCarpetaSalida(carpeta.getAbsolutePath())) {
             txtDirectorio.setText(carpeta.getAbsolutePath());
         } else {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar el directorio.");
@@ -158,11 +157,11 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             aviso(Alert.AlertType.WARNING, "La confirmación no coincide con la nueva contraseña.");
         } else if (nuevoId == idActual && nueva.isEmpty()) {
             aviso(Alert.AlertType.INFORMATION, "No hay cambios que guardar.");
-        } else if (!"admin".equals(baseDatos.autenticar(idActual, pwdActual.getText()))) {
+        } else if (!"admin".equals(Personal.autenticar(idActual, pwdActual.getText()))) {
             aviso(Alert.AlertType.WARNING, "La contraseña actual es incorrecta.");
-        } else if (!baseDatos.idUsuarioLibre(nuevoId, idActual)) {
+        } else if (!Administrador.usuarioDisponible(nuevoId, idActual)) {
             aviso(Alert.AlertType.WARNING, "El usuario " + nuevoId + " ya está en uso por otra cuenta.");
-        } else if (!baseDatos.actualizarCredencialesAdmin(idActual, nuevoId, nueva)) {
+        } else if (!Administrador.cambiarCredenciales(idActual, nuevoId, nueva)) {
             aviso(Alert.AlertType.ERROR, "No se pudieron guardar los cambios.");
         } else {
             mainController.setIdAdministrador(nuevoId);

@@ -1,13 +1,11 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Consulta;
 import com.gestor.gestordecitasmedicas.controlador.ValidacionClinica;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
-import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Medicamento;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
@@ -25,7 +23,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -35,6 +32,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
+import java.util.stream.Stream;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
 
 public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private Label lblEstado;
@@ -49,7 +50,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtNombrePaciente, txtEdadPaciente, txtSexoPaciente;
     private Consulta consulta;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ControladorPDF controladorPDF = new ControladorPDF();
     private final List<FilaMedicamento> filas = new ArrayList<>();
     private final Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(1), e -> tick()));
@@ -85,10 +85,10 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     }
 
     /** Abre una consulta ya registrada para editarla; conserva su vínculo con la cita, nota y receta. */
-    public boolean cargarConsultaParaEdicion(Consulta guardada, Paciente paciente) {
-        Cita citaGuardada = guardada == null ? null : baseDatos.cargarCitas().get(guardada.getIdCita());
+    public boolean cargarConsultaParaEdicion(Consulta guardada) {
+        Cita citaGuardada = guardada == null ? null : Cita.buscar(guardada.getIdCita());
         if (citaGuardada == null) return false;
-        cargarConsulta(citaGuardada, paciente, guardada.getSignosVitales());
+        cargarConsulta(citaGuardada, guardada.getSignosVitales());
         aplicarModoEdicion(true);
         return true;
     }
@@ -103,26 +103,15 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         btnVolver.setText(activo ? "Volver al expediente" : "Volver a Signos Vitales");
     }
 
-    public void cargarConsulta(Cita cita, Paciente paciente, SignosVitales signos) {
+    /** El paciente se toma siempre de la base de datos según la CURP de la cita. */
+    public void cargarConsulta(Cita cita, SignosVitales signos) {
         aplicarModoEdicion(false);
         this.cita = cita;
-        this.paciente = cita == null ? null : baseDatos.cargarPacientePorCurp(cita.getCurp());
-        paciente = this.paciente;
+        this.paciente = cita == null ? null : Paciente.buscar(cita.getCurp());
         this.signos = signos;
-        this.receta = cita == null ? null : baseDatos.cargarRecetaPorCita(cita.getIdCita());
-        this.consulta = cita == null ? null : baseDatos.cargarConsultaPorCita(cita.getIdCita());
-
-        medicamentosBox.getChildren().clear();
-        filas.clear();
-        txtDiagnostico.clear();
-        txtEvolucion.clear();
-        txtIndicaciones.clear();
-        txtNombrePaciente.clear();
-        txtEdadPaciente.clear();
-        txtSexoPaciente.clear();
-        txtPadecimiento.clear();
-        txtExploracion.clear();
-        txtEstudios.clear();
+        this.receta = cita == null ? null : Receta.deCita(cita.getIdCita());
+        this.consulta = cita == null ? null : Consulta.deCita(cita.getIdCita());
+        limpiarCampos();
 
         if (receta != null) {
             if (receta.getSignosVitales() != null) {
@@ -136,8 +125,8 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         }
         if (paciente != null) {
             Date fechaIdentidad = receta == null || receta.getFecha() == null ? new Date() : receta.getFecha();
-            txtNombrePaciente.setText(receta != null && receta.getNombrePaciente() != null ? receta.getNombrePaciente() : nombrePaciente(paciente, cita.getCurp()));
-            txtEdadPaciente.setText(receta != null && receta.getEdadPaciente() != null ? receta.getEdadPaciente() : (paciente.getFechaNacimiento() == null ? "" : com.gestor.gestordecitasmedicas.controlador.TextoExpediente.edad(paciente, fechaIdentidad)));
+            txtNombrePaciente.setText(receta != null && receta.getNombrePaciente() != null ? receta.getNombrePaciente() : Paciente.nombreParaMostrar(paciente, cita.getCurp()));
+            txtEdadPaciente.setText(receta != null && receta.getEdadPaciente() != null ? receta.getEdadPaciente() : (paciente.getFechaNacimiento() == null ? "" : TextoExpediente.edad(paciente, fechaIdentidad)));
             txtSexoPaciente.setText(receta != null && receta.getSexoPaciente() != null ? receta.getSexoPaciente() : paciente.getSexo());
         }
         if (consulta != null) {
@@ -190,6 +179,16 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         consulta = null;
         segundos = 0;
         reloj.pause();
+        limpiarCampos();
+        lblPaciente.setText("Sin cita seleccionada");
+        lblResumen.setText("Selecciona una cita desde la agenda para iniciar la consulta");
+        lblFechaEmision.setText("Fecha de emisión: --");
+        lblMedicamentos.setText("0 fármacos añadidos");
+        lblTimer.setText("00:00 min");
+        habilitar(false);
+    }
+
+    private void limpiarCampos() {
         medicamentosBox.getChildren().clear();
         filas.clear();
         txtDiagnostico.clear();
@@ -201,12 +200,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         txtNombrePaciente.clear();
         txtEdadPaciente.clear();
         txtSexoPaciente.clear();
-        lblPaciente.setText("Sin cita seleccionada");
-        lblResumen.setText("Selecciona una cita desde la agenda para iniciar la consulta");
-        lblFechaEmision.setText("Fecha de emisión: --");
-        lblMedicamentos.setText("0 fármacos añadidos");
-        lblTimer.setText("00:00 min");
-        habilitar(false);
     }
 
     private void habilitar(boolean activo) {
@@ -221,7 +214,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         if (cita == null) {
             return;
         }
-        lblPaciente.setText(nombrePaciente(paciente, cita.getCurp()));
+        lblPaciente.setText(Paciente.nombreParaMostrar(paciente, cita.getCurp()));
         String edad = paciente == null ? "--" : String.valueOf(edad(paciente));
         String hora = cita.getFechaCita() == null ? "--"
                 : new SimpleDateFormat("HH:mm").format(cita.getFechaCita());
@@ -255,7 +248,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         GridPane.setHgrow(col0, Priority.ALWAYS);
         campos.add(col0, 0, 0);
         // Recetas antiguas: se fusionan concentración, vía y frecuencia en el campo único para no perder datos.
-        fila.dosis.setText(String.join(" ", java.util.stream.Stream.of(m.getConcentracion(), m.getDosis(), m.getViaAdministracion(), m.getFrecuencia())
+        fila.dosis.setText(String.join(" ", Stream.of(m.getConcentracion(), m.getDosis(), m.getViaAdministracion(), m.getFrecuencia())
                 .map(ConsultaController::valor).filter(s -> !s.isEmpty()).toArray(String[]::new)));
         fila.dosis.getStyleClass().add("search-field");
         fila.dosis.setPromptText("Ej. 1 tableta de 500 mg por vía oral cada 8 horas");
@@ -398,7 +391,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         destino.setSexoPaciente(valor(txtSexoPaciente.getText()));
         if (destino.getIdReceta() == 0 || valor(destino.getCedulaMedico()).isEmpty()) {
             try {
-                baseDatos.cargarDatosPrescriptor(destino);
+                destino.cargarDatosPrescriptor();
             } catch (IllegalStateException ex) {
                 aviso(Alert.AlertType.ERROR, "Datos del prescriptor no disponibles", ex.getMessage());
                 return false;
@@ -425,7 +418,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             aviso(Alert.AlertType.WARNING, "Datos clínicos incompletos", String.join("\n", errores));
             return false;
         }
-        if (!baseDatos.guardarAtencion(cita, nota, destino, finalizar)) {
+        if (!nota.guardarAtencion(cita, destino, finalizar)) {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar", "La nota y la receta no se guardaron. Revise la conexión y vuelva a intentar.");
             return false;
         }
@@ -459,15 +452,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         return Period.between(nacimiento, LocalDate.now()).getYears();
     }
 
-    private static String nombrePaciente(Paciente paciente, String curp) {
-        if (paciente == null) {
-            return curp == null ? "Paciente no registrado" : curp;
-        }
-        String nombre = (valor(paciente.getNombre()) + " " + valor(paciente.getApellidoPaterno())
-                + " " + valor(paciente.getApellidoMaterno())).trim();
-        return nombre.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : nombre;
-    }
-
     private static Label etiqueta(String texto) {
         Label l = new Label(texto);
         l.getStyleClass().add("caption");
@@ -476,13 +460,5 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
 
     private static String valor(String texto) {
         return texto == null ? "" : texto.trim();
-    }
-
-    private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

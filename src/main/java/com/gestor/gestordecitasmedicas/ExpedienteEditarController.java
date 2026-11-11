@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
@@ -34,7 +33,6 @@ public class ExpedienteEditarController implements PanelControlado {
     @FXML private ScrollPane editorScroll;
     @FXML private Label pacienteEditor, errorEdicion;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final Map<String, TextInputControl> campos = new LinkedHashMap<>();
     private MainController mainController;
     private Paciente paciente;
@@ -147,8 +145,7 @@ public class ExpedienteEditarController implements PanelControlado {
             campos.get("fechaHoraHistoria").requestFocus();
             return;
         }
-        boolean guardado = c.getIdExpediente() > 0
-                ? baseDatos.actualizarExpediente(c) : baseDatos.insertarExpediente(c);
+        boolean guardado = c.guardar();
         if (!guardado) {
             mostrarError("No se pudieron guardar los cambios. Puede volver a intentarlo.");
             return;

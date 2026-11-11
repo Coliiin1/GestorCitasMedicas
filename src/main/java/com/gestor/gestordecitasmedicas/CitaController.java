@@ -1,8 +1,7 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
-import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
@@ -20,10 +19,10 @@ import javafx.scene.control.TextField;
 import javafx.util.Duration;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
 
 public class CitaController implements PanelControlado, PanelRefrescable {
     @FXML private Label lblTimer, lblImc, lblPaciente, lblPacienteBanner;
@@ -33,7 +32,6 @@ public class CitaController implements PanelControlado, PanelRefrescable {
     @FXML private TextArea txtMotivo;
     @FXML private Button btnCancelar, btnSiguiente, btnExpediente;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(1), e -> tick()));
     private int segundos;
 
@@ -71,26 +69,25 @@ public class CitaController implements PanelControlado, PanelRefrescable {
             return;
         }
         citaActual = cita;
-        pacienteActual = baseDatos.cargarPacientePorCurp(cita.getCurp());
+        pacienteActual = Paciente.buscar(cita.getCurp());
         segundos = 0;
         tick();
         if (reloj.getStatus() != Animation.Status.RUNNING) {
             reloj.play();
         }
 
-        String nombre = nombrePaciente(pacienteActual, cita.getCurp());
+        String nombre = Paciente.nombreParaMostrar(pacienteActual, cita.getCurp());
         lblPaciente.setText(nombre);
         lblPacienteBanner.setText(nombre);
         lblEdad.setText(pacienteActual == null ? "Edad: --"
-                : "Edad: " + edad(pacienteActual) + " años");
+                : "Edad: " + Paciente.edadTexto(pacienteActual) + " años");
         lblNacimiento.setText(pacienteActual == null ? "--" : fecha(pacienteActual.getFechaNacimiento()));
         lblCurp.setText(cita.getCurp() == null ? "--" : cita.getCurp());
         lblSexo.setText(pacienteActual == null || pacienteActual.getSexo() == null
                 ? "No registrado" : pacienteActual.getSexo());
-        lblSangre.setText(tipoSangre(cita.getCurp()));
-        lblAlergias.setText(alergias(cita.getCurp()));
+        mostrarDatosExpediente(cita.getCurp());
 
-        Receta existente = baseDatos.cargarRecetaPorCita(cita.getIdCita());
+        Receta existente = Receta.deCita(cita.getIdCita());
         mostrarSignos(existente == null ? null : existente.getSignosVitales());
         txtMotivo.setText(existente == null || existente.getDiagnostico() == null
                 ? "" : existente.getDiagnostico());
@@ -156,15 +153,12 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
-        citaActual.setEstado(Estado.CANCELADA);
-        if (!baseDatos.actualizarCita(citaActual)) {
+        if (!citaActual.cancelar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
-        com.gestor.gestordecitasmedicas.controlador.ControladorCorreo.notificarCancelaciones(
-                java.util.List.of(citaActual), baseDatos.cargarPacientes(),
+        ControladorCorreo.notificarCancelaciones(List.of(citaActual), Paciente.todos(),
                 HorarioConfigController::avisoNotificacion);
-        reloj.pause();
         limpiar();
         if (mainController != null) {
             mainController.ir("agenda-panel.fxml");
@@ -190,7 +184,7 @@ public class CitaController implements PanelControlado, PanelRefrescable {
             return;
         }
         ConsultaController controlador = mainController.controlador("consulta-panel.fxml");
-        controlador.cargarConsulta(citaActual, pacienteActual, leerSignos());
+        controlador.cargarConsulta(citaActual, leerSignos());
         reloj.pause();
         mainController.ir("consulta-panel.fxml");
     }
@@ -282,60 +276,23 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         return Math.round(valor > 3 ? valor : valor * 100);
     }
 
-    private String tipoSangre(String curp) {
+    /** Tipo de sangre y alergias del expediente (se carga una sola vez). */
+    private void mostrarDatosExpediente(String curp) {
+        Expediente expediente;
         try {
-            Expediente expediente = baseDatos.cargarExpedientePorCurp(curp);
-            return expediente == null || expediente.getTipoSangre() == null
-                    || expediente.getTipoSangre().trim().isEmpty() ? "No registrado" : expediente.getTipoSangre();
+            expediente = Expediente.dePaciente(curp);
         } catch (IllegalStateException e) {
-            return "No disponible";
+            lblSangre.setText("No disponible");
+            lblAlergias.setText("No disponible");
+            return;
         }
-    }
-
-    private String alergias(String curp) {
-        try {
-            Expediente expediente = baseDatos.cargarExpedientePorCurp(curp);
-            if (expediente == null || expediente.getAlergias() == null
-                    || expediente.getAlergias().trim().isEmpty()) {
-                return "Ninguna reportada";
-            }
-            return expediente.getAlergias();
-        } catch (IllegalStateException e) {
-            return "No disponible";
-        }
-    }
-
-    private static String edad(Paciente paciente) {
-        if (paciente == null || paciente.getFechaNacimiento() == null) {
-            return "--";
-        }
-        LocalDate nacimiento = paciente.getFechaNacimiento().toInstant()
-                .atZone(ZoneId.systemDefault()).toLocalDate();
-        return String.valueOf(Period.between(nacimiento, LocalDate.now()).getYears());
+        lblSangre.setText(expediente == null || expediente.getTipoSangre() == null
+                || expediente.getTipoSangre().trim().isEmpty() ? "No registrado" : expediente.getTipoSangre());
+        lblAlergias.setText(expediente == null || expediente.getAlergias() == null
+                || expediente.getAlergias().trim().isEmpty() ? "Ninguna reportada" : expediente.getAlergias());
     }
 
     private static String fecha(Date fecha) {
         return fecha == null ? "--" : new SimpleDateFormat("dd/MM/yyyy").format(fecha);
-    }
-
-    private static String nombrePaciente(Paciente paciente, String curp) {
-        if (paciente == null) {
-            return curp == null ? "Paciente no registrado" : curp;
-        }
-        String nombre = (valor(paciente.getNombre()) + " " + valor(paciente.getApellidoPaterno())
-                + " " + valor(paciente.getApellidoMaterno())).trim();
-        return nombre.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : nombre;
-    }
-
-    private static String valor(String texto) {
-        return texto == null ? "" : texto.trim();
-    }
-
-    private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

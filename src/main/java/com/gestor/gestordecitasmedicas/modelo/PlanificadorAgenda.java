@@ -15,6 +15,10 @@ import java.util.TreeSet;
  * activos y fuera de los bloqueos configurados.
  */
 public final class PlanificadorAgenda {
+    public static final String[] MESES = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
+            "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+    public static final String[] MESES_CORTO = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep",
+            "Oct", "Nov", "Dic"};
     public static final int DURACION_CITA_MINUTOS = 60;
 
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
@@ -155,16 +159,6 @@ public final class PlanificadorAgenda {
         }
         return (inicio == null ? "--" : inicio.toString().replace('T', ' '))
                 + " a " + (fin == null ? "--" : fin.toString().replace('T', ' '));
-    }
-
-    public static List<LocalDate> diasSemana(LocalDate lunes) {
-        List<LocalDate> dias = new ArrayList<>();
-        LocalDate dia = lunes;
-        for (int i = 0; i < 7; i++) {
-            dias.add(dia);
-            dia = dia.plusDays(1);
-        }
-        return dias;
     }
 
     public static LocalDate lunesDe(LocalDate fecha) {
