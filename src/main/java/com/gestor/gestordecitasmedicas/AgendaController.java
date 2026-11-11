@@ -497,9 +497,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
+        Cita cancelada = citaSeleccionada;
         limpiarFicha();
         refrescar();
         aviso(Alert.AlertType.INFORMATION, "Cita cancelada", "La cita se marcó como cancelada.");
+        ControladorCorreo.notificarCancelaciones(List.of(cancelada), baseDatos.cargarPacientes(),
+                HorarioConfigController::avisoNotificacion);
     }
 
     @FXML
@@ -715,6 +718,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
             Cita citaGuardada;
             boolean guardado;
+            Date fechaAnterior = null;
             if (existente == null) {
                 Cita nueva = new Cita();
                 nueva.setCurp(paciente.getCurp());
@@ -723,6 +727,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 guardado = baseDatos.insertarCita(nueva);
                 citaGuardada = nueva;
             } else {
+                fechaAnterior = existente.getFechaCita();
                 existente.setFechaCita(fechaCita);
                 existente.setEstado(Estado.AGENDADA);
                 guardado = baseDatos.actualizarCita(existente);
@@ -738,7 +743,10 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
             Paciente pacienteCita = existente == null
                     ? paciente : pacientesMapa.get(existente.getCurp());
-            enviarConfirmacionAsync(pacienteCita, citaGuardada);
+            // Sin cambio real de fecha no se avisa al paciente.
+            if (fechaAnterior == null || fechaAnterior.getTime() != fechaCita.getTime()) {
+                enviarConfirmacionAsync(pacienteCita, citaGuardada, fechaAnterior);
+            }
         });
 
         ButtonType resultado = dialogo.showAndWait().orElse(ButtonType.CANCEL);
@@ -873,6 +881,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 event.consume();
                 aviso(Alert.AlertType.ERROR, "No se pudo bloquear",
                         "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
+            } else if (!conflictos.isEmpty()) {
+                ControladorCorreo.notificarCancelaciones(conflictos, baseDatos.cargarPacientes(),
+                        HorarioConfigController::avisoNotificacion);
             }
         });
 
@@ -924,7 +935,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         mainController.ir("paciente-editar-panel.fxml");
     }
 
-    private void enviarConfirmacionAsync(Paciente paciente, Cita cita) {
+    /** fechaAnterior != null indica reprogramación (correo distinto al de cita nueva). */
+    private void enviarConfirmacionAsync(Paciente paciente, Cita cita, Date fechaAnterior) {
+        boolean reprogramada = fechaAnterior != null;
         if (paciente == null || cita == null) {
             aviso(Alert.AlertType.WARNING, "Correo no enviado",
                     "No se encontró el paciente de la cita, así que no se envió la confirmación.");
@@ -946,11 +959,15 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
         String destinatario = paciente.getCorreo().trim();
         Thread hilo = new Thread(() -> {
-            boolean enviado = controlador.enviarConfirmacionCita(paciente, cita);
+            boolean enviado = reprogramada
+                    ? controlador.enviarReprogramacionCita(paciente, cita, fechaAnterior)
+                    : controlador.enviarConfirmacionCita(paciente, cita);
             Platform.runLater(() -> {
                 if (enviado) {
-                    aviso(Alert.AlertType.INFORMATION, "Confirmación enviada",
-                            "Se envió la confirmación de la cita a " + destinatario + ".");
+                    aviso(Alert.AlertType.INFORMATION,
+                            reprogramada ? "Reprogramación enviada" : "Confirmación enviada",
+                            "Se envió " + (reprogramada ? "el aviso de reprogramación" : "la confirmación")
+                                    + " de la cita a " + destinatario + ".");
                 } else {
                     aviso(Alert.AlertType.WARNING, "Correo no enviado",
                             "La cita se guardó, pero no se pudo enviar el correo a "

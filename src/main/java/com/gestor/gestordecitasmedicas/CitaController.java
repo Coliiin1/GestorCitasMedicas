@@ -161,6 +161,9 @@ public class CitaController implements PanelControlado, PanelRefrescable {
             aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
+        com.gestor.gestordecitasmedicas.controlador.ControladorCorreo.notificarCancelaciones(
+                java.util.List.of(citaActual), baseDatos.cargarPacientes(),
+                HorarioConfigController::avisoNotificacion);
         reloj.pause();
         limpiar();
         if (mainController != null) {

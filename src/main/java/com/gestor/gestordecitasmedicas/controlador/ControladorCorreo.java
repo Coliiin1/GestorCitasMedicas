@@ -4,6 +4,8 @@ import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 
+import javafx.application.Platform;
+
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -18,10 +20,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 
 public class ControladorCorreo {
 
@@ -98,6 +104,75 @@ public class ControladorCorreo {
 
         String asunto = "Confirmación de cita médica - Folio " + cita.getIdCita();
         return enviarCorreo(paciente.getCorreo(), asunto, construirCuerpoConfirmacion(paciente, cita));
+    }
+
+    public boolean enviarReprogramacionCita(Paciente paciente, Cita cita, Date fechaAnterior) {
+        if (paciente == null || cita == null || vacio(paciente.getCorreo())) {
+            return false;
+        }
+        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
+                + escaparHtml(unirNombre(paciente)) + "</strong>,</p>"
+                + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
+                + "Tu cita cambió de horario. Estos son los nuevos detalles:</p>"
+                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
+                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+                + fila("Fecha anterior", "<span style=\"font-weight:400;color:#94a3b8;text-decoration:line-through;\">"
+                + escaparHtml(formatearFecha(fechaAnterior)) + "</span>", true)
+                + fila("Nueva fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
+                + escaparHtml(formatearFecha(cita.getFechaCita())) + "</span>", true)
+                + fila("Folio", "#" + cita.getIdCita(), true)
+                + fila("Estado", pastillaEstado(cita.getEstado()), false)
+                + "</table>"
+                + "<p style=\"margin:22px 0 0;font-size:13px;color:#64748b;line-height:1.6;\">"
+                + "Si no puedes asistir en el nuevo horario, comunícate con el consultorio.</p>";
+        return enviarCorreo(paciente.getCorreo(), "Cita reprogramada - Folio " + cita.getIdCita(),
+                plantilla("Cita reprogramada", contenido));
+    }
+
+    public boolean enviarCancelacionCita(Paciente paciente, Cita cita) {
+        if (paciente == null || cita == null || vacio(paciente.getCorreo())) {
+            return false;
+        }
+        String contenido = "<p style=\"margin:0 0 6px;font-size:16px;color:#0f172a;\">Hola <strong>"
+                + escaparHtml(unirNombre(paciente)) + "</strong>,</p>"
+                + "<p style=\"margin:0 0 22px;font-size:15px;color:#475569;line-height:1.6;\">"
+                + "Lamentamos informarte que tu cita fue cancelada:</p>"
+                + "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" "
+                + "style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;\">"
+                + fila("Fecha y hora", "<span style=\"font-size:16px;font-weight:600;color:#0369a1;\">"
+                + escaparHtml(formatearFecha(cita.getFechaCita())) + "</span>", true)
+                + fila("Folio", "#" + cita.getIdCita(), true)
+                + fila("Estado", pastillaEstado(Estado.CANCELADA), false)
+                + "</table>"
+                + "<p style=\"margin:22px 0 0;font-size:14px;color:#475569;line-height:1.6;\">"
+                + "Comunícate con el consultorio para reagendar tu cita. Disculpa las molestias.</p>";
+        return enviarCorreo(paciente.getCorreo(), "Cita cancelada - Folio " + cita.getIdCita(),
+                plantilla("Cita cancelada", contenido));
+    }
+
+    /**
+     * Notifica en segundo plano la cancelación de cada cita (omite pacientes sin correo).
+     * alTerminar(enviados, total) se ejecuta en el hilo de JavaFX.
+     */
+    public static void notificarCancelaciones(List<Cita> citas, Map<String, Paciente> pacientes,
+                                              BiConsumer<Integer, Integer> alTerminar) {
+        List<Cita> copia = new ArrayList<>(citas);
+        Thread hilo = new Thread(() -> {
+            ControladorCorreo controlador = new ControladorCorreo();
+            int enviados = 0;
+            if (controlador.estaConfigurado()) {
+                for (Cita cita : copia) {
+                    if (controlador.enviarCancelacionCita(pacientes.get(cita.getCurp()), cita)) {
+                        enviados++;
+                    }
+                }
+            }
+            int total = copia.size();
+            int ok = enviados;
+            Platform.runLater(() -> alTerminar.accept(ok, total));
+        }, "correo-cancelacion");
+        hilo.setDaemon(true);
+        hilo.start();
     }
 
     public boolean estaConfigurado() {
@@ -271,39 +346,4 @@ public class ControladorCorreo {
         return valor == null || valor.trim().isEmpty();
     }
 
-    public static void main(String[] args) {
-        String correoPaciente = "carlosdanielavilacolin@gmail.com"; //aqui va el correo del destinatario
-
-        ControladorCorreo controlador = new ControladorCorreo();
-        if (!controlador.estaConfigurado()) {
-            System.out.println("La configuración de correo está incompleta.");
-            System.out.println("Define SMTP_USER, SMTP_PASSWORD y SMTP_FROM, o crea correo.properties en la raíz del proyecto.");
-            return;
-        }
-
-        System.out.println("Servidor SMTP: " + controlador.servidor + ":" + controlador.puerto);
-        System.out.println("Remitente: " + controlador.remitente);
-        System.out.println("Correo del paciente: " + correoPaciente);
-
-        Paciente paciente = new Paciente("MEND800101HDFRRN01", new Date(), "N/A", "Domicilio de prueba", "0000000000", correoPaciente);
-        paciente.setNombre("Paciente");
-        paciente.setApellidoPaterno("de Prueba");
-        paciente.setApellidoMaterno("Gmail");
-
-        Calendar calendario = Calendar.getInstance();
-        calendario.add(Calendar.DAY_OF_MONTH, 1);
-
-        Cita cita = new Cita();
-        cita.setIdCita(1);
-        cita.setFechaCita(calendario.getTime());
-        cita.setEstado(Estado.AGENDADA);
-        cita.setCurp(paciente.getCurp());
-
-        boolean enviado = controlador.enviarConfirmacionCita(paciente, cita);
-        if (enviado) {
-            System.out.println("Correo de confirmación enviado correctamente a " + correoPaciente);
-        } else {
-            System.out.println("No se pudo enviar el correo. Revisa la configuración y el mensaje de error.");
-        }
-    }
 }

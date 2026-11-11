@@ -463,6 +463,10 @@ public final class HorarioConfigController {
             return;
         }
         cambios = true;
+        if (!conflictos.isEmpty()) {
+            com.gestor.gestordecitasmedicas.controlador.ControladorCorreo.notificarCancelaciones(
+                    conflictos, baseDatos.cargarPacientes(), HorarioConfigController::avisoNotificacion);
+        }
         limpiarFormularioBloqueo();
         recargarListas();
     }
@@ -613,6 +617,18 @@ public final class HorarioConfigController {
         alerta.getDialogPane().setContent(lista);
         alerta.getButtonTypes().setAll(aceptar, volver);
         return alerta.showAndWait().orElse(volver) == aceptar;
+    }
+
+    /** Resumen del envío de correos de cancelación; lo reutilizan Agenda y Consulta. */
+    static void avisoNotificacion(int enviados, int total) {
+        if (enviados == total) {
+            aviso(Alert.AlertType.INFORMATION, "Cancelación notificada",
+                    "Se notificó por correo a " + enviados + " paciente(s).");
+        } else {
+            aviso(Alert.AlertType.WARNING, "Notificación incompleta",
+                    "Se notificó por correo a " + enviados + " de " + total + " paciente(s). "
+                            + "Los demás no tienen correo o el SMTP no está configurado.");
+        }
     }
 
     private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {

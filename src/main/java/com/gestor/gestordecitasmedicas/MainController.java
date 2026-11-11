@@ -1,11 +1,11 @@
 package com.gestor.gestordecitasmedicas;
 
+import com.gestor.gestordecitasmedicas.modelo.Administrador;
+import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import com.gestor.gestordecitasmedicas.modelo.Administrador;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -15,35 +15,32 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainController {
     @FXML private StackPane contenido;
     @FXML private Pane menu;
-    @FXML private Button btnCita;
-    @FXML private Button btnDashboard;
     @FXML private Button btnConfig;
-
-    /** Botones de módulo: los del menú más Configuración, que está junto a "Cerrar sesión". */
-    private java.util.List<Node> modulos() {
-        java.util.List<Node> l = new java.util.ArrayList<>(menu.getChildren());
-        l.add(btnConfig);
-        return l;
-    }
-
-    // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
-    private final Map<String, Node> paneles = new HashMap<>();
-    private final Map<String, Object> controladores = new HashMap<>();
-    // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
-    private Button ultimoActivo;
-
     @FXML private Label lblConsultorio;
     @FXML private Label lblMedico;
 
     private boolean esAdmin;
-    private boolean rolConfigurado;
     private int idAdmin;
+    // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
+    private Button ultimoActivo;
+    // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
+    private final Map<String, Node> paneles = new HashMap<>();
+    private final Map<String, Object> controladores = new HashMap<>();
+
+    /** Botones de módulo: los del menú más Configuración, que está junto a "Cerrar sesión". */
+    private List<Node> modulos() {
+        List<Node> l = new ArrayList<>(menu.getChildren());
+        l.add(btnConfig);
+        return l;
+    }
 
     public void setIdAdministrador(int id) {
         idAdmin = id;
@@ -51,6 +48,10 @@ public class MainController {
 
     public int idAdministrador() {
         return idAdmin;
+    }
+
+    public boolean esAdministrador() {
+        return esAdmin;
     }
 
     /** Muestra en la barra lateral los datos del consultorio guardados en la tabla Administrador. */
@@ -64,20 +65,14 @@ public class MainController {
         lblMedico.setText(("Dr. " + a.getNombre() + " " + a.getApellidoPaterno()).trim());
     }
 
-    public boolean esAdministrador() {
-        return esAdmin;
-    }
-
     /** Ajusta menú y navegación según el rol ("admin" o "asis") y abre la pantalla inicial. */
     public void configurarRol(String rol, int idUsuario) {
         esAdmin = "admin".equals(rol);
         idAdmin = idUsuario;
         aplicarConfiguracion();
-        rolConfigurado = true;
         for (Node n : modulos()) {
             if (n instanceof Button) {
-                boolean permitido = destinoPermitido((String) n.getUserData())
-                        && n != btnCita && (esAdmin || n != btnDashboard) && !"consulta-panel.fxml".equals(n.getUserData());
+                boolean permitido = destinoPermitido((String) n.getUserData());
                 n.setVisible(permitido);
                 n.setManaged(permitido);
             }
@@ -86,8 +81,7 @@ public class MainController {
     }
 
     private boolean destinoPermitido(String fxml) {
-        if (!rolConfigurado || esAdmin) return true;
-        return "agenda-panel.fxml".equals(fxml) || "paciente-editar-panel.fxml".equals(fxml);
+        return esAdmin || "agenda-panel.fxml".equals(fxml) || "paciente-editar-panel.fxml".equals(fxml);
     }
 
     @FXML
@@ -144,7 +138,7 @@ public class MainController {
         if (activo != null) activo.getStyleClass().add("nav-item-active");
     }
 
-    public Node obtenerPanel(String fxml) {
+    private Node obtenerPanel(String fxml) {
         return paneles.computeIfAbsent(fxml, this::cargar);
     }
 
