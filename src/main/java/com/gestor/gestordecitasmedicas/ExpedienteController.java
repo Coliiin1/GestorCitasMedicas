@@ -123,8 +123,9 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
     private void imprimirReceta(Receta receta) {
         if (receta == null) return;
         if (new ControladorPDF().generarPDF(receta)) {
-            aviso(Alert.AlertType.INFORMATION, "Receta generada",
-                    new File(ControladorPDF.carpetaSalida(), "receta_" + receta.getIdReceta() + ".pdf").getAbsolutePath());
+            File archivo = new File(ControladorPDF.carpetaSalida(), "receta_" + receta.getIdReceta() + ".pdf");
+            ControladorPDF.abrir(archivo);
+            aviso(Alert.AlertType.INFORMATION, "Receta generada", archivo.getAbsolutePath());
         } else {
             aviso(Alert.AlertType.ERROR, "PDF no generado", "No se pudo generar la receta. Revise que los datos estén completos.");
         }

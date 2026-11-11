@@ -54,48 +54,132 @@ public class ControladorPDF {
         }
     }
 
+    private static final BaseColor AZUL = new BaseColor(26, 117, 188);
+    private static final BaseColor FONDO = new BaseColor(232, 240, 248);
+
+    /** Abre el PDF en el visor predeterminado sin bloquear la interfaz; falla en silencio si no hay visor. */
+    public static void abrir(File archivo) {
+        Thread t = new Thread(() -> {
+            try {
+                if (java.awt.Desktop.isDesktopSupported()
+                        && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.OPEN))
+                    java.awt.Desktop.getDesktop().open(archivo);
+            } catch (IOException | RuntimeException e) {
+                System.err.println("No se pudo abrir el PDF: " + e.getMessage());
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+    }
+
     /** Genera un formato para firma autógrafa, nunca una receta electrónica firmada. */
     public void generarReceta(File archivo, Receta receta) throws IOException, DocumentException {
         List<String> errores = ValidacionClinica.receta(receta, true);
         if (!errores.isEmpty()) throw new IllegalArgumentException(String.join("\n", errores));
-        Document documento = new Document(PageSize.A4, 40, 40, 65, 60);
+        Paciente paciente = null;
+        try { paciente = new com.gestor.gestordecitasmedicas.modelo.BaseDatos().cargarPacientePorCurp(receta.getCurp()); }
+        catch (RuntimeException e) { System.err.println("Receta sin datos extra del paciente: " + e.getMessage()); }
+        com.gestor.gestordecitasmedicas.modelo.SignosVitales sv = receta.getSignosVitales();
+
+        Document documento = new Document(PageSize.A4, 0, 0, 0, 0);
         try (FileOutputStream salida = new FileOutputStream(archivo)) {
             PdfWriter writer = PdfWriter.getInstance(documento, salida);
-            identificarPaginas(writer, "Receta #" + receta.getIdReceta() + " | " + receta.getNombrePaciente());
             documento.open();
             try {
-                documento.add(new Paragraph("Receta médica ordinaria", FUENTE_TITULO));
-                documento.add(new Paragraph("Formato para firma autógrafa - pendiente de firma", FUENTE_SUBTITULO));
-                agregarSeccion(documento, "Prescriptor y establecimiento");
-                PdfPTable emisor = tablaDatos();
-                agregarFila(emisor, "Profesional que prescribe", receta.getNombreMedico());
-                agregarFila(emisor, "Profesión y cédula profesional", receta.getProfesion() + " | " + receta.getCedulaMedico());
-                agregarFila(emisor, "Institución que expidió el título", receta.getInstitucionTitulo());
-                agregarFila(emisor, "Domicilio del prescriptor", receta.getDomicilioMedico());
-                if (receta.getEspecialidad() != null && !receta.getEspecialidad().trim().isEmpty())
-                    agregarFila(emisor, "Especialidad y registro", receta.getEspecialidad() + " | " + receta.getRegistroEspecialidad());
-                agregarFila(emisor, "Establecimiento", receta.getNombreEstablecimiento());
-                agregarFila(emisor, "Domicilio del establecimiento", receta.getDomicilioEstablecimiento());
-                documento.add(emisor);
-                agregarSeccion(documento, "Paciente y prescripción");
-                PdfPTable datos = tablaDatos();
-                agregarFila(datos, "Folio interno", String.valueOf(receta.getIdReceta()));
-                agregarFila(datos, "Fecha y hora de expedición", formatearFecha(receta.getFecha()));
-                agregarFila(datos, "Nombre completo del paciente", receta.getNombrePaciente());
-                agregarFila(datos, "Edad y sexo", receta.getEdadPaciente() + " | " + receta.getSexoPaciente());
-                agregarFila(datos, "CURP", texto(receta.getCurp()));
-                agregarFila(datos, "Diagnóstico", receta.getDiagnostico());
-                documento.add(datos);
-                agregarMedicamentos(documento, receta.getMedicamentos());
-                agregarBloqueClinico(documento, "Indicaciones generales y seguimiento", TextoExpediente.valor(receta.getIndicaciones()));
-                Paragraph firma = new Paragraph("\n\n________________________________________\nFirma autógrafa de " + receta.getNombreMedico()
-                        + "\nCédula profesional: " + receta.getCedulaMedico()
-                        + "\nImprimir y firmar por el profesional que prescribe.", FUENTE_DATO);
-                firma.setKeepTogether(true);
-                firma.setAlignment(Element.ALIGN_CENTER);
-                documento.add(firma);
+                com.itextpdf.text.pdf.PdfContentByte cb = writer.getDirectContent();
+                float h = PageSize.A4.getHeight();
+                Font negrita = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, AZUL);
+                Font chica = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, AZUL);
+                Font dato = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
+                Font nombre = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD, AZUL);
+
+                // Bandas de fondo (y medido desde arriba)
+                cb.setColorFill(FONDO);
+                cb.rectangle(0, h - 130, 595, 130);
+                cb.rectangle(0, h - 640, 595, 340);
+                cb.fill();
+                cb.setColorFill(AZUL);
+                cb.roundRectangle(20, h - 800, 555, 60, 25);
+                cb.fill();
+                cb.setColorStroke(AZUL);
+                cb.moveTo(205, h - 690); cb.lineTo(390, h - 690); cb.stroke();
+
+                try {
+                    java.net.URL logo = getClass().getResource("/Imagenes/IconoUaemex.png");
+                    if (logo != null) {
+                        com.itextpdf.text.Image img = com.itextpdf.text.Image.getInstance(logo);
+                        img.scaleToFit(75, 85);
+                        img.setAbsolutePosition(30, h - 25 - img.getScaledHeight());
+                        cb.addImage(img);
+                    }
+                } catch (IOException | DocumentException e) { /* shortcut: logo opcional */ }
+
+                String esp = receta.getEspecialidad() == null || receta.getEspecialidad().trim().isEmpty()
+                        ? receta.getProfesion() : receta.getEspecialidad();
+                texto(cb, "Dr. " + receta.getNombreMedico(), 115, h - 55, nombre);
+                texto(cb, texto(esp), 115, h - 75, negrita);
+                campo(cb, "FECHA:", formatearFecha(receta.getFecha()), 115, h - 115, negrita, dato);
+                campo(cb, "CÉDULA PROFESIONAL", texto(receta.getCedulaMedico()), 340, h - 45, negrita, negrita);
+                texto(cb, texto(receta.getNombreEstablecimiento()), 340, h - 60, chica);
+                texto(cb, texto(receta.getDomicilioEstablecimiento()), 340, h - 72, chica);
+                campo(cb, "FOLIO:", String.valueOf(receta.getIdReceta()), 340, h - 115, negrita, dato);
+
+                campo(cb, "PACIENTE:", texto(receta.getNombrePaciente()), 60, h - 160, negrita, dato);
+                campo(cb, "CURP:", texto(receta.getCurp()), 340, h - 160, negrita, dato);
+                campo(cb, "FECHA NACIMIENTO:", paciente == null ? "-" : TextoExpediente.fecha(paciente.getFechaNacimiento()), 60, h - 185, negrita, dato);
+                campo(cb, "PESO:", sv == null || sv.getPeso() <= 0 ? "-" : sv.getPeso() + " kg", 250, h - 185, negrita, dato);
+                campo(cb, "ESTATURA:", sv == null || sv.getTalla() <= 0 ? "-" : sv.getTalla() + " cm", 340, h - 185, negrita, dato);
+                campo(cb, "SIGNOS VITALES:", sv == null ? "-" : "PA " + texto(sv.getPresionArterial()) + " | FC " + sv.getFrecuenciaCardiaca()
+                        + " | FR " + sv.getFrecuenciaRespiratoria() + " | T " + sv.getTemperatura() + " °C | SpO2 " + sv.getSaturacionOxigeno() + "%",
+                        60, h - 210, negrita, new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.BLACK));
+                campo(cb, "DOMICILIO DEL PACIENTE:", paciente == null ? "-" : texto(paciente.getDomicilio()), 60, h - 235, negrita, dato);
+
+                // Diagnóstico, medicamentos e indicaciones: texto con ajuste de línea dentro de la banda
+                ColumnText col = new ColumnText(cb);
+                col.setSimpleColumn(60, h - 665, 535, h - 315);
+                Paragraph p = new Paragraph("DIAGNOSTICO: ", negrita);
+                p.add(new Chunk(texto(receta.getDiagnostico()), dato));
+                p.setSpacingAfter(14);
+                col.addElement(p);
+                col.addElement(new Paragraph("MEDICAMENTOS:", negrita));
+                for (Medicamento m : receta.getMedicamentos()) {
+                    Paragraph li = new Paragraph("•  " + lineaMedicamento(m), dato);
+                    li.setIndentationLeft(12);
+                    col.addElement(li);
+                }
+                String ind = TextoExpediente.valor(receta.getIndicaciones());
+                if (ind != null && !ind.trim().isEmpty() && !"-".equals(ind.trim())) {
+                    Paragraph pi = new Paragraph("INDICACIONES: ", negrita);
+                    pi.setSpacingBefore(10);
+                    pi.add(new Chunk(ind, dato));
+                    col.addElement(pi);
+                }
+                col.go(); // shortcut: una sola página, el excedente se recorta; paginar si hace falta
+
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase("FIRMA", negrita), 297, h - 705, 0);
+                Font blanca = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.WHITE);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(texto(receta.getNombreEstablecimiento()),
+                        new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD, BaseColor.WHITE)), 297, h - 765, 0);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(texto(receta.getDomicilioEstablecimiento()), blanca), 297, h - 782, 0);
             } finally { documento.close(); }
         }
+    }
+
+    private void texto(com.itextpdf.text.pdf.PdfContentByte cb, String t, float x, float y, Font f) {
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(t, f), x, y, 0);
+    }
+
+    private void campo(com.itextpdf.text.pdf.PdfContentByte cb, String etiqueta, String valor, float x, float y, Font fe, Font fv) {
+        texto(cb, etiqueta, x, y, fe);
+        texto(cb, valor, x + fe.getCalculatedBaseFont(false).getWidthPoint(etiqueta, fe.getSize()) + 5, y, fv);
+    }
+
+    private String lineaMedicamento(Medicamento m) {
+        StringBuilder sb = new StringBuilder(texto(m.getNombreMedicamento()));
+        for (String v : new String[]{m.getConcentracion(), m.getPresentacion(), m.getDosis(), m.getViaAdministracion(),
+                m.getFrecuencia(), m.getDuradcion(), m.getCantidad()})
+            if (v != null && !v.trim().isEmpty()) sb.append(" | ").append(v.trim());
+        return sb.toString();
     }
 
     private PdfPTable tablaDatos() throws DocumentException {

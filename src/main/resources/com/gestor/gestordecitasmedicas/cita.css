@@ -5,7 +5,7 @@
 
    Espaciado:  4 / 8 / 12 / 16 / 24 / 32
    Radios:     4 (chip) / 8 (control, tile) / 12 (tarjeta, panel)
-   Tipografía: 11 caption · 12 meta · 13 cuerpo · 14 título ítem · 20 título página
+   Tipografía: 11 caption · 12 label de campo · 13 info/campos/placeholder · 14 título ítem · 16 sección · 20 título panel
    Controles:  32 compacto · 36 icono/nav · 40 normal · 44 grande
    Tarjeta:    padding 20 · gap interno 12 · gap de sección 24
    ===================================================================== */
@@ -199,7 +199,7 @@
 }
 
 .card-subtitle {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-text-fill: #64748b;
 }
 
@@ -216,32 +216,37 @@
 }
 
 .patient-meta {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-text-fill: #64748b;
 }
 
 .info-value {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #1e293b;
 }
 
 .meta-value {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #334155;
 }
 
 .meta-mono {
     -fx-font-family: "Consolas", "Courier New", monospace;
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #334155;
 }
 
 .notice-text {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-text-fill: #475569;
+}
+
+/* label de campo */
+.field-label {
+    -fx-font-size: 12px;
 }
 
 /* caption / meta secundaria */
@@ -250,7 +255,6 @@
 .caption-blue,
 .list-caption,
 .section-label,
-.field-label,
 .cal-head,
 .unit {
     -fx-font-size: 11px;

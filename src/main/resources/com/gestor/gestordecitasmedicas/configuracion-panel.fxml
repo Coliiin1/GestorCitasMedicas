@@ -6,89 +6,95 @@
 
 <!-- Panel "Configuración general" (solo administrador). Los campos de datos se crean en el controlador. -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ConfiguracionController">
+    <HBox alignment="CENTER" styleClass="page-header">
+        <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
+            <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                <Label styleClass="panel-title" text="CONFIGURACIÓN GENERAL" />
+                <Label styleClass="card-subtitle" text="Datos del consultorio, directorio de archivos y cuenta de administrador." />
+            </VBox>
+        </HBox>
+    </HBox>
+
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-        <VBox styleClass="page-body" spacing="16.0">
-            <TabPane styleClass="expediente-tabs" tabClosingPolicy="UNAVAILABLE" maxWidth="Infinity">
-                <Tab text="Consultorio">
-            <!-- Datos del consultorio -->
-            <VBox maxWidth="960.0" styleClass="edit-card, page-form">
-                <VBox spacing="4.0" styleClass="edit-header">
-                    <Label styleClass="panel-title" text="DATOS DEL CONSULTORIO" />
-                    <Label styleClass="card-subtitle" text="Datos del médico y del establecimiento que aparecen en recetas y expedientes" />
-                </VBox>
-                <VBox spacing="24.0" styleClass="config-body">
-                    <GridPane fx:id="gridDatos" hgap="24.0" vgap="16.0">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                        </columnConstraints>
-                    </GridPane>
-                    <HBox alignment="CENTER" styleClass="form-actions">
-                        <Button onAction="#onGuardarDatos" prefWidth="260.0" styleClass="btn-primary" text="Guardar Datos">
-                            <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
-                        </Button>
-                    </HBox>
-                </VBox>
+        <VBox styleClass="page-body">
+            <VBox styleClass="page-content" spacing="16.0">
+                <TabPane styleClass="expediente-tabs" tabClosingPolicy="UNAVAILABLE" maxWidth="Infinity">
+                    <Tab text="Consultorio">
+                        <VBox styleClass="edit-card">
+                            <VBox spacing="4.0" styleClass="edit-header">
+                                <Label styleClass="title-section" text="DATOS DEL CONSULTORIO" />
+                                <Label styleClass="card-subtitle" text="Datos del médico y del establecimiento que aparecen en recetas y expedientes" />
+                            </VBox>
+                            <VBox spacing="24.0" styleClass="config-body">
+                                <GridPane fx:id="gridDatos" hgap="24.0" vgap="16.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                                    </columnConstraints>
+                                </GridPane>
+                                <HBox alignment="CENTER" styleClass="form-actions">
+                                    <Button onAction="#onGuardarDatos" prefWidth="260.0" styleClass="btn-primary" text="Guardar Datos">
+                                        <graphic><FontIcon iconLiteral="fi-rr-check" /></graphic>
+                                    </Button>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Tab>
+                    <Tab text="Directorio de archivos">
+                        <VBox styleClass="edit-card">
+                            <VBox spacing="4.0" styleClass="edit-header">
+                                <Label styleClass="title-section" text="DIRECTORIO DE ARCHIVOS" />
+                                <Label styleClass="card-subtitle" text="Carpeta donde se guardan los PDF de recetas" />
+                            </VBox>
+                            <VBox spacing="24.0" styleClass="config-body">
+                                <HBox spacing="12.0">
+                                    <TextField fx:id="txtDirectorio" editable="false" styleClass="form-field, form-field-mono" HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#onExaminar" styleClass="btn-secondary" text="Examinar…">
+                                        <graphic><FontIcon iconLiteral="fi-rr-folder-open" /></graphic>
+                                    </Button>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Tab>
+                    <Tab text="Administrador">
+                        <VBox styleClass="edit-card">
+                            <VBox spacing="4.0" styleClass="edit-header">
+                                <Label styleClass="title-section" text="CUENTA DE ADMINISTRADOR" />
+                                <Label styleClass="card-subtitle" text="Cambia el usuario (ID de acceso) y/o la contraseña. Se requiere la contraseña actual" />
+                            </VBox>
+                            <VBox spacing="24.0" styleClass="config-body">
+                                <GridPane hgap="24.0" vgap="16.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
+                                    </columnConstraints>
+                                    <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                        <Label styleClass="field-label" text="USUARIO (ID DE ACCESO)" />
+                                        <TextField fx:id="txtUsuario" styleClass="form-field, form-field-mono" />
+                                    </VBox>
+                                    <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                        <Label styleClass="field-label" text="CONTRASEÑA ACTUAL *" />
+                                        <PasswordField fx:id="pwdActual" styleClass="form-field, password-field" />
+                                    </VBox>
+                                    <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                        <Label styleClass="field-label" text="NUEVA CONTRASEÑA (OPCIONAL)" />
+                                        <PasswordField fx:id="pwdNueva" styleClass="form-field, password-field" />
+                                    </VBox>
+                                    <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <Label styleClass="field-label" text="CONFIRMAR NUEVA CONTRASEÑA" />
+                                        <PasswordField fx:id="pwdConfirmar" styleClass="form-field, password-field" />
+                                    </VBox>
+                                </GridPane>
+                                <HBox alignment="CENTER" styleClass="form-actions">
+                                    <Button onAction="#onGuardarCredenciales" prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
+                                        <graphic><FontIcon iconLiteral="fi-rr-lock" /></graphic>
+                                    </Button>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Tab>
+                </TabPane>
             </VBox>
-
-                </Tab>
-                <Tab text="Directorio de archivos">
-            <!-- Directorio de archivos -->
-            <VBox maxWidth="960.0" styleClass="edit-card, page-form">
-                <VBox spacing="4.0" styleClass="edit-header">
-                    <Label styleClass="panel-title" text="DIRECTORIO DE ARCHIVOS" />
-                    <Label styleClass="card-subtitle" text="Carpeta donde se guardan los PDF de recetas" />
-                </VBox>
-                <VBox spacing="24.0" styleClass="config-body">
-                    <HBox spacing="12.0">
-                        <TextField fx:id="txtDirectorio" editable="false" prefHeight="40.0" styleClass="form-field, form-field-mono" HBox.hgrow="ALWAYS" />
-                        <Button onAction="#onExaminar" styleClass="btn-secondary" text="Examinar…">
-                            <graphic><FontIcon iconLiteral="fi-rr-folder-open" /></graphic>
-                        </Button>
-                    </HBox>
-                </VBox>
-            </VBox>
-
-                </Tab>
-                <Tab text="Administrador">
-            <!-- Contraseña del administrador -->
-            <VBox maxWidth="960.0" styleClass="edit-card, page-form">
-                <VBox spacing="4.0" styleClass="edit-header">
-                    <Label styleClass="panel-title" text="CUENTA DE ADMINISTRADOR" />
-                    <Label styleClass="card-subtitle" text="Cambia el usuario (ID de acceso) y/o la contraseña. Se requiere la contraseña actual" />
-                </VBox>
-                <VBox spacing="24.0" styleClass="config-body">
-                    <GridPane hgap="24.0" vgap="16.0">
-                        <columnConstraints>
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                            <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
-                        </columnConstraints>
-                        <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Label styleClass="field-label" text="USUARIO (ID DE ACCESO)" />
-                            <TextField fx:id="txtUsuario" prefHeight="40.0" styleClass="form-field, form-field-mono" />
-                        </VBox>
-                        <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Label styleClass="field-label" text="CONTRASEÑA ACTUAL *" />
-                            <PasswordField fx:id="pwdActual" prefHeight="40.0" styleClass="form-field, password-field" />
-                        </VBox>
-                        <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <Label styleClass="field-label" text="NUEVA CONTRASEÑA (OPCIONAL)" />
-                            <PasswordField fx:id="pwdNueva" prefHeight="40.0" styleClass="form-field, password-field" />
-                        </VBox>
-                        <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                            <Label styleClass="field-label" text="CONFIRMAR NUEVA CONTRASEÑA" />
-                            <PasswordField fx:id="pwdConfirmar" prefHeight="40.0" styleClass="form-field, password-field" />
-                        </VBox>
-                    </GridPane>
-                    <HBox alignment="CENTER" styleClass="form-actions">
-                        <Button onAction="#onGuardarCredenciales" prefWidth="260.0" styleClass="btn-primary" text="Guardar Cambios">
-                            <graphic><FontIcon iconLiteral="fi-rr-lock" /></graphic>
-                        </Button>
-                    </HBox>
-                </VBox>
-            </VBox>
-                </Tab>
-            </TabPane>
         </VBox>
     </ScrollPane>
 </VBox>
