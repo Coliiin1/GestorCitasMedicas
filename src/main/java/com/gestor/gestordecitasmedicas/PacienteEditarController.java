@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.function.Consumer;
+import javafx.scene.layout.GridPane;
 
 public class PacienteEditarController implements PanelControlado {
     @FXML private Label lblTitulo;
@@ -29,7 +30,7 @@ public class PacienteEditarController implements PanelControlado {
     @FXML private TextField txtCorreo;
     @FXML private TextField txtDomicilio;
     @FXML private Button btnCancelar;
-    @FXML private javafx.scene.layout.GridPane boxClinico;
+    @FXML private GridPane boxClinico;
     @FXML private ComboBox<String> cbTipoSangre;
     @FXML private TextField txtAlergias;
 
@@ -262,18 +263,10 @@ public class PacienteEditarController implements PanelControlado {
     }
 
     private void mostrarError(String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.WARNING);
-        alerta.setTitle("Datos incompletos");
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.WARNING, "Datos incompletos", mensaje);
     }
 
     private void mostrarInformacion(String titulo, String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.INFORMATION, titulo, mensaje);
     }
 }

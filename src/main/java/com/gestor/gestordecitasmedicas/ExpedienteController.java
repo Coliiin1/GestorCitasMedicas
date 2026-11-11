@@ -15,6 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import javafx.geometry.Pos;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
 
 public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML private Label nombre, folio, curp, telefono, nombreFicha, datosPersonales;
@@ -114,7 +117,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
             detalles.getStyleClass().add("btn-primary");
             detalles.setOnAction(e -> verDetalles(c));
             HBox fila = new HBox(12, titulo, espacio, imprimir, detalles);
-            fila.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            fila.setAlignment(Pos.CENTER_LEFT);
             fila.getStyleClass().add("row-card");
             listaConsultas.getChildren().add(fila);
         }
@@ -134,7 +137,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
     private void verDetalles(Consulta consulta) {
         if (mainController == null) return;
         ConsultaController editor = mainController.controlador("consulta-panel.fxml");
-        if (!editor.cargarConsultaParaEdicion(consulta, pacienteActual)) {
+        if (!editor.cargarConsultaParaEdicion(consulta)) {
             aviso(Alert.AlertType.ERROR, "No disponible", "No se encontró la cita vinculada a esta consulta.");
             return;
         }
@@ -176,13 +179,5 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         } catch (IOException | DocumentException ex) {
             aviso(Alert.AlertType.ERROR, "Error al exportar", ex.getMessage());
         }
-    }
-
-    private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

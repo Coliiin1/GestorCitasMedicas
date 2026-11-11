@@ -1,8 +1,7 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 /** Migración aditiva de los formatos ambulatorios; no modifica datos históricos. */
 final class MigracionClinica {
@@ -19,10 +18,7 @@ final class MigracionClinica {
         }
     }
     private static void agregarColumnas(Connection con, String tabla, String[] columnas) throws SQLException {
-        Set<String> existentes = new HashSet<>();
-        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("PRAGMA table_info(" + tabla + ")")) {
-            while (rs.next()) existentes.add(rs.getString("name"));
-        }
+        List<String> existentes = MigracionAgenda.columnas(con, tabla);
         try (Statement s = con.createStatement()) {
             for (String columna : columnas) {
                 if (!existentes.contains(columna)) s.execute("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " TEXT");
@@ -32,10 +28,7 @@ final class MigracionClinica {
 
     /** Conserva el valor anterior incluso al reemplazar detalles o ejecutar una baja en cascada. */
     private static void conservarVersiones(Connection con, String tabla) throws SQLException {
-        java.util.List<String> columnas = new java.util.ArrayList<>();
-        try (Statement s = con.createStatement(); ResultSet rs = s.executeQuery("PRAGMA table_info(" + tabla + ")")) {
-            while (rs.next()) columnas.add(rs.getString("name"));
-        }
+        List<String> columnas = MigracionAgenda.columnas(con, tabla);
         String nombres = String.join(", ", columnas);
         String anteriores = columnas.stream().map(c -> "OLD." + c).collect(java.util.stream.Collectors.joining(", "));
         try (Statement s = con.createStatement()) {

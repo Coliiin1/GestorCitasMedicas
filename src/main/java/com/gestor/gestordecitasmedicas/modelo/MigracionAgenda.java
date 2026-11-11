@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Migración aditiva de horarios y bloqueos. El bloqueo deja de depender de un
@@ -25,7 +25,7 @@ final class MigracionAgenda {
     }
 
     private static void reconstruirBloqueos(Connection con) throws SQLException {
-        Set<String> columnas = columnas(con, "Horario_bloqueado");
+        List<String> columnas = columnas(con, "Horario_bloqueado");
         if (columnas.isEmpty() || columnas.contains("id_bloqueo")) {
             return;
         }
@@ -113,8 +113,9 @@ final class MigracionAgenda {
         }
     }
 
-    private static Set<String> columnas(Connection con, String tabla) throws SQLException {
-        Set<String> columnas = new HashSet<>();
+    /** Nombres de las columnas de la tabla, en el orden en que están definidas. */
+    static List<String> columnas(Connection con, String tabla) throws SQLException {
+        List<String> columnas = new ArrayList<>();
         try (Statement s = con.createStatement();
              ResultSet rs = s.executeQuery("PRAGMA table_info(" + tabla + ")")) {
             while (rs.next()) {

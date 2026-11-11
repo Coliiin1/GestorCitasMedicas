@@ -220,9 +220,7 @@ public class ControladorPDF {
                 documento.add(new Paragraph("Expediente del paciente", FUENTE_TITULO));
                 documento.add(new Paragraph("Consulta externa - copia para revisión y firma autógrafa", FUENTE_SUBTITULO));
                 agregarSeccion(documento, "Ficha de identidad");
-                PdfPTable datos = new PdfPTable(2);
-                datos.setWidthPercentage(100);
-                datos.setWidths(new float[]{1f, 2f});
+                PdfPTable datos = tablaDatos();
                 agregarFila(datos, "Nombre", TextoExpediente.nombre(paciente));
                 agregarFila(datos, "Expediente", expediente.getIdExpediente() > 0
                         ? String.valueOf(expediente.getIdExpediente()) : "Sin expediente registrado");
@@ -234,11 +232,6 @@ public class ControladorPDF {
                 agregarFila(datos, "Edad a la apertura", TextoExpediente.edad(paciente, expediente.getFechaApertura()));
                 agregarFila(datos, "Domicilio", texto(paciente.getDomicilio()));
                 agregarFila(datos, "Correo", texto(paciente.getCorreo()));
-                for (com.itextpdf.text.pdf.PdfPRow fila : datos.getRows()) {
-                    for (PdfPCell celda : fila.getCells()) {
-                        if (celda != null) celda.setPadding(5);
-                    }
-                }
                 documento.add(datos);
                 agregarBloqueClinico(documento, "Historia clínica ambulatoria", TextoExpediente.historia(expediente));
                 agregarBloqueClinico(documento, "Alergias y advertencias", TextoExpediente.valor(expediente.getAlergias()));
@@ -270,38 +263,6 @@ public class ControladorPDF {
         seccion.setSpacingBefore(14);
         seccion.setSpacingAfter(6);
         documento.add(seccion);
-    }
-
-    private void agregarMedicamentos(Document documento, List<Medicamento> medicamentos) throws DocumentException {
-        agregarSeccion(documento, "Prescripción farmacológica");
-        int i = 0;
-        for (Medicamento m : medicamentos) {
-            PdfPTable tabla = tablaDatos();
-            tabla.setSpacingBefore(8);
-            tabla.setSplitLate(false);
-            tabla.setKeepTogether(true);
-            agregarFila(tabla, "Medicamento " + (++i) + " / denominación genérica", m.getNombreMedicamento());
-            if (m.getDenominacionDistintiva() != null && !m.getDenominacionDistintiva().trim().isEmpty())
-                agregarFila(tabla, "Denominación distintiva", m.getDenominacionDistintiva());
-            // Campos heredados (concentración, presentación, vía, frecuencia) solo se imprimen si existen.
-            agregarFilaSiHay(tabla, "Concentración y presentación", m.getConcentracion(), m.getPresentacion());
-            agregarFilaSiHay(tabla, "Dosis y posología", m.getDosis(), m.getViaAdministracion(), m.getFrecuencia());
-            agregarFilaSiHay(tabla, "Duración del tratamiento", m.getDuradcion());
-            agregarFilaSiHay(tabla, "Cantidad a dispensar", m.getCantidad());
-            agregarFilaSiHay(tabla, "Tipo de receta (fracción)", m.getGrupoRegulatorio());
-            tabla.setHeaderRows(1);
-            documento.add(tabla);
-        }
-    }
-
-    private void agregarFilaSiHay(PdfPTable tabla, String etiqueta, String... valores) {
-        StringBuilder sb = new StringBuilder();
-        for (String v : valores) {
-            if (v == null || v.trim().isEmpty()) continue;
-            if (sb.length() > 0) sb.append(" | ");
-            sb.append(v.trim());
-        }
-        if (sb.length() > 0) agregarFila(tabla, etiqueta, sb.toString());
     }
 
     private void agregarFila(PdfPTable tabla, String etiqueta, String valor) {

@@ -1,13 +1,15 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class Cita {
 
-    public int idCita;
-    public Date fechaCita;
-    public Estado estado;
-    public String curp;
+    private int idCita;
+    private Date fechaCita;
+    private Estado estado;
+    private String curp;
 
     public int getIdCita() {
         return idCita;
@@ -39,5 +41,10 @@ public class Cita {
 
     public void setCurp(String curp) {
         this.curp = curp;
+    }
+
+    /** Fecha y hora de la cita en la zona local, o null si no tiene fecha. */
+    public LocalDateTime fechaHora() {
+        return fechaCita == null ? null : LocalDateTime.ofInstant(fechaCita.toInstant(), ZoneId.systemDefault());
     }
 }

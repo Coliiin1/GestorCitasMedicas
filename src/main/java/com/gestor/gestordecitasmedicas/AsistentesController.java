@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
+
 public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
     @FXML private ComboBox<String> cmbOrden;
@@ -144,10 +146,10 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
 
         if (baseDatos.eliminarAsistente(asistente.getIdAsistente())) {
             refrescar();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Asistente eliminado",
+            aviso(Alert.AlertType.INFORMATION, "Asistente eliminado",
                     "El asistente se eliminó correctamente.");
         } else {
-            mostrarAlerta(Alert.AlertType.ERROR, "No se pudo eliminar",
+            aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
                     "Ocurrió un error al eliminar el asistente. Inténtalo de nuevo.");
         }
     }
@@ -177,13 +179,5 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
         String sinAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "");
         return sinAcentos.trim().toLowerCase();
-    }
-
-    private static void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

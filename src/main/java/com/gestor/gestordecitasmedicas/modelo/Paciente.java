@@ -1,5 +1,8 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.Date;
 
 public class Paciente extends Usuario {
@@ -66,5 +69,29 @@ public class Paciente extends Usuario {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    /** Nombre completo para mostrar; si no hay paciente o no tiene nombre, usa la CURP. */
+    public static String nombreParaMostrar(Paciente paciente, String curp) {
+        if (paciente == null) {
+            return curp == null ? "Paciente no registrado" : curp;
+        }
+        String nombre = (limpio(paciente.getNombre()) + " " + limpio(paciente.getApellidoPaterno())
+                + " " + limpio(paciente.getApellidoMaterno())).trim();
+        return nombre.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : nombre;
+    }
+
+    /** Edad en años cumplidos, o "--" si no hay paciente o fecha de nacimiento. */
+    public static String edadTexto(Paciente paciente) {
+        if (paciente == null || paciente.getFechaNacimiento() == null) {
+            return "--";
+        }
+        LocalDate nacimiento = paciente.getFechaNacimiento().toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDate();
+        return String.valueOf(Period.between(nacimiento, LocalDate.now()).getYears());
+    }
+
+    private static String limpio(String texto) {
+        return texto == null ? "" : texto.trim();
     }
 }

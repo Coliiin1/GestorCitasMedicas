@@ -32,10 +32,16 @@ import javafx.util.StringConverter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
+import com.gestor.gestordecitasmedicas.modelo.Paciente;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import javafx.scene.control.TextArea;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
 
 /**
  * Configuración de horario semanal y fechas bloqueadas. Se abre únicamente
@@ -133,8 +139,8 @@ public final class HorarioConfigController {
         comboDia.setMaxWidth(Double.MAX_VALUE);
         comboDia.getStyleClass().add("combo-field");
 
-        comboInicio = comboHora(LocalTime.of(9, 0));
-        comboFin = comboHora(LocalTime.of(13, 0));
+        comboInicio = Ui.comboHora(PlanificadorAgenda.horasDelDia(), LocalTime.of(9, 0));
+        comboFin = Ui.comboHora(PlanificadorAgenda.horasDelDia(), LocalTime.of(13, 0));
         checkActivo = new CheckBox("Activo");
         checkActivo.setSelected(true);
 
@@ -179,8 +185,8 @@ public final class HorarioConfigController {
         bloqueoDesde.getStyleClass().add("date-field");
         bloqueoHasta.getStyleClass().add("date-field");
 
-        bloqueoHoraInicio = comboHora(LocalTime.of(9, 0));
-        bloqueoHoraFin = comboHora(LocalTime.of(18, 0));
+        bloqueoHoraInicio = Ui.comboHora(PlanificadorAgenda.horasDelDia(), LocalTime.of(9, 0));
+        bloqueoHoraFin = Ui.comboHora(PlanificadorAgenda.horasDelDia(), LocalTime.of(18, 0));
         bloqueoTodoElDia = new CheckBox("Todo el día");
         bloqueoTodoElDia.setSelected(true);
         bloqueoHoraInicio.setDisable(true);
@@ -352,8 +358,7 @@ public final class HorarioConfigController {
         if (horarioEditando != null) {
             ArrayList<Cita> citas = baseDatos.citasActivasEnHorario(horarioEditando);
             for (Cita cita : citas) {
-                LocalDateTime fecha = LocalDateTime.ofInstant(
-                        cita.getFechaCita().toInstant(), ZoneId.systemDefault());
+                LocalDateTime fecha = cita.fechaHora();
                 if (!horario.isEstado() || !cubre(horario, fecha)) {
                     aviso(Alert.AlertType.WARNING, "Hay citas en ese tramo",
                             "No se puede modificar o desactivar el tramo porque hay "
@@ -464,7 +469,7 @@ public final class HorarioConfigController {
         }
         cambios = true;
         if (!conflictos.isEmpty()) {
-            com.gestor.gestordecitasmedicas.controlador.ControladorCorreo.notificarCancelaciones(
+            ControladorCorreo.notificarCancelaciones(
                     conflictos, baseDatos.cargarPacientes(), HorarioConfigController::avisoNotificacion);
         }
         limpiarFormularioBloqueo();
@@ -553,26 +558,6 @@ public final class HorarioConfigController {
         return label;
     }
 
-    private static ComboBox<LocalTime> comboHora(LocalTime seleccionada) {
-        ComboBox<LocalTime> combo = new ComboBox<>();
-        combo.getItems().setAll(PlanificadorAgenda.horasDelDia());
-        combo.setMaxWidth(Double.MAX_VALUE);
-        combo.getStyleClass().add("combo-field");
-        combo.setConverter(new StringConverter<LocalTime>() {
-            @Override
-            public String toString(LocalTime hora) {
-                return PlanificadorAgenda.formatoHora(hora);
-            }
-
-            @Override
-            public LocalTime fromString(String texto) {
-                return null;
-            }
-        });
-        seleccionarHora(combo, seleccionada);
-        return combo;
-    }
-
     private static void seleccionarHora(ComboBox<LocalTime> combo, LocalTime hora) {
         if (hora != null && combo.getItems().contains(hora)) {
             combo.getSelectionModel().select(hora);
@@ -595,17 +580,17 @@ public final class HorarioConfigController {
         if (citas.isEmpty()) {
             return true;
         }
-        java.util.Map<String, com.gestor.gestordecitasmedicas.modelo.Paciente> pacientes = baseDatos.cargarPacientes();
-        java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        Map<String, Paciente> pacientes = baseDatos.cargarPacientes();
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         StringBuilder texto = new StringBuilder();
         citas.stream().sorted(Comparator.comparing(Cita::getFechaCita)).forEach(cita -> {
-            com.gestor.gestordecitasmedicas.modelo.Paciente p = pacientes.get(cita.getCurp());
+            Paciente p = pacientes.get(cita.getCurp());
             String nombre = p == null ? cita.getCurp()
                     : (p.getNombre() + " " + p.getApellidoPaterno() + " " + p.getApellidoMaterno()).replace("null", "").trim();
-            texto.append(formato.format(LocalDateTime.ofInstant(cita.getFechaCita().toInstant(), ZoneId.systemDefault())))
+            texto.append(formato.format(cita.fechaHora()))
                     .append(" · ").append(nombre).append('\n');
         });
-        javafx.scene.control.TextArea lista = new javafx.scene.control.TextArea(texto.toString());
+        TextArea lista = new TextArea(texto.toString());
         lista.setEditable(false);
         lista.setPrefRowCount(Math.min(citas.size(), 10) + 1);
 
@@ -629,13 +614,5 @@ public final class HorarioConfigController {
                     "Se notificó por correo a " + enviados + " de " + total + " paciente(s). "
                             + "Los demás no tienen correo o el SMTP no está configurado.");
         }
-    }
-
-    private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

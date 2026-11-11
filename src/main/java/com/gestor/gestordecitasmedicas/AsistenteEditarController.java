@@ -127,18 +127,10 @@ public class AsistenteEditarController implements PanelControlado {
     }
 
     private void mostrarError(String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.WARNING);
-        alerta.setTitle("Datos incompletos");
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.WARNING, "Datos incompletos", mensaje);
     }
 
     private void mostrarInformacion(String titulo, String mensaje) {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
+        Ui.aviso(Alert.AlertType.INFORMATION, titulo, mensaje);
     }
 }

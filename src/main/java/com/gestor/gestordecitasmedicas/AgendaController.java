@@ -35,7 +35,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Period;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -46,18 +45,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import javafx.event.ActionEvent;
+import javafx.scene.layout.Priority;
+import javafx.stage.Window;
+
+import static com.gestor.gestordecitasmedicas.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.Ui.comboHora;
 
 public class AgendaController implements PanelControlado, PanelRefrescable {
     @FXML private GridPane calendario, semana;
     @FXML private TextField fichaNombre;
-    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel, hoyProgramadas, hoyCompletadas;
-    @FXML private Button btnAgendar, btnIniciar, btnReprogramar, btnCancelar;
-    @FXML private Button btnConfigHorario, btnBloquearDia, btnBloquearSemana;
+    @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel;
+    @FXML private Button btnIniciar, btnReprogramar, btnCancelar;
+    @FXML private Button btnConfigHorario;
 
     private static final String[] DIAS_CAL = {"L", "M", "X", "J", "V", "S", "D"};
     private static final String[] NOMBRES_DIA_CORTO = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
-    private static final String[] MESES = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
-    private static final String[] MESES_CORTO = {"Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"};
 
     private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Horario> horarios = new ArrayList<>();
@@ -107,12 +110,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         renderCalendario();
         renderSemana();
         if (citaSeleccionada != null) {
-            Cita actualizada = buscarCita(citaSeleccionada.getIdCita());
+            Cita actualizada = baseDatos.cargarCitas().get(citaSeleccionada.getIdCita());
             if (actualizada == null || actualizada.getFechaCita() == null) {
                 limpiarFicha();
             } else {
                 pacienteSeleccionado = baseDatos.cargarPacientePorCurp(actualizada.getCurp());
-                LocalDateTime fecha = fechaHora(actualizada);
+                LocalDateTime fecha = actualizada.fechaHora();
                 mostrarCita(new Turno(actualizada, pacienteSeleccionado),
                         fechaLarga(fecha.toLocalDate()), fecha.toLocalTime());
             }
@@ -155,7 +158,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     private void renderCalendario() {
         calendario.getChildren().clear();
-        mesLabel.setText(MESES[mes.getMonthValue() - 1] + " " + mes.getYear());
+        mesLabel.setText(PlanificadorAgenda.MESES[mes.getMonthValue() - 1] + " " + mes.getYear());
         for (int c = 0; c < DIAS_CAL.length; c++) calendario.add(celdaCalendario(DIAS_CAL[c], "cal-head"), c, 0);
 
         LocalDate dia = mes.atDay(1).minusDays(mes.atDay(1).getDayOfWeek().getValue() - 1);
@@ -178,7 +181,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             celda.setOnMouseClicked(e -> {
                 seleccion = fecha;
                 mes = YearMonth.from(fecha);
-                citaSeleccionada = null;
                 limpiarFicha();
                 renderCalendario();
                 renderSemana();
@@ -188,9 +190,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     }
 
     private void renderSemana() {
-        LocalDate lunes = lunesSemana(seleccion);
+        LocalDate lunes = PlanificadorAgenda.lunesDe(seleccion);
         rangoLabel.setText("Semana del " + lunes.getDayOfMonth() + " al " + lunes.plusDays(6).getDayOfMonth()
-                + " de " + MESES[lunes.getMonthValue() - 1] + ", " + lunes.getYear());
+                + " de " + PlanificadorAgenda.MESES[lunes.getMonthValue() - 1] + ", " + lunes.getYear());
 
         ArrayList<Cita> citasSemana = baseDatos.cargarCitasEntre(lunes, lunes.plusDays(6));
         List<LocalDate> fechas = fechasSemana(lunes, citasSemana);
@@ -205,7 +207,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         semana.getColumnConstraints().add(columnaHora);
         for (int i = 0; i < fechas.size(); i++) {
             ColumnConstraints columna = new ColumnConstraints();
-            columna.setHgrow(javafx.scene.layout.Priority.ALWAYS);
+            columna.setHgrow(Priority.ALWAYS);
             columna.setMinWidth(0);
             semana.getColumnConstraints().add(columna);
         }
@@ -218,7 +220,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             LocalDate fecha = fechas.get(c);
             DiaSemana dia = DiaSemana.desdeDayOfWeek(fecha.getDayOfWeek());
             Label etiqueta = new Label((dia == null ? "" : dia.getEtiquetaCorta()) + "\n"
-                    + fecha.getDayOfMonth() + " " + MESES_CORTO[fecha.getMonthValue() - 1]);
+                    + fecha.getDayOfMonth() + " " + PlanificadorAgenda.MESES_CORTO[fecha.getMonthValue() - 1]);
             etiqueta.getStyleClass().addAll("day-head", fecha.equals(seleccion) ? "day-head-sel" : "day-head-off");
             etiqueta.setMaxWidth(Double.MAX_VALUE);
             semana.add(etiqueta, c + 1, 0);
@@ -255,7 +257,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             }
         }
         for (Cita cita : citasSemana) {
-            LocalDateTime fecha = fechaHora(cita);
+            LocalDateTime fecha = cita.fechaHora();
             if (fecha != null) {
                 dias.add(fecha.getDayOfWeek().getValue());
             }
@@ -278,7 +280,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private List<LocalTime> horasVista(List<Cita> citasSemana) {
         TreeSet<LocalTime> horas = new TreeSet<>(PlanificadorAgenda.horasDeTrabajo(horarios));
         for (Cita cita : citasSemana) {
-            LocalDateTime fecha = fechaHora(cita);
+            LocalDateTime fecha = cita.fechaHora();
             if (fecha != null) {
                 horas.add(fecha.toLocalTime().withSecond(0).withNano(0));
             }
@@ -290,7 +292,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         Turno[][] turnos = new Turno[horas.size()][fechas.size()];
         HashMap<String, Paciente> pacientes = baseDatos.cargarPacientes();
         for (Cita cita : citasSemana) {
-            LocalDateTime fecha = fechaHora(cita);
+            LocalDateTime fecha = cita.fechaHora();
             if (fecha == null) {
                 continue;
             }
@@ -351,19 +353,14 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private void moverSemana(int semanas) {
         seleccion = seleccion.plusWeeks(semanas);
         mes = YearMonth.from(seleccion);
-        citaSeleccionada = null;
         limpiarFicha();
         renderCalendario();
         renderSemana();
     }
 
-    private static LocalDate lunesSemana(LocalDate d) {
-        return d.minusDays(d.getDayOfWeek().getValue() - 1);
-    }
-
     private static String fechaLarga(LocalDate d) {
         return NOMBRES_DIA_CORTO[d.getDayOfWeek().getValue() - 1] + ", " + d.getDayOfMonth() + " "
-                + MESES_CORTO[d.getMonthValue() - 1] + " " + d.getYear();
+                + PlanificadorAgenda.MESES_CORTO[d.getMonthValue() - 1] + " " + d.getYear();
     }
 
     private Label celdaCalendario(String texto, String estilo) {
@@ -398,9 +395,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             libre.setOnAction(e -> dialogoCita(null, fecha, hora));
             return libre;
         }
-        Label estado = new Label(etiquetaEstado(turno.cita.getEstado()));
+        Label estado = new Label(Estado.etiqueta(turno.cita.getEstado()));
         estado.getStyleClass().add("caption");
-        Label paciente = new Label(nombrePaciente(turno.paciente, turno.cita.getCurp()));
+        Label paciente = new Label(Paciente.nombreParaMostrar(turno.paciente, turno.cita.getCurp()));
         paciente.getStyleClass().add("info-value");
         Label referencia = new Label("Cita #" + turno.cita.getIdCita());
         referencia.getStyleClass().add("hint");
@@ -423,8 +420,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private void mostrarCita(Turno turno, String fecha, LocalTime hora) {
         citaSeleccionada = turno.cita;
         pacienteSeleccionado = turno.paciente;
-        fichaNombre.setText(nombrePaciente(turno.paciente, turno.cita.getCurp()));
-        fichaEdad.setText("Edad: " + edad(turno.paciente) + " · " + etiquetaEstado(turno.cita.getEstado()));
+        fichaNombre.setText(Paciente.nombreParaMostrar(turno.paciente, turno.cita.getCurp()));
+        fichaEdad.setText("Edad: " + Paciente.edadTexto(turno.paciente) + " · " + Estado.etiqueta(turno.cita.getEstado()));
         fichaFecha.setText(fecha);
         fichaHora.setText(PlanificadorAgenda.formatoHora(hora) + " ("
                 + PlanificadorAgenda.DURACION_CITA_MINUTOS + " min)");
@@ -475,7 +472,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (citaSeleccionada == null || citaSeleccionada.getFechaCita() == null) {
             return;
         }
-        LocalDateTime fecha = fechaHora(citaSeleccionada);
+        LocalDateTime fecha = citaSeleccionada.fechaHora();
         dialogoCita(citaSeleccionada, fecha.toLocalDate(), fecha.toLocalTime());
     }
 
@@ -488,7 +485,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         confirmacion.setTitle("Cancelar cita");
         confirmacion.setHeaderText(null);
         confirmacion.setContentText("¿Cancelar la cita #" + citaSeleccionada.getIdCita() + " del paciente "
-                + nombrePaciente(pacienteSeleccionado, citaSeleccionada.getCurp()) + "?");
+                + Paciente.nombreParaMostrar(pacienteSeleccionado, citaSeleccionada.getCurp()) + "?");
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
@@ -525,7 +522,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onBloquearSemana() {
-        if (dialogoBloqueo(lunesSemana(seleccion), true)) {
+        if (dialogoBloqueo(PlanificadorAgenda.lunesDe(seleccion), true)) {
             refrescar();
         }
     }
@@ -563,7 +560,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         comboPaciente.setConverter(new StringConverter<Paciente>() {
             @Override
             public String toString(Paciente paciente) {
-                return paciente == null ? "" : nombrePaciente(paciente, paciente.getCurp()) + " · " + paciente.getCurp();
+                return paciente == null ? "" : Paciente.nombreParaMostrar(paciente, paciente.getCurp()) + " · " + paciente.getCurp();
             }
 
             @Override
@@ -581,21 +578,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         selectorFecha.setMaxWidth(Double.MAX_VALUE);
         selectorFecha.getStyleClass().add("date-field");
 
-        ComboBox<LocalTime> comboHora = new ComboBox<>();
-        comboHora.setMaxWidth(Double.MAX_VALUE);
-        comboHora.getStyleClass().add("combo-field");
-        comboHora.setConverter(new StringConverter<LocalTime>() {
-            @Override
-            public String toString(LocalTime hora) {
-                return PlanificadorAgenda.formatoHora(hora);
-            }
-
-            @Override
-            public LocalTime fromString(String texto) {
-                return null;
-            }
-        });
-        LocalTime horaPreferida = existente != null ? fechaHora(existente).toLocalTime() : horaInicial;
+        ComboBox<LocalTime> comboHora = comboHora(List.of(), null);
+        LocalTime horaPreferida = existente != null ? existente.fechaHora().toLocalTime() : horaInicial;
         actualizarHorasDisponibles(comboHora, fechaInicial, horaPreferida);
         selectorFecha.valueProperty().addListener((observable, anterior, fecha) -> {
             if (fecha != null) {
@@ -636,7 +620,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (existente == null) {
             campoPaciente.getChildren().addAll(comboPaciente, registrarPaciente);
         } else {
-            Label nombreActual = new Label(nombrePaciente(
+            Label nombreActual = new Label(Paciente.nombreParaMostrar(
                     pacientesMapa.get(existente.getCurp()), existente.getCurp()));
             nombreActual.getStyleClass().add("info-value");
             campoPaciente.getChildren().add(nombreActual);
@@ -674,17 +658,19 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         ((Button) botonBloquear).setGraphic(new FontIcon("fi-rr-lock"));
         ((Button) dialogo.getDialogPane().lookupButton(guardar)).setGraphic(new FontIcon("fi-rr-check"));
         ((Button) dialogo.getDialogPane().lookupButton(ButtonType.CANCEL)).setGraphic(new FontIcon("fi-rr-cross"));
-        botonBloquear.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+        botonBloquear.addEventFilter(ActionEvent.ACTION, event -> {
             event.consume();
             LocalDate fecha = selectorFecha.getValue() == null ? fechaInicial : selectorFecha.getValue();
             if (dialogoBloqueo(fecha, false)) {
                 recargarHorarios();
+                renderCalendario();
+                renderSemana();
                 selectorFecha.setValue(fecha);
                 actualizarHorasDisponibles(comboHora, fecha, null);
             }
         });
 
-        dialogo.getDialogPane().lookupButton(guardar).addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+        dialogo.getDialogPane().lookupButton(guardar).addEventFilter(ActionEvent.ACTION, event -> {
             LocalDate fecha = selectorFecha.getValue();
             LocalTime hora = comboHora.getSelectionModel().getSelectedItem();
             Paciente paciente = comboPaciente.getSelectionModel().getSelectedItem();
@@ -757,7 +743,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (resultado.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
             seleccion = selectorFecha.getValue() == null ? seleccion : selectorFecha.getValue();
             mes = YearMonth.from(seleccion);
-            citaSeleccionada = null;
             limpiarFicha();
             refrescar();
             aviso(Alert.AlertType.INFORMATION,
@@ -833,7 +818,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().lookupButton(ButtonType.CANCEL).getStyleClass().add("btn-secondary");
         ((Button) dialogo.getDialogPane().lookupButton(guardar)).setGraphic(new FontIcon("fi-rr-lock"));
 
-        dialogo.getDialogPane().lookupButton(guardar).addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+        dialogo.getDialogPane().lookupButton(guardar).addEventFilter(ActionEvent.ACTION, event -> {
             LocalDate inicioDia = dpInicio.getValue();
             LocalDate finDia = dpFin.getValue();
             if (inicioDia == null || finDia == null || finDia.isBefore(inicioDia)) {
@@ -887,36 +872,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             }
         });
 
-        ButtonType resultado = dialogo.showAndWait().orElse(ButtonType.CANCEL);
-        if (resultado.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-            recargarHorarios();
-            renderCalendario();
-            renderSemana();
-            return true;
-        }
-        return false;
-    }
-
-    private static ComboBox<LocalTime> comboHora(List<LocalTime> horas, LocalTime seleccionada) {
-        ComboBox<LocalTime> combo = new ComboBox<>();
-        combo.getItems().setAll(horas);
-        combo.setMaxWidth(Double.MAX_VALUE);
-        combo.getStyleClass().add("combo-field");
-        combo.setConverter(new StringConverter<LocalTime>() {
-            @Override
-            public String toString(LocalTime hora) {
-                return PlanificadorAgenda.formatoHora(hora);
-            }
-
-            @Override
-            public LocalTime fromString(String texto) {
-                return null;
-            }
-        });
-        if (seleccionada != null && horas.contains(seleccionada)) {
-            combo.getSelectionModel().select(seleccionada);
-        }
-        return combo;
+        // Quien llama recarga y redibuja la agenda.
+        return dialogo.showAndWait().orElse(ButtonType.CANCEL).getButtonData() == ButtonBar.ButtonData.OK_DONE;
     }
 
     private void abrirRegistroPaciente() {
@@ -987,7 +944,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                     || cita.getEstado() == Estado.CANCELADA) {
                 continue;
             }
-            LocalDateTime inicioCita = fechaHora(cita);
+            LocalDateTime inicioCita = cita.fechaHora();
             if (PlanificadorAgenda.seSolapan(inicio, fin, inicioCita,
                     inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS))) {
                 return cita;
@@ -996,25 +953,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         return null;
     }
 
-    private Cita buscarCita(int idCita) {
-        for (Cita cita : baseDatos.cargarCitas().values()) {
-            if (cita.getIdCita() == idCita) {
-                return cita;
-            }
-        }
-        return null;
-    }
-
-    private javafx.stage.Window ventana() {
+    private Window ventana() {
         return fichaNombre == null || fichaNombre.getScene() == null
                 ? null : fichaNombre.getScene().getWindow();
-    }
-
-    private static LocalDateTime fechaHora(Cita cita) {
-        if (cita == null || cita.getFechaCita() == null) {
-            return null;
-        }
-        return LocalDateTime.ofInstant(cita.getFechaCita().toInstant(), ZoneId.systemDefault());
     }
 
     private static HBox etiquetaRequerida(String texto) {
@@ -1029,47 +970,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         return etiqueta;
     }
 
-    private static String nombrePaciente(Paciente paciente, String curp) {
-        if (paciente == null) {
-            return curp == null ? "Paciente no registrado" : curp;
-        }
-        String nombre = (valor(paciente.getNombre()) + " " + valor(paciente.getApellidoPaterno())
-                + " " + valor(paciente.getApellidoMaterno())).trim();
-        return nombre.isEmpty() ? (curp == null ? "Paciente sin nombre" : curp) : nombre;
-    }
-
     private static String nombrePacienteOrden(Paciente paciente) {
         return (valor(paciente.getApellidoPaterno()) + " " + valor(paciente.getApellidoMaterno())
                 + " " + valor(paciente.getNombre())).trim();
     }
 
-    private static String edad(Paciente paciente) {
-        if (paciente == null || paciente.getFechaNacimiento() == null) {
-            return "--";
-        }
-        LocalDate nacimiento = paciente.getFechaNacimiento().toInstant()
-                .atZone(ZoneId.systemDefault()).toLocalDate();
-        return String.valueOf(Period.between(nacimiento, LocalDate.now()).getYears());
-    }
-
-    private static String etiquetaEstado(Estado estado) {
-        if (estado == null) return "Agendada";
-        switch (estado) {
-            case ATENDIDA: return "Atendida";
-            case CANCELADA: return "Cancelada";
-            default: return "Agendada";
-        }
-    }
-
     private static String valor(String texto) {
         return texto == null ? "" : texto.trim();
-    }
-
-    private static void aviso(Alert.AlertType tipo, String titulo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
     }
 }

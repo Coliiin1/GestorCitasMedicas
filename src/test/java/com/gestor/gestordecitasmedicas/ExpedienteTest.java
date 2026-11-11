@@ -283,7 +283,7 @@ class ExpedienteTest {
         Scene escena = new Scene(vista, 1368, 900);
         escena.getStylesheets().add(getClass().getResource("cita.css").toExternalForm());
         ConsultaController controlador = loader.getController();
-        controlador.cargarConsulta(nueva, null, new SignosVitales("120/80",72,18,36.5f,98,70f,170));
+        controlador.cargarConsulta(nueva, new SignosVitales("120/80",72,18,36.5f,98,70f,170));
         for (String id : new String[]{"txtNombrePaciente", "txtEdadPaciente", "txtSexoPaciente"}) {
             javafx.scene.control.TextField campo = (javafx.scene.control.TextField) loader.getNamespace().get(id);
             assertFalse(campo.isEditable());
@@ -319,7 +319,7 @@ class ExpedienteTest {
         try (Statement s = BaseDatos.getConexion().createStatement()) {
             s.executeUpdate("UPDATE Administrador SET nombre='Nombre cambiado después'");
         }
-        controlador.cargarConsulta(nueva,paciente,null);
+        controlador.cargarConsulta(nueva, null);
         assertEquals("Indicaciones independientes",((TextArea)loader.getNamespace().get("txtIndicaciones")).getText());
         assertEquals(true,guardar.invoke(controlador,true,false));
         assertEquals(Estado.ATENDIDA,bd.cargarCitas().get(nueva.getIdCita()).getEstado());

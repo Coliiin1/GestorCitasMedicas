@@ -16,7 +16,7 @@
             <Button fx:id="btnConfigHorario" minWidth="-Infinity" onAction="#onConfigurarHorario" styleClass="btn-secondary" text="Horario y bloqueos">
                 <graphic><FontIcon iconLiteral="fi-rr-settings" /></graphic>
             </Button>
-            <Button fx:id="btnAgendar" minWidth="-Infinity" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
+            <Button minWidth="-Infinity" onAction="#onAgendarNueva" styleClass="btn-primary" text="Agendar Nueva Cita">
                 <graphic><FontIcon iconLiteral="fi-rr-plus" /></graphic>
             </Button>
         </HBox>
@@ -37,7 +37,7 @@
                             <graphic><FontIcon iconLiteral="fi-rr-angle-small-right" /></graphic>
                             <tooltip><Tooltip text="Semana siguiente" /></tooltip>
                         </Button>
-                        <Button fx:id="btnBloquearSemana" minWidth="-Infinity" onAction="#onBloquearSemana" styleClass="btn-secondary" text="Bloquear semana">
+                        <Button minWidth="-Infinity" onAction="#onBloquearSemana" styleClass="btn-secondary" text="Bloquear semana">
                             <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                         </Button>
                     </HBox>
@@ -86,7 +86,7 @@
                                     <ColumnConstraints hgrow="ALWAYS" minWidth="0.0" percentWidth="14.32" />
                                 </columnConstraints>
                             </GridPane>
-                            <Button fx:id="btnBloquearDia" maxWidth="Infinity" onAction="#onBloquearDia" styleClass="btn-secondary" text="Bloquear día">
+                            <Button maxWidth="Infinity" onAction="#onBloquearDia" styleClass="btn-secondary" text="Bloquear día">
                                 <graphic><FontIcon iconLiteral="fi-rr-cross" /></graphic>
                             </Button>
                         </VBox>
@@ -112,8 +112,8 @@
                         </VBox>
 
                         <VBox spacing="8.0" styleClass="card">
-                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label fx:id="hoyProgramadas" styleClass="info-value" text="0 pacientes" /></HBox>
-                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label fx:id="hoyCompletadas" styleClass="info-value" text="0 de 0 (0%)" /></HBox>
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Citas programadas hoy:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="0 pacientes" /></HBox>
+                            <HBox><Label maxWidth="Infinity" styleClass="hint" text="Completadas:" HBox.hgrow="ALWAYS" /><Label styleClass="info-value" text="0 de 0 (0%)" /></HBox>
                         </VBox>
                     </VBox>
 
