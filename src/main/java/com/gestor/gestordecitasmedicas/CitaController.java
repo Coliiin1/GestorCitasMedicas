@@ -1,9 +1,7 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
-import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
@@ -34,7 +32,6 @@ public class CitaController implements PanelControlado, PanelRefrescable {
     @FXML private TextArea txtMotivo;
     @FXML private Button btnCancelar, btnSiguiente, btnExpediente;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(1), e -> tick()));
     private int segundos;
 
@@ -72,7 +69,7 @@ public class CitaController implements PanelControlado, PanelRefrescable {
             return;
         }
         citaActual = cita;
-        pacienteActual = baseDatos.cargarPacientePorCurp(cita.getCurp());
+        pacienteActual = Paciente.buscar(cita.getCurp());
         segundos = 0;
         tick();
         if (reloj.getStatus() != Animation.Status.RUNNING) {
@@ -90,7 +87,7 @@ public class CitaController implements PanelControlado, PanelRefrescable {
                 ? "No registrado" : pacienteActual.getSexo());
         mostrarDatosExpediente(cita.getCurp());
 
-        Receta existente = baseDatos.cargarRecetaPorCita(cita.getIdCita());
+        Receta existente = Receta.deCita(cita.getIdCita());
         mostrarSignos(existente == null ? null : existente.getSignosVitales());
         txtMotivo.setText(existente == null || existente.getDiagnostico() == null
                 ? "" : existente.getDiagnostico());
@@ -156,12 +153,11 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
-        citaActual.setEstado(Estado.CANCELADA);
-        if (!baseDatos.actualizarCita(citaActual)) {
+        if (!citaActual.cancelar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
-        ControladorCorreo.notificarCancelaciones(List.of(citaActual), baseDatos.cargarPacientes(),
+        ControladorCorreo.notificarCancelaciones(List.of(citaActual), Paciente.todos(),
                 HorarioConfigController::avisoNotificacion);
         limpiar();
         if (mainController != null) {
@@ -284,7 +280,7 @@ public class CitaController implements PanelControlado, PanelRefrescable {
     private void mostrarDatosExpediente(String curp) {
         Expediente expediente;
         try {
-            expediente = baseDatos.cargarExpedientePorCurp(curp);
+            expediente = Expediente.dePaciente(curp);
         } catch (IllegalStateException e) {
             lblSangre.setText("No disponible");
             lblAlergias.setText("No disponible");

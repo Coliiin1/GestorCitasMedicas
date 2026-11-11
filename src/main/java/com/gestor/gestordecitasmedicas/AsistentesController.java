@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -29,7 +28,6 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private VBox listaAsistentes;
     @FXML private Label lblContador;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Asistente> asistentes = new ArrayList<>();
     private MainController mainController;
 
@@ -50,7 +48,7 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
     @Override
     public void refrescar() {
         asistentes.clear();
-        asistentes.addAll(baseDatos.cargarAsistentes());
+        asistentes.addAll(Asistente.todos());
         aplicarFiltro();
     }
 
@@ -144,7 +142,7 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
             return;
         }
 
-        if (baseDatos.eliminarAsistente(asistente.getIdAsistente())) {
+        if (asistente.eliminar()) {
             refrescar();
             aviso(Alert.AlertType.INFORMATION, "Asistente eliminado",
                     "El asistente se eliminó correctamente.");

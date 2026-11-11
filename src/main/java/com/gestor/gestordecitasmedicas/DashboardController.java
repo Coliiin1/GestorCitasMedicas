@@ -1,6 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
@@ -44,7 +44,6 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     private static final String[] DIAS = {"Lun", "Mar", "Mié", "Jue", "Vie"};
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("hh:mm a");
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
 
     @Override
@@ -63,10 +62,10 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         lblFecha.setText("Resumen general · " + hoy.getDayOfMonth() + " de " + PlanificadorAgenda.MESES[hoy.getMonthValue() - 1]
                 + " de " + hoy.getYear());
 
-        HashMap<String, Paciente> pacientes = baseDatos.cargarPacientes();
-        List<Cita> citas = new ArrayList<>(baseDatos.cargarCitas().values());
+        HashMap<String, Paciente> pacientes = Paciente.todos();
+        List<Cita> citas = new ArrayList<>(Cita.todas().values());
         citas.sort(Comparator.comparing(Cita::getFechaCita, Comparator.nullsLast(Comparator.naturalOrder())));
-        int asistentes = baseDatos.cargarAsistentes().size();
+        int asistentes = Asistente.todos().size();
 
         LocalDate lunes = PlanificadorAgenda.lunesDe(hoy);
         YearMonth mesActual = YearMonth.from(hoy);
@@ -227,7 +226,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     @FXML
     private void onHorario() {
         if (mainController == null || !mainController.esAdministrador()) return;
-        if (HorarioConfigController.abrir(lblFecha.getScene().getWindow(), baseDatos)) refrescar();
+        if (HorarioConfigController.abrir(lblFecha.getScene().getWindow())) refrescar();
     }
 
     private void iniciar(Cita cita) {
@@ -290,7 +289,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
 
     private void renderActividad(HashMap<String, Paciente> pacientes) {
         actividad.getChildren().clear();
-        List<Receta> recetas = new ArrayList<>(baseDatos.cargarRecetas().values());
+        List<Receta> recetas = new ArrayList<>(Receta.todas().values());
         recetas.sort(Comparator.comparing(Receta::getFecha, Comparator.nullsFirst(Comparator.naturalOrder()))
                 .thenComparingInt(Receta::getIdReceta).reversed());
         if (recetas.isEmpty()) {

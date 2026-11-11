@@ -1,6 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
+import com.gestor.gestordecitasmedicas.modelo.Personal;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -121,7 +121,7 @@ public class LoginController {
         try {
             String id = txtUsuario.getText().trim().replaceFirst("^#", "");
             idUsuario = Integer.parseInt(id);
-            rol = new BaseDatos().autenticar(idUsuario, password.getText());
+            rol = Personal.autenticar(idUsuario, password.getText());
         } catch (NumberFormatException ignorada) {
             // usuario no numérico: se trata como credenciales incorrectas
         }

@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -20,7 +19,6 @@ public class AsistenteEditarController implements PanelControlado {
     @FXML private TextField passwordVisible;
     @FXML private Button btnTogglePassword;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private MainController mainController;
     private Asistente asistenteActual;
     private String contrasenaOriginal;
@@ -81,32 +79,23 @@ public class AsistenteEditarController implements PanelControlado {
         String apellidoMaterno = texto(txtApellidoMaterno);
         String contrasena = password.getText();
 
-        if (nombre.isEmpty() || apellidoPaterno.isEmpty()) {
-            mostrarError("El nombre y el apellido paterno son obligatorios.");
-            return;
-        }
-        if (nombre.length() > 20 || apellidoPaterno.length() > 20 || apellidoMaterno.length() > 20) {
-            mostrarError("El nombre y los apellidos no deben exceder 20 caracteres.");
+        boolean esNuevo = asistenteActual == null;
+        String error = Asistente.validar(nombre, apellidoPaterno, apellidoMaterno, contrasena, esNuevo);
+        if (error != null) {
+            mostrarError(error);
             return;
         }
         if (contrasena.isEmpty()) {
-            if (asistenteActual == null) {
-                mostrarError("La contraseña es obligatoria para registrar un asistente.");
-                return;
-            }
             contrasena = contrasenaOriginal == null ? "" : contrasenaOriginal;
         }
 
-        boolean esNuevo = asistenteActual == null;
         Asistente asistente = esNuevo ? new Asistente() : asistenteActual;
         asistente.setNombre(nombre);
         asistente.setApellidoPaterno(apellidoPaterno);
         asistente.setApellidoMaterno(apellidoMaterno);
         asistente.setContrasena(contrasena);
 
-        boolean guardado = esNuevo
-                ? baseDatos.insertarAsistente(asistente)
-                : baseDatos.actualizarAsistente(asistente);
+        boolean guardado = esNuevo ? asistente.registrar() : asistente.actualizar();
 
         if (!guardado) {
             mostrarError("No se pudo guardar el asistente. Inténtalo de nuevo.");

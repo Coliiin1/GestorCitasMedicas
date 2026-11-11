@@ -2,6 +2,7 @@ package com.gestor.gestordecitasmedicas.modelo;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class Receta {
 
@@ -129,4 +130,21 @@ public class Receta {
     private String indicaciones;
     public String getIndicaciones() { return indicaciones; }
     public void setIndicaciones(String valor) { this.indicaciones = valor; }
+
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    /** Receta más reciente de la cita con medicamentos y signos vitales, o null si no tiene. */
+    public static Receta deCita(int idCita) {
+        return new BaseDatos().cargarRecetaPorCita(idCita);
+    }
+
+    /** Todas las recetas, indexadas por id. */
+    public static HashMap<Integer, Receta> todas() {
+        return new BaseDatos().cargarRecetas();
+    }
+
+    /** Copia en la receta los datos del médico prescriptor (cédula, especialidad, establecimiento...). */
+    public void cargarDatosPrescriptor() {
+        new BaseDatos().cargarDatosPrescriptor(this);
+    }
 }

@@ -29,7 +29,6 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
 
     @FXML private Label estadoEdicion;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final PauseTransition ocultarConfirmacion = new PauseTransition(Duration.seconds(5));
     private Paciente pacienteActual;
     private Expediente expedienteActual;
@@ -56,10 +55,10 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         btnExportar.setDisable(true);
         expedienteActual = null;
         try {
-            Expediente expediente = baseDatos.cargarExpedientePorCurp(pacienteActual.getCurp());
+            Expediente expediente = Expediente.dePaciente(pacienteActual.getCurp());
             if (expediente == null) {
                 expediente = new Expediente();
-                expediente.setDatosPaciente(baseDatos.cargarPacientePorCurp(pacienteActual.getCurp()));
+                expediente.setDatosPaciente(Paciente.buscar(pacienteActual.getCurp()));
             }
             expedienteActual = expediente;
             Paciente paciente = expediente.getDatosPaciente();

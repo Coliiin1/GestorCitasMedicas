@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -29,7 +28,6 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
     @FXML private VBox listaPacientes;
     @FXML private Label lblContador;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Paciente> pacientes = new ArrayList<>();
     private MainController mainController;
 
@@ -50,7 +48,7 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
     @Override
     public void refrescar() {
         pacientes.clear();
-        pacientes.addAll(baseDatos.cargarPacientes().values());
+        pacientes.addAll(Paciente.todos().values());
         aplicarFiltro();
     }
 
@@ -175,7 +173,7 @@ public class PacientesController implements PanelControlado, PanelRefrescable {
             return;
         }
 
-        if (baseDatos.eliminarPaciente(paciente.getCurp())) {
+        if (paciente.eliminar()) {
             refrescar();
             aviso(Alert.AlertType.INFORMATION, "Paciente eliminado",
                     "El paciente se eliminó correctamente.");

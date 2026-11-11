@@ -25,13 +25,19 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 
 public class ControladorPDF {
 
     public static final String CLAVE_CARPETA = "directorio.pdf";
 
     public static String carpetaSalida() {
-        return new com.gestor.gestordecitasmedicas.modelo.BaseDatos().obtenerConfig(CLAVE_CARPETA, "pdf");
+        return new BaseDatos().obtenerConfig(CLAVE_CARPETA, "pdf");
+    }
+
+    /** Guarda la carpeta donde se generan los PDF. */
+    public static boolean guardarCarpetaSalida(String ruta) {
+        return new BaseDatos().guardarConfig(CLAVE_CARPETA, ruta);
     }
 
     private static final BaseColor COLOR_PRIMARIO = new BaseColor(30, 64, 175);
@@ -77,7 +83,7 @@ public class ControladorPDF {
         List<String> errores = ValidacionClinica.receta(receta, true);
         if (!errores.isEmpty()) throw new IllegalArgumentException(String.join("\n", errores));
         Paciente paciente = null;
-        try { paciente = new com.gestor.gestordecitasmedicas.modelo.BaseDatos().cargarPacientePorCurp(receta.getCurp()); }
+        try { paciente = Paciente.buscar(receta.getCurp()); }
         catch (RuntimeException e) { System.err.println("Receta sin datos extra del paciente: " + e.getMessage()); }
         com.gestor.gestordecitasmedicas.modelo.SignosVitales sv = receta.getSignosVitales();
 

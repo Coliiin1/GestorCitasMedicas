@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Consulta;
 import com.gestor.gestordecitasmedicas.controlador.ValidacionClinica;
@@ -51,7 +50,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtNombrePaciente, txtEdadPaciente, txtSexoPaciente;
     private Consulta consulta;
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ControladorPDF controladorPDF = new ControladorPDF();
     private final List<FilaMedicamento> filas = new ArrayList<>();
     private final Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(1), e -> tick()));
@@ -88,7 +86,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
 
     /** Abre una consulta ya registrada para editarla; conserva su vínculo con la cita, nota y receta. */
     public boolean cargarConsultaParaEdicion(Consulta guardada) {
-        Cita citaGuardada = guardada == null ? null : baseDatos.cargarCitas().get(guardada.getIdCita());
+        Cita citaGuardada = guardada == null ? null : Cita.buscar(guardada.getIdCita());
         if (citaGuardada == null) return false;
         cargarConsulta(citaGuardada, guardada.getSignosVitales());
         aplicarModoEdicion(true);
@@ -109,10 +107,10 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     public void cargarConsulta(Cita cita, SignosVitales signos) {
         aplicarModoEdicion(false);
         this.cita = cita;
-        this.paciente = cita == null ? null : baseDatos.cargarPacientePorCurp(cita.getCurp());
+        this.paciente = cita == null ? null : Paciente.buscar(cita.getCurp());
         this.signos = signos;
-        this.receta = cita == null ? null : baseDatos.cargarRecetaPorCita(cita.getIdCita());
-        this.consulta = cita == null ? null : baseDatos.cargarConsultaPorCita(cita.getIdCita());
+        this.receta = cita == null ? null : Receta.deCita(cita.getIdCita());
+        this.consulta = cita == null ? null : Consulta.deCita(cita.getIdCita());
         limpiarCampos();
 
         if (receta != null) {
@@ -393,7 +391,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         destino.setSexoPaciente(valor(txtSexoPaciente.getText()));
         if (destino.getIdReceta() == 0 || valor(destino.getCedulaMedico()).isEmpty()) {
             try {
-                baseDatos.cargarDatosPrescriptor(destino);
+                destino.cargarDatosPrescriptor();
             } catch (IllegalStateException ex) {
                 aviso(Alert.AlertType.ERROR, "Datos del prescriptor no disponibles", ex.getMessage());
                 return false;
@@ -420,7 +418,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             aviso(Alert.AlertType.WARNING, "Datos clínicos incompletos", String.join("\n", errores));
             return false;
         }
-        if (!baseDatos.guardarAtencion(cita, nota, destino, finalizar)) {
+        if (!nota.guardarAtencion(cita, destino, finalizar)) {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar", "La nota y la receta no se guardaron. Revise la conexión y vuelva a intentar.");
             return false;
         }

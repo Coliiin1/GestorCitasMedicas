@@ -1,7 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.DiaSemana;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
@@ -62,7 +61,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private static final String[] DIAS_CAL = {"L", "M", "X", "J", "V", "S", "D"};
     private static final String[] NOMBRES_DIA_CORTO = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
 
-    private final BaseDatos baseDatos = new BaseDatos();
     private final ArrayList<Horario> horarios = new ArrayList<>();
     private final ArrayList<HorarioBloqueado> bloqueos = new ArrayList<>();
 
@@ -110,11 +108,11 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         renderCalendario();
         renderSemana();
         if (citaSeleccionada != null) {
-            Cita actualizada = baseDatos.cargarCitas().get(citaSeleccionada.getIdCita());
+            Cita actualizada = Cita.buscar(citaSeleccionada.getIdCita());
             if (actualizada == null || actualizada.getFechaCita() == null) {
                 limpiarFicha();
             } else {
-                pacienteSeleccionado = baseDatos.cargarPacientePorCurp(actualizada.getCurp());
+                pacienteSeleccionado = Paciente.buscar(actualizada.getCurp());
                 LocalDateTime fecha = actualizada.fechaHora();
                 mostrarCita(new Turno(actualizada, pacienteSeleccionado),
                         fechaLarga(fecha.toLocalDate()), fecha.toLocalTime());
@@ -151,9 +149,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     private void recargarHorarios() {
         horarios.clear();
-        horarios.addAll(baseDatos.cargarHorariosActivos());
+        horarios.addAll(Horario.activos());
         bloqueos.clear();
-        bloqueos.addAll(baseDatos.cargarBloqueos());
+        bloqueos.addAll(HorarioBloqueado.todos());
     }
 
     private void renderCalendario() {
@@ -194,7 +192,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         rangoLabel.setText("Semana del " + lunes.getDayOfMonth() + " al " + lunes.plusDays(6).getDayOfMonth()
                 + " de " + PlanificadorAgenda.MESES[lunes.getMonthValue() - 1] + ", " + lunes.getYear());
 
-        ArrayList<Cita> citasSemana = baseDatos.cargarCitasEntre(lunes, lunes.plusDays(6));
+        ArrayList<Cita> citasSemana = Cita.entre(lunes, lunes.plusDays(6));
         List<LocalDate> fechas = fechasSemana(lunes, citasSemana);
         List<LocalTime> horas = horasVista(citasSemana);
 
@@ -290,7 +288,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     private Turno[][] cargarTurnos(List<LocalDate> fechas, List<LocalTime> horas, List<Cita> citasSemana) {
         Turno[][] turnos = new Turno[horas.size()][fechas.size()];
-        HashMap<String, Paciente> pacientes = baseDatos.cargarPacientes();
+        HashMap<String, Paciente> pacientes = Paciente.todos();
         for (Cita cita : citasSemana) {
             LocalDateTime fecha = cita.fechaHora();
             if (fecha == null) {
@@ -489,8 +487,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
-        citaSeleccionada.setEstado(Estado.CANCELADA);
-        if (!baseDatos.actualizarCita(citaSeleccionada)) {
+        if (!citaSeleccionada.cancelar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
@@ -498,7 +495,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         limpiarFicha();
         refrescar();
         aviso(Alert.AlertType.INFORMATION, "Cita cancelada", "La cita se marcó como cancelada.");
-        ControladorCorreo.notificarCancelaciones(List.of(cancelada), baseDatos.cargarPacientes(),
+        ControladorCorreo.notificarCancelaciones(List.of(cancelada), Paciente.todos(),
                 HorarioConfigController::avisoNotificacion);
     }
 
@@ -507,7 +504,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (!esAdmin()) {
             return;
         }
-        boolean cambios = HorarioConfigController.abrir(ventana(), baseDatos);
+        boolean cambios = HorarioConfigController.abrir(ventana());
         if (cambios) {
             refrescar();
         }
@@ -533,7 +530,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     private void dialogoCita(Cita existente, LocalDate fechaInicial, LocalTime horaInicial,
                              String curpPreseleccionada) {
-        HashMap<String, Paciente> pacientesMapa = baseDatos.cargarPacientes();
+        HashMap<String, Paciente> pacientesMapa = Paciente.todos();
 
         List<Paciente> pacientes = new ArrayList<>(pacientesMapa.values());
         pacientes.sort(Comparator.comparing(AgendaController::nombrePacienteOrden));
@@ -691,7 +688,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 return;
             }
 
-            Cita ocupada = buscarOcupada(fecha, hora, existente == null ? 0 : existente.getIdCita());
+            Cita ocupada = Cita.ocupadaEn(fecha, hora, existente == null ? 0 : existente.getIdCita());
             if (ocupada != null) {
                 event.consume();
                 aviso(Alert.AlertType.WARNING, "Horario ocupado",
@@ -709,14 +706,11 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 Cita nueva = new Cita();
                 nueva.setCurp(paciente.getCurp());
                 nueva.setFechaCita(fechaCita);
-                nueva.setEstado(Estado.AGENDADA);
-                guardado = baseDatos.insertarCita(nueva);
+                guardado = nueva.agendar();
                 citaGuardada = nueva;
             } else {
                 fechaAnterior = existente.getFechaCita();
-                existente.setFechaCita(fechaCita);
-                existente.setEstado(Estado.AGENDADA);
-                guardado = baseDatos.actualizarCita(existente);
+                guardado = existente.reprogramar(fechaCita);
                 citaGuardada = existente;
             }
 
@@ -846,8 +840,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 fin = finDia.atTime(horaFin);
             }
 
-            ArrayList<Cita> conflictos = baseDatos.citasActivasEnRango(inicio, fin);
-            if (!HorarioConfigController.confirmarCancelacionCitas(baseDatos, conflictos)) {
+            ArrayList<Cita> conflictos = Cita.activasEnRango(inicio, fin);
+            if (!HorarioConfigController.confirmarCancelacionCitas(conflictos)) {
                 event.consume();
                 return;
             }
@@ -862,12 +856,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             HorarioBloqueado bloqueo = new HorarioBloqueado();
             bloqueo.setFechaInicio(inicio);
             bloqueo.setFechaFin(fin);
-            if (!baseDatos.guardarBloqueo(bloqueo)) {
+            if (!bloqueo.guardar()) {
                 event.consume();
                 aviso(Alert.AlertType.ERROR, "No se pudo bloquear",
                         "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
             } else if (!conflictos.isEmpty()) {
-                ControladorCorreo.notificarCancelaciones(conflictos, baseDatos.cargarPacientes(),
+                ControladorCorreo.notificarCancelaciones(conflictos, Paciente.todos(),
                         HorarioConfigController::avisoNotificacion);
             }
         });
@@ -934,23 +928,6 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         }, "correo-confirmacion");
         hilo.setDaemon(true);
         hilo.start();
-    }
-
-    private Cita buscarOcupada(LocalDate fecha, LocalTime hora, int idExcluir) {
-        LocalDateTime inicio = LocalDateTime.of(fecha, hora);
-        LocalDateTime fin = inicio.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS);
-        for (Cita cita : baseDatos.cargarCitasEntre(fecha, fecha)) {
-            if (cita.getFechaCita() == null || cita.getIdCita() == idExcluir
-                    || cita.getEstado() == Estado.CANCELADA) {
-                continue;
-            }
-            LocalDateTime inicioCita = cita.fechaHora();
-            if (PlanificadorAgenda.seSolapan(inicio, fin, inicioCita,
-                    inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS))) {
-                return cita;
-            }
-        }
-        return null;
     }
 
     private Window ventana() {

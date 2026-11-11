@@ -54,4 +54,25 @@ public class Administrador extends Personal {
     public void setDomicilio(String domicilio) {
         this.domicilio = domicilio;
     }
+
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    public static Administrador buscar(int idAdministrador) {
+        return new BaseDatos().obtenerAdministrador(idAdministrador);
+    }
+
+    /** Guarda los datos personales y del consultorio. */
+    public boolean actualizar() {
+        return new BaseDatos().actualizarAdministrador(this);
+    }
+
+    /** true si {@code nuevoId} no lo usa otra cuenta distinta de {@code idActual}. */
+    public static boolean usuarioDisponible(int nuevoId, int idActual) {
+        return new BaseDatos().idUsuarioLibre(nuevoId, idActual);
+    }
+
+    /** Cambia el usuario (id) y, si {@code nuevaContrasena} no está vacía, la contraseña. */
+    public static boolean cambiarCredenciales(int idActual, int nuevoId, String nuevaContrasena) {
+        return new BaseDatos().actualizarCredencialesAdmin(idActual, nuevoId, nuevaContrasena);
+    }
 }

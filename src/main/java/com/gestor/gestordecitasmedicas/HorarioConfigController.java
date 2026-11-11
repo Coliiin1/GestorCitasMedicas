@@ -1,6 +1,5 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.DiaSemana;
 import com.gestor.gestordecitasmedicas.modelo.Horario;
@@ -49,7 +48,6 @@ import static com.gestor.gestordecitasmedicas.Ui.aviso;
  */
 public final class HorarioConfigController {
     private final Window owner;
-    private final BaseDatos baseDatos;
     private final ArrayList<Horario> horarios = new ArrayList<>();
     private final ArrayList<HorarioBloqueado> bloqueos = new ArrayList<>();
 
@@ -73,13 +71,12 @@ public final class HorarioConfigController {
 
     private boolean cambios;
 
-    private HorarioConfigController(Window owner, BaseDatos baseDatos) {
+    private HorarioConfigController(Window owner) {
         this.owner = owner;
-        this.baseDatos = baseDatos;
     }
 
-    public static boolean abrir(Window owner, BaseDatos baseDatos) {
-        return new HorarioConfigController(owner, baseDatos).mostrar();
+    public static boolean abrir(Window owner) {
+        return new HorarioConfigController(owner).mostrar();
     }
 
     private boolean mostrar() {
@@ -233,9 +230,9 @@ public final class HorarioConfigController {
 
     private void recargarListas() {
         horarios.clear();
-        horarios.addAll(baseDatos.cargarHorarios());
+        horarios.addAll(Horario.todos());
         bloqueos.clear();
-        bloqueos.addAll(baseDatos.cargarBloqueos());
+        bloqueos.addAll(HorarioBloqueado.todos());
         renderHorarios();
         renderBloqueos();
     }
@@ -356,7 +353,7 @@ public final class HorarioConfigController {
         }
 
         if (horarioEditando != null) {
-            ArrayList<Cita> citas = baseDatos.citasActivasEnHorario(horarioEditando);
+            ArrayList<Cita> citas = horarioEditando.citasActivas();
             for (Cita cita : citas) {
                 LocalDateTime fecha = cita.fechaHora();
                 if (!horario.isEstado() || !cubre(horario, fecha)) {
@@ -368,7 +365,7 @@ public final class HorarioConfigController {
             }
         }
 
-        if (!baseDatos.guardarHorario(horario)) {
+        if (!horario.guardar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar",
                     "El tramo no se guardó. Revisa que no se cruce con otro tramo activo.");
             return;
@@ -394,7 +391,7 @@ public final class HorarioConfigController {
                         + PlanificadorAgenda.formatoHora(horario.getHoraFin()) + "?")) {
             return;
         }
-        if (!baseDatos.eliminarHorario(horario.getIdHorario())) {
+        if (!horario.eliminar()) {
             aviso(Alert.AlertType.WARNING, "No se pudo eliminar",
                     "El tramo tiene citas activas o no existe. Reprograma o cancela las citas primero.");
             return;
@@ -452,8 +449,8 @@ public final class HorarioConfigController {
             }
         }
 
-        ArrayList<Cita> conflictos = baseDatos.citasActivasEnRango(inicio, fin);
-        if (!confirmarCancelacionCitas(baseDatos, conflictos)) {
+        ArrayList<Cita> conflictos = Cita.activasEnRango(inicio, fin);
+        if (!confirmarCancelacionCitas(conflictos)) {
             return;
         }
 
@@ -462,7 +459,7 @@ public final class HorarioConfigController {
         bloqueo.setFechaInicio(inicio);
         bloqueo.setFechaFin(fin);
 
-        if (!baseDatos.guardarBloqueo(bloqueo)) {
+        if (!bloqueo.guardar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo guardar",
                     "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
             return;
@@ -470,7 +467,7 @@ public final class HorarioConfigController {
         cambios = true;
         if (!conflictos.isEmpty()) {
             ControladorCorreo.notificarCancelaciones(
-                    conflictos, baseDatos.cargarPacientes(), HorarioConfigController::avisoNotificacion);
+                    conflictos, Paciente.todos(), HorarioConfigController::avisoNotificacion);
         }
         limpiarFormularioBloqueo();
         recargarListas();
@@ -505,7 +502,7 @@ public final class HorarioConfigController {
                         bloqueo.getFechaInicio(), bloqueo.getFechaFin()) + "?")) {
             return;
         }
-        if (!baseDatos.eliminarBloqueo(bloqueo.getIdHorarioBloqueado())) {
+        if (!bloqueo.eliminar()) {
             aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
                     "El bloqueo no se eliminó. Inténtalo de nuevo.");
             return;
@@ -576,11 +573,11 @@ public final class HorarioConfigController {
     }
 
     /** Lista las citas que se cancelarán al bloquear y pide confirmación; true si no hay citas o se acepta. */
-    static boolean confirmarCancelacionCitas(BaseDatos baseDatos, List<Cita> citas) {
+    static boolean confirmarCancelacionCitas(List<Cita> citas) {
         if (citas.isEmpty()) {
             return true;
         }
-        Map<String, Paciente> pacientes = baseDatos.cargarPacientes();
+        Map<String, Paciente> pacientes = Paciente.todos();
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         StringBuilder texto = new StringBuilder();
         citas.stream().sorted(Comparator.comparing(Cita::getFechaCita)).forEach(cita -> {

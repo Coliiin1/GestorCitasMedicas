@@ -128,4 +128,19 @@ public class Consulta {
     private String sexoPaciente;
     public String getSexoPaciente() { return sexoPaciente; }
     public void setSexoPaciente(String valor) { this.sexoPaciente = valor; }
+
+    // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
+
+    /** Nota de consulta registrada para la cita, o null si aún no tiene. */
+    public static Consulta deCita(int idCita) {
+        return new BaseDatos().cargarConsultaPorCita(idCita);
+    }
+
+    /**
+     * Guarda en una sola transacción esta nota, la receta (con medicamentos y signos) y, si
+     * {@code finalizar}, marca la cita como ATENDIDA. Si algo falla no se guarda nada.
+     */
+    public boolean guardarAtencion(Cita cita, Receta receta, boolean finalizar) {
+        return new BaseDatos().guardarAtencion(cita, this, receta, finalizar);
+    }
 }
