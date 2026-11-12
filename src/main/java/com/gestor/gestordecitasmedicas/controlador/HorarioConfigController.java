@@ -38,6 +38,8 @@ import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import java.time.temporal.ChronoUnit;
 
 
 /**
@@ -286,11 +288,14 @@ public final class HorarioConfigController {
             return;
         }
         listaBloqueos.getChildren().clear();
-        if (bloqueos.isEmpty()) {
-            listaBloqueos.getChildren().add(mensajeVacio("No hay fechas bloqueadas."));
+        // Los bloqueos ya vencidos no se listan: no afectan la agenda y solo estorban.
+        List<HorarioBloqueado> ordenados = new ArrayList<>(bloqueos);
+        LocalDateTime ahora = LocalDateTime.now();
+        ordenados.removeIf(b -> b.getFechaFin() != null && !b.getFechaFin().isAfter(ahora));
+        if (ordenados.isEmpty()) {
+            listaBloqueos.getChildren().add(mensajeVacio("No hay fechas bloqueadas vigentes."));
             return;
         }
-        List<HorarioBloqueado> ordenados = new ArrayList<>(bloqueos);
         ordenados.sort(Comparator.comparing(HorarioBloqueado::getFechaInicio,
                 Comparator.nullsLast(Comparator.naturalOrder())));
         for (HorarioBloqueado bloqueo : ordenados) {
@@ -351,15 +356,17 @@ public final class HorarioConfigController {
         }
 
         if (horarioEditando != null) {
-            ArrayList<Cita> citas = horarioEditando.citasActivas();
-            for (Cita cita : citas) {
-                LocalDateTime fecha = cita.fechaHora();
-                if (!horario.isEstado() || !cubre(horario, fecha)) {
-                    Notificador.advertencia("Hay citas en ese tramo",
-                            "No se puede modificar o desactivar el tramo porque hay "
-                                    + citas.size() + " cita(s) activa(s). Reprograma o cancela primero.");
-                    return;
+            int fuera = 0;
+            for (Cita cita : horarioEditando.citasActivas()) {
+                if (!horario.isEstado() || !cubre(horario, cita.fechaHora())) {
+                    fuera++;
                 }
+            }
+            if (fuera > 0) {
+                Notificador.advertencia("Hay citas en ese tramo",
+                        "No se puede modificar o desactivar el tramo porque " + fuera
+                                + " cita(s) agendada(s) quedarían fuera de horario. Reprograma o cancela primero.");
+                return;
             }
         }
 
@@ -411,64 +418,80 @@ public final class HorarioConfigController {
     }
 
     private void guardarBloqueo() {
-        LocalDate desde = bloqueoDesde.getValue();
-        LocalDate hasta = bloqueoHasta.getValue();
-        if (desde == null || hasta == null || hasta.isBefore(desde)) {
-            Notificador.advertencia("Fechas inválidas",
-                    "Selecciona un rango de fechas válido.");
-            return;
-        }
-
-        LocalDateTime inicio;
-        LocalDateTime fin;
-        if (bloqueoTodoElDia.isSelected()) {
-            inicio = desde.atStartOfDay();
-            fin = hasta.plusDays(1).atStartOfDay();
-        } else {
-            LocalTime horaInicio = bloqueoHoraInicio.getSelectionModel().getSelectedItem();
-            LocalTime horaFin = bloqueoHoraFin.getSelectionModel().getSelectedItem();
-            if (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin)) {
-                Notificador.advertencia("Horas inválidas",
-                        "La hora de inicio debe ser anterior a la hora de fin.");
-                return;
-            }
-            inicio = desde.atTime(horaInicio);
-            fin = hasta.atTime(horaFin);
-        }
-
-        int idEditando = bloqueoEditando == null ? 0 : bloqueoEditando.getIdHorarioBloqueado();
-        for (HorarioBloqueado existente : bloqueos) {
-            if (existente.getIdHorarioBloqueado() != idEditando
-                    && PlanificadorAgenda.seSolapan(inicio, fin,
-                    existente.getFechaInicio(), existente.getFechaFin())) {
-                Notificador.advertencia("Bloqueo superpuesto",
-                        "Ya existe un bloqueo que se cruza con ese periodo.");
-                return;
-            }
-        }
-
-        ArrayList<Cita> conflictos = Cita.activasEnRango(inicio, fin);
-        if (!confirmarCancelacionCitas(conflictos)) {
-            return;
-        }
-
-        HorarioBloqueado bloqueo = new HorarioBloqueado();
-        bloqueo.setIdHorarioBloqueado(idEditando);
-        bloqueo.setFechaInicio(inicio);
-        bloqueo.setFechaFin(fin);
-
-        if (!bloqueo.guardar()) {
-            Notificador.error("No se pudo guardar",
-                    "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
+        if (!crearBloqueos(bloqueoDesde.getValue(), bloqueoHasta.getValue(), bloqueoTodoElDia.isSelected(),
+                bloqueoHoraInicio.getSelectionModel().getSelectedItem(),
+                bloqueoHoraFin.getSelectionModel().getSelectedItem(),
+                bloqueoEditando == null ? 0 : bloqueoEditando.getIdHorarioBloqueado())) {
             return;
         }
         cambios = true;
-        if (!conflictos.isEmpty()) {
-            ControladorCorreo.notificarCancelaciones(
-                    conflictos, Paciente.todos(), HorarioConfigController::avisoNotificacion);
-        }
         limpiarFormularioBloqueo();
         recargarListas();
+    }
+
+    /**
+     * Flujo único de alta/edición de bloqueos (lo usan este diálogo y la agenda): valida, revisa cruces,
+     * confirma la cancelación de citas, guarda y notifica. Con horas, la franja se repite en cada día del rango.
+     * Devuelve true si se guardó; si no, ya mostró el aviso correspondiente.
+     */
+    static boolean crearBloqueos(LocalDate desde, LocalDate hasta, boolean todoElDia,
+                                 LocalTime horaInicio, LocalTime horaFin, int idEditando) {
+        if (desde == null || hasta == null || hasta.isBefore(desde)) {
+            Notificador.advertencia("Fechas inválidas", "Selecciona un rango de fechas válido.");
+            return false;
+        }
+        if (!todoElDia && (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin))) {
+            Notificador.advertencia("Horas inválidas", "La hora de inicio debe ser anterior a la hora de fin.");
+            return false;
+        }
+
+        List<LocalDateTime[]> intervalos =
+                PlanificadorAgenda.intervalosDeBloqueo(desde, hasta, todoElDia, horaInicio, horaFin);
+        LocalDateTime ahora = LocalDateTime.now();
+        intervalos.removeIf(i -> !i[1].isAfter(ahora));
+        if (intervalos.isEmpty()) {
+            Notificador.advertencia("Periodo vencido", "El periodo seleccionado ya pasó; no hay nada que bloquear.");
+            return false;
+        }
+
+        for (HorarioBloqueado existente : HorarioBloqueado.todos()) {
+            if (existente.getIdHorarioBloqueado() == idEditando) {
+                continue;
+            }
+            for (LocalDateTime[] i : intervalos) {
+                if (PlanificadorAgenda.seSolapan(i[0], i[1], existente.getFechaInicio(), existente.getFechaFin())) {
+                    Notificador.advertencia("Bloqueo superpuesto", "Se cruza con un bloqueo existente: "
+                            + PlanificadorAgenda.formatoRango(existente.getFechaInicio(), existente.getFechaFin())
+                            + ". Edita o elimina ese bloqueo primero.");
+                    return false;
+                }
+            }
+        }
+
+        List<Cita> conflictos = new ArrayList<>();
+        List<HorarioBloqueado> nuevos = new ArrayList<>();
+        for (LocalDateTime[] i : intervalos) {
+            conflictos.addAll(Cita.activasEnRango(i[0], i[1]));
+            HorarioBloqueado bloqueo = new HorarioBloqueado();
+            bloqueo.setIdHorarioBloqueado(nuevos.isEmpty() ? idEditando : 0); // al editar, el primero conserva el id
+            bloqueo.setFechaInicio(i[0]);
+            bloqueo.setFechaFin(i[1]);
+            nuevos.add(bloqueo);
+        }
+
+        String motivo = confirmarCancelacionCitas(conflictos);
+        if (motivo == null) {
+            return false;
+        }
+        if (!HorarioBloqueado.guardarTodos(nuevos)) {
+            Notificador.error("No se pudo guardar", "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
+            return false;
+        }
+        if (!conflictos.isEmpty()) {
+            ControladorCorreo.notificarCancelaciones(
+                    conflictos, Paciente.todos(), motivo, HorarioConfigController::avisoNotificacion);
+        }
+        return true;
     }
 
     private void editarBloqueo(HorarioBloqueado bloqueo) {
@@ -488,8 +511,11 @@ public final class HorarioConfigController {
             bloqueoHasta.setValue(fin.toLocalDate().minusDays(1));
         } else {
             bloqueoHasta.setValue(fin.toLocalDate());
-            seleccionarHora(bloqueoHoraInicio, inicio.toLocalTime());
-            seleccionarHora(bloqueoHoraFin, fin.toLocalTime());
+            // Los combos solo tienen horas exactas: una hora intermedia se redondea hacia fuera para no encoger el bloqueo.
+            LocalTime horaFin = fin.toLocalTime();
+            seleccionarHora(bloqueoHoraInicio, inicio.toLocalTime().truncatedTo(ChronoUnit.HOURS));
+            seleccionarHora(bloqueoHoraFin, horaFin.equals(horaFin.truncatedTo(ChronoUnit.HOURS))
+                    ? horaFin : horaFin.truncatedTo(ChronoUnit.HOURS).plusHours(1));
         }
         btnGuardarBloqueo.setText("Guardar cambios");
     }
@@ -497,7 +523,8 @@ public final class HorarioConfigController {
     private void eliminarBloqueo(HorarioBloqueado bloqueo) {
         if (!confirmar("Eliminar bloqueo",
                 "¿Eliminar el bloqueo " + PlanificadorAgenda.formatoRango(
-                        bloqueo.getFechaInicio(), bloqueo.getFechaFin()) + "?")) {
+                        bloqueo.getFechaInicio(), bloqueo.getFechaFin())
+                        + "? Las citas que se cancelaron al bloquear no se restauran.")) {
             return;
         }
         if (!bloqueo.eliminar()) {
@@ -563,10 +590,14 @@ public final class HorarioConfigController {
         return Confirmacion.destructiva(titulo, mensaje, "Eliminar");
     }
 
-    /** Lista las citas que se cancelarán al bloquear y pide confirmación; true si no hay citas o se acepta. */
-    static boolean confirmarCancelacionCitas(List<Cita> citas) {
+    /**
+     * Lista las citas que se cancelarán al bloquear y pide confirmación con un motivo opcional. Devuelve null si
+     * se rechaza; si no, el motivo escrito ("" si no hay citas o se dejó vacío). El motivo solo se usa en el
+     * correo a los pacientes: no se guarda.
+     */
+    static String confirmarCancelacionCitas(List<Cita> citas) {
         if (citas.isEmpty()) {
-            return true;
+            return "";
         }
         Map<String, Paciente> pacientes = Paciente.todos();
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -582,9 +613,14 @@ public final class HorarioConfigController {
         lista.setEditable(false);
         lista.setPrefRowCount(Math.min(citas.size(), 10) + 1);
 
-        return Confirmacion.preguntar("¿Cancelar las citas del periodo?",
+        TextField motivo = new TextField();
+        motivo.setPromptText("Motivo (opcional): se incluye en el correo a los pacientes");
+        motivo.getStyleClass().add("form-field");
+
+        boolean aceptado = Confirmacion.preguntar("¿Cancelar las citas del periodo?",
                 "Se cancelarán " + citas.size() + " cita(s) agendada(s) en este periodo:",
-                "Cancelar citas y bloquear", true, lista);
+                "Cancelar citas y bloquear", true, new VBox(8, lista, motivo));
+        return aceptado ? motivo.getText().trim() : null;
     }
 
     /** Resumen del envío de correos de cancelación; lo reutilizan Agenda y Consulta. */

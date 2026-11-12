@@ -44,4 +44,17 @@ class IconosTest {
         assertNotNull(getClass().getResource("/com/gestor/gestordecitasmedicas/fonts/uicons-regular-rounded.ttf"));
         assertNotNull(getClass().getResource("/META-INF/services/org.kordamp.ikonli.IkonHandler"));
     }
+
+    @Test
+    void lasFuentesManropeEstanEnElClasspathYCargan() throws IOException {
+        assertEquals(7, HelloApplication.FUENTES_MANROPE.length);
+        for (String ruta : HelloApplication.FUENTES_MANROPE) {
+            assertNotNull(getClass().getResource(ruta), "Falta la fuente: " + ruta);
+            try (java.io.InputStream in = getClass().getResourceAsStream(ruta)) {
+                javafx.scene.text.Font fuente = javafx.scene.text.Font.loadFont(in, 13);
+                assertNotNull(fuente, "No se pudo cargar la fuente: " + ruta);
+                assertTrue(fuente.getFamily().startsWith("Manrope"), "Familia inesperada: " + fuente.getFamily());
+            }
+        }
+    }
 }

@@ -77,6 +77,37 @@ class PlanificadorAgendaTest {
     }
 
     @Test
+    void unBloqueoParcialNoMarcaElDiaComoBloqueado() {
+        LocalDate lunes = LocalDate.of(2026, 11, 9);
+        List<Horario> horarios = Arrays.asList(tramo(DiaSemana.LUNES, "09:00", "13:00", true));
+
+        assertFalse(PlanificadorAgenda.diaBloqueado(lunes, horarios,
+                Arrays.asList(bloqueo("2026-11-09T10:00", "2026-11-09T11:00"))));
+        assertTrue(PlanificadorAgenda.diaBloqueado(lunes, horarios,
+                Arrays.asList(bloqueo("2026-11-09T00:00", "2026-11-10T00:00"))));
+        // Martes no es hábil: aunque tenga bloqueo, no se pinta como bloqueado.
+        assertFalse(PlanificadorAgenda.diaBloqueado(lunes.plusDays(1), horarios,
+                Arrays.asList(bloqueo("2026-11-10T00:00", "2026-11-11T00:00"))));
+    }
+
+    @Test
+    void elBloqueoConHorasRepiteLaFranjaEnCadaDia() {
+        LocalDate lunes = LocalDate.of(2026, 11, 9);
+
+        List<LocalDateTime[]> todoElDia = PlanificadorAgenda.intervalosDeBloqueo(
+                lunes, lunes.plusDays(4), true, null, null);
+        assertEquals(1, todoElDia.size());
+        assertEquals(LocalDateTime.parse("2026-11-09T00:00"), todoElDia.get(0)[0]);
+        assertEquals(LocalDateTime.parse("2026-11-14T00:00"), todoElDia.get(0)[1]);
+
+        List<LocalDateTime[]> franja = PlanificadorAgenda.intervalosDeBloqueo(
+                lunes, lunes.plusDays(4), false, LocalTime.of(13, 0), LocalTime.of(15, 0));
+        assertEquals(5, franja.size());
+        assertEquals(LocalDateTime.parse("2026-11-11T13:00"), franja.get(2)[0]);
+        assertEquals(LocalDateTime.parse("2026-11-11T15:00"), franja.get(2)[1]);
+    }
+
+    @Test
     void reglaDeSolapamientoUsaIntervalosSemiabiertos() {
         LocalDateTime inicio = LocalDateTime.parse("2026-11-09T10:00");
         LocalDateTime fin = LocalDateTime.parse("2026-11-09T11:00");

@@ -2,10 +2,11 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<GridPane styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.LoginController">
+<GridPane hgap="12.0" styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.LoginController">
     <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
     <columnConstraints>
         <ColumnConstraints hgrow="ALWAYS" percentWidth="50.0" />
@@ -13,31 +14,71 @@
     </columnConstraints>
     <rowConstraints><RowConstraints vgrow="ALWAYS" /></rowConstraints>
 
-    <!-- Panel visual -->
-    <StackPane fx:id="hero" styleClass="login-hero" GridPane.columnIndex="0" />
+    <!-- Panel visual: la foto del carrusel cubre el panel; la marca y el lema flotan en tarjetas -->
+    <StackPane fx:id="hero" styleClass="login-hero" GridPane.columnIndex="0">
+        <StackPane fx:id="carrusel" />
+        <VBox mouseTransparent="true" styleClass="login-velo">
+            <HBox alignment="CENTER_LEFT" maxWidth="-Infinity" spacing="12.0" styleClass="login-flotante, login-marca-caja">
+                <ImageView fx:id="logo" fitHeight="36.0" fitWidth="36.0" />
+                <VBox>
+                    <Label styleClass="login-marca" text="Gestor de Citas Médicas" />
+                    <Label styleClass="login-marca-sub" text="Consultorio médico" />
+                </VBox>
+            </HBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="login-flotante">
+                <StackPane styleClass="login-tile">
+                    <FontIcon iconLiteral="fi-rr-calendar" />
+                </StackPane>
+                <VBox spacing="4.0" HBox.hgrow="ALWAYS">
+                    <Label styleClass="login-lema" text="Tu consulta, organizada de principio a fin." wrapText="true" />
+                    <Label styleClass="login-lema-sub" text="Agenda, expedientes y recetas en un solo lugar." wrapText="true" />
+                </VBox>
+                <HBox fx:id="puntos" alignment="CENTER" spacing="8.0" />
+            </HBox>
+        </VBox>
+    </StackPane>
 
-    <!-- Formulario -->
-    <VBox alignment="CENTER" GridPane.columnIndex="1">
-        <VBox maxWidth="440.0" spacing="28.0">
-            <Label styleClass="h-title" text="Iniciar sesión" />
+    <!-- Formulario: tarjeta del mismo alto que el panel visual -->
+    <VBox alignment="CENTER" styleClass="login-card" GridPane.columnIndex="1">
+        <Region VBox.vgrow="ALWAYS" />
+        <VBox maxWidth="400.0" spacing="24.0">
+            <VBox spacing="8.0">
+                <Label styleClass="login-eyebrow" text="BIENVENIDO" />
+                <Label styleClass="login-titulo" text="Iniciar sesión" />
+                <Label styleClass="hint" text="Ingresa tu usuario y contraseña para acceder al consultorio." wrapText="true" />
+            </VBox>
 
             <VBox spacing="8.0">
                 <Label styleClass="field-label" text="USUARIO" />
-                <TextField fx:id="txtUsuario" onAction="#onIngresar" prefHeight="54.0" promptText="Usuario" styleClass="form-field" />
+                <StackPane>
+                    <TextField fx:id="txtUsuario" onAction="#onIngresar" prefHeight="54.0" promptText="Usuario" styleClass="form-field, login-campo" />
+                    <FontIcon iconLiteral="fi-rr-user-md" mouseTransparent="true" styleClass="login-icono" StackPane.alignment="CENTER_LEFT">
+                        <StackPane.margin><Insets left="16.0" /></StackPane.margin>
+                    </FontIcon>
+                </StackPane>
             </VBox>
 
             <VBox spacing="8.0">
                 <Label styleClass="field-label" text="CONTRASEÑA" />
                 <StackPane>
-                    <PasswordField fx:id="password" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" styleClass="form-field, password-field" />
-                    <TextField fx:id="passwordVisible" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" styleClass="form-field, password-field" visible="false" />
+                    <PasswordField fx:id="password" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" styleClass="form-field, password-field, login-campo" />
+                    <TextField fx:id="passwordVisible" onAction="#onIngresar" prefHeight="54.0" promptText="Contraseña" styleClass="form-field, password-field, login-campo" visible="false" />
+                    <FontIcon iconLiteral="fi-rr-lock" mouseTransparent="true" styleClass="login-icono" StackPane.alignment="CENTER_LEFT">
+                        <StackPane.margin><Insets left="16.0" /></StackPane.margin>
+                    </FontIcon>
                     <Button fx:id="btnTogglePassword" onAction="#onTogglePassword" styleClass="btn-icon" StackPane.alignment="CENTER_RIGHT">
+                        <StackPane.margin><Insets right="8.0" /></StackPane.margin>
                         <graphic><FontIcon iconLiteral="fi-rr-eye" /></graphic>
                     </Button>
                 </StackPane>
             </VBox>
 
-            <Button maxWidth="Infinity" onAction="#onIngresar" prefHeight="54.0" styleClass="btn-primary" text="Ingresar" />
+            <Button contentDisplay="RIGHT" maxWidth="Infinity" onAction="#onIngresar" prefHeight="54.0" styleClass="btn-primary" text="Ingresar">
+                <graphic><FontIcon iconLiteral="fi-rr-arrow-right" /></graphic>
+            </Button>
         </VBox>
+        <Region VBox.vgrow="ALWAYS" />
+        <Label styleClass="hint" text="Licencia Profesional" />
     </VBox>
 </GridPane>

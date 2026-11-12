@@ -39,6 +39,11 @@ public class HorarioBloqueado {
         return new BaseDatos().guardarBloqueo(this);
     }
 
+    /** Guarda varios bloqueos en una sola transacción (todos o ninguno). */
+    public static boolean guardarTodos(java.util.List<HorarioBloqueado> bloqueos) {
+        return new BaseDatos().guardarBloqueos(bloqueos);
+    }
+
     public boolean eliminar() {
         return new BaseDatos().eliminarBloqueo(getIdHorarioBloqueado());
     }

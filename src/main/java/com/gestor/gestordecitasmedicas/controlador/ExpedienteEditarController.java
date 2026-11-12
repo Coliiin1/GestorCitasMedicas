@@ -150,6 +150,7 @@ public class ExpedienteEditarController implements PanelControlado {
             mostrarError("No se pudieron guardar los cambios. Puede volver a intentarlo.");
             return;
         }
+        com.gestor.gestordecitasmedicas.servicio.ControladorPDF.actualizarExpediente(paciente.getCurp());
         mainController.ir("expediente-panel.fxml");
         ExpedienteController vista = mainController.controlador("expediente-panel.fxml");
         vista.mostrarConfirmacion("Expediente actualizado correctamente.");

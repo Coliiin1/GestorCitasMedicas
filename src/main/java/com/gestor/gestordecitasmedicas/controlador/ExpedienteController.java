@@ -123,10 +123,15 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
 
     private void imprimirReceta(Receta receta) {
         if (receta == null) return;
-        if (new ControladorPDF().generarPDF(receta)) {
-            File archivo = new File(ControladorPDF.carpetaSalida(), "receta_" + receta.getIdReceta() + ".pdf");
-            ControladorPDF.abrir(archivo);
-            Notificador.exito("Receta generada", archivo.getAbsolutePath());
+        ControladorPDF pdf = new ControladorPDF();
+        if (pdf.generarPDF(receta)) {
+            try {
+                File archivo = pdf.archivoReceta(receta);
+                ControladorPDF.abrir(archivo);
+                Notificador.exito("Receta generada", archivo.getAbsolutePath());
+            } catch (IOException ex) {
+                Notificador.error("PDF no generado", ex.getMessage());
+            }
         } else {
             Notificador.error("PDF no generado", "No se pudo generar la receta. Revise que los datos estén completos.");
         }
@@ -165,14 +170,9 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML
     private void exportarPdf() {
         if (expedienteActual == null) return;
-        FileChooser selector = new FileChooser();
-        selector.setTitle("Guardar expediente en PDF");
-        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos PDF", "*.pdf"));
-        selector.setInitialFileName("expediente_" + pacienteActual.getCurp() + ".pdf");
-        File archivo = selector.showSaveDialog(nombre.getScene().getWindow());
-        if (archivo == null) return;
         try {
-            new ControladorPDF().generarExpediente(archivo, expedienteActual);
+            File archivo = new ControladorPDF().exportarExpediente(expedienteActual);
+            ControladorPDF.abrir(archivo);
             Notificador.exito("Expediente exportado", archivo.getAbsolutePath());
         } catch (IOException | DocumentException ex) {
             Notificador.error("Error al exportar", ex.getMessage());

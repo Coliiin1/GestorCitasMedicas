@@ -145,6 +145,7 @@ public class PacienteEditarController implements PanelControlado {
 
         if (esNuevo) {
             boolean expedienteCreado = crearExpediente(paciente);
+            if (expedienteCreado) com.gestor.gestordecitasmedicas.servicio.ControladorPDF.actualizarExpediente(curp);
             if (expedienteCreado) {
                 mostrarInformacion("Paciente registrado",
                         "El paciente y su expediente se registraron correctamente.");
@@ -153,6 +154,7 @@ public class PacienteEditarController implements PanelControlado {
                         "El paciente se registró, pero no se pudo crear su expediente automáticamente.");
             }
         } else {
+            com.gestor.gestordecitasmedicas.servicio.ControladorPDF.actualizarExpediente(curp);
             mostrarInformacion("Paciente actualizado", "Los datos del paciente se actualizaron correctamente.");
         }
 

@@ -88,22 +88,48 @@ class HorarioBaseDatosTest {
     }
 
     @Test
-    void noBloqueaSiHayCitasActivasEnElRango() {
+    void elBloqueoCancelaLasCitasAgendadasFuturasYNoTocaLasPasadas() {
         Paciente paciente = paciente();
-        Cita cita = cita(paciente, LocalDateTime.of(2026, 12, 7, 10, 0));
+        LocalDate ayer = LocalDate.now().minusDays(1);
+        LocalDate manana = LocalDate.now().plusDays(1);
+        Cita pasada = cita(paciente, ayer.atTime(10, 0));
+        Cita futura = cita(paciente, manana.atTime(10, 0));
+        Cita fueraDelRango = cita(paciente, manana.atTime(15, 0));
 
-        HorarioBloqueado bloqueo = new HorarioBloqueado();
-        bloqueo.setFechaInicio(LocalDateTime.of(2026, 12, 7, 9, 0));
-        bloqueo.setFechaFin(LocalDateTime.of(2026, 12, 7, 13, 0));
-        assertFalse(bd.guardarBloqueo(bloqueo));
-        assertTrue(bd.cargarBloqueos().isEmpty());
+        // Abarca desde ayer: la cita vencida no debe cancelarse ni contarse.
+        LocalDateTime inicio = ayer.atStartOfDay();
+        LocalDateTime fin = manana.atTime(13, 0);
+        assertEquals(1, bd.citasActivasEnRango(inicio, fin).size());
+        assertTrue(bd.guardarBloqueo(bloqueo(inicio, fin)));
 
-        cita.setEstado(Estado.CANCELADA);
-        assertTrue(bd.actualizarCita(cita));
-
-        assertTrue(bd.guardarBloqueo(bloqueo));
+        assertEquals(Estado.AGENDADA, bd.cargarCitas().get(pasada.getIdCita()).getEstado());
+        assertEquals(Estado.CANCELADA, bd.cargarCitas().get(futura.getIdCita()).getEstado());
+        assertEquals(Estado.AGENDADA, bd.cargarCitas().get(fueraDelRango.getIdCita()).getEstado());
         assertEquals(1, bd.cargarBloqueos().size());
-        assertTrue(bd.eliminarBloqueo(bloqueo.getIdHorarioBloqueado()));
+    }
+
+    @Test
+    void guardarBloqueosEsTodoONada() {
+        LocalDate dia = LocalDate.now().plusDays(3);
+        assertTrue(bd.guardarBloqueo(bloqueo(dia.plusDays(1).atTime(13, 0), dia.plusDays(1).atTime(15, 0))));
+
+        // El segundo se cruza con el existente: tampoco debe guardarse el primero.
+        assertFalse(bd.guardarBloqueos(java.util.Arrays.asList(
+                bloqueo(dia.atTime(13, 0), dia.atTime(15, 0)),
+                bloqueo(dia.plusDays(1).atTime(14, 0), dia.plusDays(1).atTime(16, 0)))));
+        assertEquals(1, bd.cargarBloqueos().size());
+
+        assertTrue(bd.guardarBloqueos(java.util.Arrays.asList(
+                bloqueo(dia.atTime(13, 0), dia.atTime(15, 0)),
+                bloqueo(dia.plusDays(2).atTime(13, 0), dia.plusDays(2).atTime(15, 0)))));
+        assertEquals(3, bd.cargarBloqueos().size());
+    }
+
+    private static HorarioBloqueado bloqueo(LocalDateTime inicio, LocalDateTime fin) {
+        HorarioBloqueado bloqueo = new HorarioBloqueado();
+        bloqueo.setFechaInicio(inicio);
+        bloqueo.setFechaFin(fin);
+        return bloqueo;
     }
 
     @Test

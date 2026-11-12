@@ -54,6 +54,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     @FXML private TextField fichaNombre;
     @FXML private Label fichaEdad, fichaFecha, fichaHora, mesLabel, rangoLabel, resumenLabel;
     @FXML private Button btnIniciar, btnReprogramar, btnCancelar;
+    private static final String TEXTO_INICIAR = "Iniciar Cita Clínica";
     @FXML private Button btnConfigHorario;
 
     private static final String[] DIAS_CAL = {"L", "M", "X", "J", "V", "S", "D"};
@@ -165,7 +166,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 estilo = "cal-sel";
             } else if (fecha.getMonthValue() != mes.getMonthValue()) {
                 estilo = "cal-other";
-            } else if (PlanificadorAgenda.tieneBloqueo(fecha, bloqueos)) {
+            } else if (PlanificadorAgenda.diaBloqueado(fecha, horarios, bloqueos)) {
                 estilo = "cal-blocked";
             } else if (!PlanificadorAgenda.esDiaHabil(fecha, horarios)) {
                 estilo = "cal-off";
@@ -423,7 +424,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 + PlanificadorAgenda.DURACION_CITA_MINUTOS + " min)");
         boolean cancelada = turno.cita.getEstado() == Estado.CANCELADA;
         boolean atendida = turno.cita.getEstado() == Estado.ATENDIDA;
-        btnIniciar.setDisable(cancelada);
+        btnIniciar.setDisable(cancelada || atendida);
+        btnIniciar.setText(atendida ? "Ya atendida" : TEXTO_INICIAR);
         btnReprogramar.setDisable(atendida);
         btnCancelar.setDisable(cancelada || atendida);
     }
@@ -435,7 +437,10 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         fichaEdad.setText("Selecciona una cita de la agenda");
         fichaFecha.setText("--");
         fichaHora.setText("--");
-        if (btnIniciar != null) btnIniciar.setDisable(true);
+        if (btnIniciar != null) {
+            btnIniciar.setDisable(true);
+            btnIniciar.setText(TEXTO_INICIAR);
+        }
         if (btnReprogramar != null) btnReprogramar.setDisable(true);
         if (btnCancelar != null) btnCancelar.setDisable(true);
     }
@@ -445,7 +450,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         List<LocalTime> disponibles = PlanificadorAgenda.iniciosDisponibles(seleccion, horarios, bloqueos);
         if (disponibles.isEmpty()) {
             Notificador.advertencia("Sin disponibilidad",
-                    PlanificadorAgenda.tieneBloqueo(seleccion, bloqueos)
+                    PlanificadorAgenda.diaBloqueado(seleccion, horarios, bloqueos)
                             ? "La fecha seleccionada está bloqueada."
                             : "No hay horario de trabajo configurado para la fecha seleccionada.");
             return;
@@ -455,7 +460,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
     @FXML
     private void onIniciarCita() {
-        if (citaSeleccionada == null || !esAdmin()) {
+        if (citaSeleccionada == null || !esAdmin() || citaSeleccionada.getEstado() == Estado.ATENDIDA) {
             return;
         }
         CitaController controlador = mainController.controlador("cita-panel.fxml");
@@ -490,7 +495,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         limpiarFicha();
         refrescar();
         Notificador.exito("Cita cancelada", "La cita se marcó como cancelada.");
-        ControladorCorreo.notificarCancelaciones(List.of(cancelada), Paciente.todos(),
+        ControladorCorreo.notificarCancelaciones(List.of(cancelada), Paciente.todos(), null,
                 HorarioConfigController::avisoNotificacion);
     }
 
@@ -677,8 +682,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             if (!PlanificadorAgenda.esInicioDisponible(fecha, hora, horarios, bloqueos)) {
                 event.consume();
                 Notificador.advertencia("Horario no disponible",
-                        PlanificadorAgenda.tieneBloqueo(fecha, bloqueos)
-                                ? "La fecha seleccionada está bloqueada."
+                        PlanificadorAgenda.estaBloqueado(fecha.atTime(hora), fecha.atTime(hora)
+                                .plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS), bloqueos)
+                                ? "Ese horario está bloqueado."
                                 : "La hora seleccionada está fuera del horario de trabajo.");
                 return;
             }
@@ -767,7 +773,8 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
         Label titulo = new Label(semana ? "BLOQUEAR SEMANA" : "BLOQUEAR FECHA");
         titulo.getStyleClass().add("field-label");
-        Label subtitulo = new Label("Las citas activas no se cancelan automáticamente.");
+        Label subtitulo = new Label("Las citas agendadas del periodo se cancelarán (se muestran antes de confirmar). "
+                + "Con horas, la franja se repite en cada día.");
         subtitulo.getStyleClass().add("card-subtitle");
         VBox encabezado = new VBox(4, titulo, subtitulo);
         encabezado.getStyleClass().add("edit-header");
@@ -808,56 +815,11 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         ((Button) dialogo.getDialogPane().lookupButton(guardar)).setGraphic(new FontIcon("fi-rr-lock"));
 
         dialogo.getDialogPane().lookupButton(guardar).addEventFilter(ActionEvent.ACTION, event -> {
-            LocalDate inicioDia = dpInicio.getValue();
-            LocalDate finDia = dpFin.getValue();
-            if (inicioDia == null || finDia == null || finDia.isBefore(inicioDia)) {
+            // Mismo flujo que "Fechas bloqueadas" de la configuración; si no se guarda, el diálogo sigue abierto.
+            if (!HorarioConfigController.crearBloqueos(dpInicio.getValue(), dpFin.getValue(), todoElDia.isSelected(),
+                    comboInicio.getSelectionModel().getSelectedItem(),
+                    comboFin.getSelectionModel().getSelectedItem(), 0)) {
                 event.consume();
-                Notificador.advertencia("Fechas inválidas",
-                        "Selecciona un rango de fechas válido.");
-                return;
-            }
-
-            LocalDateTime inicio;
-            LocalDateTime fin;
-            if (todoElDia.isSelected()) {
-                inicio = inicioDia.atStartOfDay();
-                fin = finDia.plusDays(1).atStartOfDay();
-            } else {
-                LocalTime horaInicio = comboInicio.getSelectionModel().getSelectedItem();
-                LocalTime horaFin = comboFin.getSelectionModel().getSelectedItem();
-                if (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin)) {
-                    event.consume();
-                    Notificador.advertencia("Horas inválidas",
-                            "La hora de inicio debe ser anterior a la hora de fin.");
-                    return;
-                }
-                inicio = inicioDia.atTime(horaInicio);
-                fin = finDia.atTime(horaFin);
-            }
-
-            ArrayList<Cita> conflictos = Cita.activasEnRango(inicio, fin);
-            if (!HorarioConfigController.confirmarCancelacionCitas(conflictos)) {
-                event.consume();
-                return;
-            }
-
-            if (PlanificadorAgenda.estaBloqueado(inicio, fin, bloqueos)) {
-                event.consume();
-                Notificador.advertencia("Bloqueo superpuesto",
-                        "Ya existe un bloqueo que se cruza con ese periodo.");
-                return;
-            }
-
-            HorarioBloqueado bloqueo = new HorarioBloqueado();
-            bloqueo.setFechaInicio(inicio);
-            bloqueo.setFechaFin(fin);
-            if (!bloqueo.guardar()) {
-                event.consume();
-                Notificador.error("No se pudo bloquear",
-                        "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
-            } else if (!conflictos.isEmpty()) {
-                ControladorCorreo.notificarCancelaciones(conflictos, Paciente.todos(),
-                        HorarioConfigController::avisoNotificacion);
             }
         });
 

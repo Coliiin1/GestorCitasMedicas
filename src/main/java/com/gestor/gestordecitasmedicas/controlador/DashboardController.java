@@ -118,6 +118,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
                 kpi("fi-rr-users", "PACIENTES", String.valueOf(pacientes), "Registrados"),
                 kpi("fi-rr-notes-medical", "CONSULTAS DEL MES", String.valueOf(consultasMes), "Citas atendidas"),
                 kpi("fi-rr-user-md", "ASISTENTES", String.valueOf(asistentes), "Con acceso al sistema"));
+        for (int i = 0; i < kpis.getChildren().size(); i++) Ui.entrada(kpis.getChildren().get(i), i * 60);
     }
 
     private VBox kpi(String icono, String titulo, String valor, String detalle) {
@@ -127,10 +128,11 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         t.setGraphicTextGap(8);
         Label v = new Label(valor);
         v.getStyleClass().add("kpi-value");
+        Ui.contar(v, Integer.parseInt(valor));
         Label d = new Label(detalle);
         d.getStyleClass().add("hint");
         VBox caja = new VBox(6, t, v, d);
-        caja.getStyleClass().add("card");
+        caja.getStyleClass().addAll("card", "kpi-card");
         HBox.setHgrow(caja, Priority.ALWAYS);
         caja.setMaxWidth(Double.MAX_VALUE);
         caja.setPrefWidth(0);
@@ -245,15 +247,18 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
 
         PieChart pastel = new PieChart();
         String[] nombres = {"Agendadas", "Atendidas", "Canceladas"};
-        // Orden del enum Estado: AGENDADA, ATENDIDA, CANCELADA
+        // Orden del enum Estado: AGENDADA, ATENDIDA, CANCELADA. Se agregan las 3 siempre para que
+        // cada estado conserve su color (default-color0/1/2) aunque alguno valga 0.
+        int totalEstados = 0;
         for (int i = 0; i < 3; i++) {
-            if (porEstado[i] > 0) pastel.getData().add(new PieChart.Data(nombres[i] + " (" + porEstado[i] + ")", porEstado[i]));
+            totalEstados += porEstado[i];
+            pastel.getData().add(new PieChart.Data(nombres[i] + " (" + porEstado[i] + ")", porEstado[i]));
         }
         pastel.setLegendVisible(true);
         pastel.setLabelsVisible(false);
         pastel.setPrefHeight(240);
         pastel.setMinHeight(240);
-        if (pastel.getData().isEmpty()) {
+        if (totalEstados == 0) {
             graficaEstado.getChildren().setAll(vacio("Sin citas este mes."));
         } else {
             graficaEstado.getChildren().setAll(pastel);
@@ -325,7 +330,7 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     }
 
     private static String estiloEstado(Estado e) {
-        if (e == Estado.ATENDIDA) return "chip-green";
+        if (e == Estado.ATENDIDA) return "chip-blue";
         if (e == Estado.CANCELADA) return "chip-blood";
         return "chip-amber";
     }
