@@ -54,7 +54,7 @@
                         <VBox styleClass="edit-card">
                             <VBox spacing="4.0" styleClass="edit-header">
                                 <Label styleClass="title-section" text="DIRECTORIO DE ARCHIVOS" />
-                                <Label styleClass="card-subtitle" text="Carpeta donde se guardan los PDF de recetas" />
+                                <Label styleClass="card-subtitle" text="Carpeta base: dentro se crea una carpeta por paciente con su expediente y sus recetas" />
                             </VBox>
                             <VBox spacing="24.0" styleClass="config-body">
                                 <HBox spacing="12.0">

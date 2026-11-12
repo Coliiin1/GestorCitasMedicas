@@ -72,7 +72,7 @@ public final class TextoExpediente {
                 + "\nPendiente de firma autógrafa; la captura del nombre no constituye firma electrónica.";
     }
 
-    private static String edadHistoria(Expediente e) {
+    public static String edadHistoria(Expediente e) {
         if (e.getDatosPaciente() == null || e.getFechaHoraHistoria() == null) return "No registrada";
         try {
             java.time.LocalDateTime elaboracion = java.time.LocalDateTime.parse(e.getFechaHoraHistoria());

@@ -113,7 +113,9 @@ public class MainController {
         PanelNotificaciones.cerrar();
         Notificador.limpiar(); // el historial es de la sesión
         try {
-            contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/login-view.fxml")).load());
+            javafx.scene.Parent login = new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/login-view.fxml")).load();
+            contenido.getScene().setRoot(login);
+            Ui.entrada(login, 0);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -122,7 +124,9 @@ public class MainController {
     public void ir(String fxml) {
         if (!destinoPermitido(fxml)) return;
         Node panel = obtenerPanel(fxml);
+        boolean cambia = !contenido.getChildren().contains(panel);
         contenido.getChildren().setAll(panel);
+        if (cambia) Ui.entrada(panel, 0);
 
         Object controlador = controladores.get(fxml);
         if (controlador instanceof PanelRefrescable) {

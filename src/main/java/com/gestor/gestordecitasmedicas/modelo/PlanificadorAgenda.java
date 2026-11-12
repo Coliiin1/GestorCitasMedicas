@@ -106,6 +106,29 @@ public final class PlanificadorAgenda {
         return estaBloqueado(fecha.atStartOfDay(), fecha.plusDays(1).atStartOfDay(), bloqueos);
     }
 
+    /** Día hábil que se quedó sin ningún inicio disponible por culpa de los bloqueos (un bloqueo parcial no cuenta). */
+    public static boolean diaBloqueado(LocalDate fecha, List<Horario> horarios, List<HorarioBloqueado> bloqueos) {
+        return esDiaHabil(fecha, horarios) && tieneBloqueo(fecha, bloqueos)
+                && iniciosDisponibles(fecha, horarios, bloqueos).isEmpty();
+    }
+
+    /**
+     * Intervalos {inicio, fin} que produce un formulario de bloqueo: uno continuo si es todo el día,
+     * o la misma franja horaria repetida en cada día del rango.
+     */
+    public static List<LocalDateTime[]> intervalosDeBloqueo(LocalDate desde, LocalDate hasta, boolean todoElDia,
+                                                            LocalTime horaInicio, LocalTime horaFin) {
+        List<LocalDateTime[]> intervalos = new ArrayList<>();
+        if (todoElDia) {
+            intervalos.add(new LocalDateTime[]{desde.atStartOfDay(), hasta.plusDays(1).atStartOfDay()});
+            return intervalos;
+        }
+        for (LocalDate dia = desde; !dia.isAfter(hasta); dia = dia.plusDays(1)) {
+            intervalos.add(new LocalDateTime[]{dia.atTime(horaInicio), dia.atTime(horaFin)});
+        }
+        return intervalos;
+    }
+
     public static boolean seSolapan(LocalDateTime inicioA, LocalDateTime finA,
                                     LocalDateTime inicioB, LocalDateTime finB) {
         return inicioA != null && finA != null && inicioB != null && finB != null

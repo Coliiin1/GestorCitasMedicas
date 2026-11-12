@@ -18,6 +18,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -27,6 +29,9 @@ import java.io.UncheckedIOException;
 
 public class LoginController {
     @FXML private StackPane hero;
+    @FXML private StackPane carrusel;
+    @FXML private ImageView logo;
+    @FXML private HBox puntos;
     @FXML private TextField txtUsuario;
     @FXML private PasswordField password;
     @FXML private TextField passwordVisible;
@@ -43,57 +48,62 @@ public class LoginController {
         clip.widthProperty().bind(hero.widthProperty());
         clip.heightProperty().bind(hero.heightProperty());
         hero.setClip(clip);
+        logo.setImage(new Image(getClass().getResource("/Icon/Icono.png").toExternalForm()));
+        Rectangle redondeoLogo = new Rectangle(36, 36);
+        redondeoLogo.setArcWidth(16);
+        redondeoLogo.setArcHeight(16);
+        logo.setClip(redondeoLogo);
         passwordVisible.textProperty().bindBidirectional(password.textProperty());
         iniciarCarrusel();
     }
 
     private static final int FOTOS = 5;
-    private static final double ANCHO = 380, ALTO = 300, HUECO = 12;
 
-    /** Carrusel vertical: la foto central es la mayor y las vecinas se achican; avanza solo cada 3 s. */
+    /** Carrusel a panel completo: cada foto cubre el panel y se funde con la siguiente cada 4 s. */
     private void iniciarCarrusel() {
         ImageView[] fotos = new ImageView[FOTOS];
         for (int i = 0; i < FOTOS; i++) {
-            Image img = new Image(getClass().getResource("/Imagenes/carrusel/" + (i + 1) + ".jpg").toExternalForm());
-            ImageView v = new ImageView(img);
-            // Recorte tipo "cover" al formato de la tarjeta.
-            double w = Math.min(img.getWidth(), img.getHeight() * ANCHO / ALTO);
-            double h = w * ALTO / ANCHO;
-            v.setViewport(new Rectangle2D((img.getWidth() - w) / 2, (img.getHeight() - h) / 2, w, h));
-            v.setFitWidth(ANCHO);
-            v.setFitHeight(ALTO);
-            Rectangle redondeo = new Rectangle(ANCHO, ALTO);
-            redondeo.setArcWidth(24);
-            redondeo.setArcHeight(24);
-            v.setClip(redondeo);
+            ImageView v = new ImageView(new Image(getClass().getResource("/Imagenes/carrusel/" + (i + 1) + ".jpg").toExternalForm()));
+            v.setManaged(false); // su tamaño sigue al panel, no al revés
             fotos[i] = v;
+            Region punto = new Region();
+            punto.getStyleClass().add("login-punto");
+            puntos.getChildren().add(punto);
         }
-        hero.getChildren().setAll(fotos);
+        carrusel.getChildren().setAll(fotos);
 
         DoubleProperty pos = new SimpleDoubleProperty();
         Runnable colocar = () -> {
-            // La foto principal ocupa la mitad del alto del panel (y hasta 90 % del ancho): crece y encoge con la ventana.
-            double s = Math.min(hero.getHeight() * 0.5 / ALTO, hero.getWidth() * 0.9 / ANCHO);
-            double alto = ALTO * s;
+            int activa = Math.floorMod(Math.round(pos.get()), FOTOS);
+            for (int i = 0; i < FOTOS; i++) {
+                java.util.List<String> clases = puntos.getChildren().get(i).getStyleClass();
+                // Solo toca las clases al cambiar de foto, no en cada cuadro de la animación.
+                if ((i == activa) != clases.contains("login-punto-activo")) {
+                    if (i == activa) clases.add("login-punto-activo"); else clases.remove("login-punto-activo");
+                }
+            }
+            double w = hero.getWidth(), h = hero.getHeight();
+            if (w <= 0 || h <= 0) return;
             for (int i = 0; i < FOTOS; i++) {
                 double d = (((i - pos.get()) % FOTOS) + FOTOS) % FOTOS;
                 if (d > FOTOS / 2.0) d -= FOTOS;
-                double a1 = Math.abs(d);
-                double escala = s * (1 - 0.2 * Math.min(a1, 1)); // las vecinas son 20 % más pequeñas
-                fotos[i].setScaleX(escala);
-                fotos[i].setScaleY(escala);
-                // Solo una vecina por lado, cortada a ~la mitad por el clip del hero; la tercera se oculta.
-                fotos[i].setTranslateY(Math.signum(d) * (0.9 * alto + HUECO) * Math.min(a1, 1.5));
-                fotos[i].setOpacity(Math.max(0, Math.min(1, 2 - a1)));
+                // Recorte tipo "cover" a la proporción actual del panel.
+                Image img = fotos[i].getImage();
+                double vw = Math.min(img.getWidth(), img.getHeight() * w / h);
+                double vh = vw * h / w;
+                fotos[i].setViewport(new Rectangle2D((img.getWidth() - vw) / 2, (img.getHeight() - vh) / 2, vw, vh));
+                fotos[i].setFitWidth(w);
+                fotos[i].setFitHeight(h);
+                fotos[i].setOpacity(Math.max(0, 1 - Math.abs(d)));
             }
         };
         pos.addListener((o, a, b) -> colocar.run());
         hero.widthProperty().addListener((o, a, b) -> colocar.run());
         hero.heightProperty().addListener((o, a, b) -> colocar.run());
-        pos.set(0.001); // fuerza la primera colocación
+        colocar.run();
 
-        Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(3), e ->
-                new Timeline(new KeyFrame(Duration.millis(600),
+        Timeline reloj = new Timeline(new KeyFrame(Duration.seconds(4), e ->
+                new Timeline(new KeyFrame(Duration.millis(800),
                         new KeyValue(pos, Math.round(pos.get()) + 1, Interpolator.EASE_BOTH))).play()));
         reloj.setCycleCount(Animation.INDEFINITE);
         reloj.play();
@@ -126,6 +136,7 @@ public class LoginController {
         }
         if (rol == null) {
             password.clear();
+            Ui.sacudir(password.getParent());
             Notificador.advertencia("Acceso denegado", "Usuario o contraseña incorrectos.");
             return;
         }
@@ -134,6 +145,7 @@ public class LoginController {
             Parent raiz = loader.load();
             ((MainController) loader.getController()).configurarRol(rol, idUsuario);
             txtUsuario.getScene().setRoot(raiz);
+            Ui.entrada(raiz, 0);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

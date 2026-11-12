@@ -319,9 +319,13 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         if (!guardarAtencion(false, true)) {
             return;
         }
-        if (controladorPDF.generarPDF(receta)) {
-            File archivo = new File(new File(ControladorPDF.carpetaSalida()),
-                    "receta_" + receta.getIdReceta() + ".pdf");
+        File archivo = null;
+        try {
+            if (controladorPDF.generarPDF(receta)) archivo = controladorPDF.archivoReceta(receta);
+        } catch (java.io.IOException ex) {
+            System.err.println("No se pudo ubicar el PDF de la receta: " + ex.getMessage());
+        }
+        if (archivo != null) {
             ControladorPDF.abrir(archivo);
             Notificador.exito("Receta guardada",
                     "La receta se guardó y el PDF se generó en:\n" + archivo.getAbsolutePath());
@@ -422,6 +426,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         }
         receta = destino;
         consulta = nota;
+        ControladorPDF.actualizarExpediente(cita.getCurp());
         return true;
     }
 

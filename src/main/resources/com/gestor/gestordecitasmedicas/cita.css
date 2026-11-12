@@ -10,9 +10,31 @@
    Tarjeta:    padding 20 · gap interno 12 · gap de sección 24
    ===================================================================== */
 
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-ExtraLight.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-Light.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-Regular.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-Medium.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-SemiBold.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-Bold.ttf");
+}
+@font-face {
+    src: url("fonts/Manrope/static/Manrope-ExtraBold.ttf");
+}
+
 .root {
     -fx-background-color: #f1f5f9;
-    -fx-font-family: "Segoe UI";
+    -fx-font-family: "Manrope";
     -fx-font-size: 13px;
 }
 
@@ -199,13 +221,14 @@
 }
 
 .card-subtitle {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #64748b;
 }
 
 .kpi-value {
+    -fx-font-family: "Manrope ExtraBold";
     -fx-font-size: 28px;
-    -fx-font-weight: bold;
     -fx-text-fill: #0369a1;
 }
 
@@ -216,6 +239,7 @@
 }
 
 .patient-meta {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #64748b;
 }
@@ -240,12 +264,14 @@
 }
 
 .notice-text {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #475569;
 }
 
 /* label de campo */
 .field-label {
+    -fx-font-family: "Manrope SemiBold";
     -fx-font-size: 12px;
 }
 
@@ -285,12 +311,11 @@
 }
 
 .field-label {
-    -fx-font-weight: bold;
     -fx-text-fill: #334155;
 }
 
 .cal-head {
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope SemiBold";
     -fx-text-fill: #64748b;
 }
 
@@ -408,8 +433,8 @@
    --------------------------------------------------------------------- */
 .chip,
 .badge-active {
+    -fx-font-family: "Manrope SemiBold";
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-padding: 3 10;
     -fx-background-radius: 4;
     -fx-border-radius: 4;
@@ -440,6 +465,12 @@
     -fx-text-fill: #047857;
 }
 
+.chip-blue {
+    -fx-background-color: #dbeafe;
+    -fx-border-color: #93c5fd;
+    -fx-text-fill: #1e40af;
+}
+
 .chip-amber {
     -fx-background-color: #fffbeb;
     -fx-border-color: #fde68a;
@@ -462,6 +493,10 @@
 
 .chip-green .ikonli-font-icon {
     -fx-icon-color: #047857;
+}
+
+.chip-blue .ikonli-font-icon {
+    -fx-icon-color: #1e40af;
 }
 
 .chip-amber .ikonli-font-icon {
@@ -511,6 +546,7 @@
 .btn-secondary,
 .btn-outline,
 .btn-dark {
+    -fx-font-family: "Manrope SemiBold";
     -fx-background-color: white;
     -fx-border-color: #cbd5e1;
     -fx-border-radius: 8;
@@ -539,6 +575,7 @@
 
 .btn-edit,
 .btn-del {
+    -fx-font-family: "Manrope SemiBold";
     -fx-background-color: white;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -830,18 +867,18 @@
 }
 
 .step-label-active {
+    -fx-font-family: "Manrope SemiBold";
     -fx-text-fill: #1e293b;
-    -fx-font-weight: bold;
 }
 
 /* ---------------------------------------------------------------------
    Agenda: calendario y turnos
    --------------------------------------------------------------------- */
 .day-head {
+    -fx-font-family: "Manrope SemiBold";
     -fx-alignment: CENTER;
     -fx-text-alignment: CENTER;
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-padding: 8;
     -fx-background-radius: 8;
 }
@@ -925,8 +962,12 @@
 }
 
 .slot-atendida {
-    -fx-background-color: #ecfdf5;
-    -fx-border-color: #a7f3d0;
+    -fx-background-color: #dbeafe;
+    -fx-border-color: #60a5fa;
+}
+
+.slot-atendida .caption {
+    -fx-text-fill: #1e40af;
 }
 
 .slot-cancelada {
@@ -935,8 +976,8 @@
 }
 
 .slot-completada {
-    -fx-background-color: #ecfdf5;
-    -fx-border-color: #a7f3d0;
+    -fx-background-color: #dbeafe;
+    -fx-border-color: #60a5fa;
 }
 
 .slot-confirmada {
@@ -1144,7 +1185,116 @@
 
 /* Login: panel visual con la paleta del sidebar */
 .login-hero {
+    -fx-background-color: #1e293b;
     -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+}
+
+.login-velo {
+    -fx-padding: 16;
+}
+
+/* Tarjetas que flotan sobre la foto: mismo lenguaje que el toast. */
+.login-flotante {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 24, 0, 0, 8);
+}
+
+.login-marca-caja {
+    -fx-padding: 8 16 8 8;
+}
+
+.login-marca,
+.login-lema {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.login-marca-sub {
+    -fx-text-fill: #0369a1;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.login-lema-sub {
+    -fx-text-fill: #475569;
+    -fx-font-size: 13px;
+}
+
+.login-tile {
+    -fx-background-color: #f0f9ff;
+    -fx-background-radius: 8;
+    -fx-border-color: #bae6fd;
+    -fx-border-radius: 8;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+}
+
+.login-tile .ikonli-font-icon {
+    -fx-icon-color: #0369a1;
+    -fx-icon-size: 16;
+}
+
+.login-punto {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4;
+    -fx-min-width: 8;
+    -fx-pref-width: 8;
+    -fx-max-width: 8;
+    -fx-min-height: 8;
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.login-punto-activo {
+    -fx-background-color: #0369a1;
+    -fx-min-width: 24;
+    -fx-pref-width: 24;
+    -fx-max-width: 24;
+}
+
+/* Panel derecho: tarjeta del mismo alto que la foto, con el formulario centrado. */
+.login-card {
+    -fx-background-color: rgba(15, 23, 42, 0.06), white;
+    -fx-background-insets: 0 0 -2 0, 0;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-padding: 32;
+}
+
+.login-eyebrow {
+    -fx-text-fill: #0284c7;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.login-titulo {
+    -fx-font-family: "Manrope ExtraBold";
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 28px;
+}
+
+/* Espacio a la izquierda para el icono del campo. */
+.login-campo {
+    -fx-padding: 0 12 0 44;
+}
+
+.login-campo.password-field {
+    -fx-padding: 0 48 0 44;
+}
+
+.login-icono {
+    -fx-icon-color: #94a3b8;
+    -fx-icon-size: 16;
 }
 
 /* Combo y selector de fecha del diálogo de cita usan .combo-field / .date-field. */
@@ -1176,7 +1326,6 @@
     -fx-background-radius: 12;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 24, 0, 0, 8);
     -fx-cursor: hand;
 }
 
@@ -1191,6 +1340,7 @@
 }
 
 .toast-mensaje {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #475569;
 }
@@ -1318,7 +1468,6 @@
     -fx-background-radius: 12;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 12;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 24, 0, 0, 8);
 }
 
 .notif-cabecera {
@@ -1349,7 +1498,7 @@
 .notif-accion:focused,
 .toast-cerrar:focused,
 .campana:focused {
-    -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
+    -fx-effect: null;
 }
 
 .notif-scroll,
@@ -1382,6 +1531,7 @@
 }
 
 .notif-mensaje {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #475569;
 }
@@ -1426,6 +1576,7 @@
 }
 
 .confirm-mensaje {
+    -fx-font-family: "Manrope Medium";
     -fx-font-size: 13px;
     -fx-text-fill: #475569;
 }
@@ -1448,4 +1599,213 @@
 
 .confirm-dialogo .button:focused {
     -fx-effect: dropshadow(gaussian, #bae6fd, 6, 0.5, 0, 0);
+}
+
+/* ---------------------------------------------------------------------
+   Pulido visual: profundidad, degradados y respuesta al toque.
+   Las sombras de tarjeta son una segunda capa de fondo (no -fx-effect)
+   para no perder la nitidez del texto.
+   --------------------------------------------------------------------- */
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #f1f5f9, #e0f2fe);
+}
+
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, #1e293b, #0f172a);
+}
+
+.nav-item-active,
+.nav-item-active:hover {
+    -fx-background-color: linear-gradient(to right, #0284c7, #0ea5e9);
+}
+
+.button:pressed {
+    -fx-scale-x: 0.97;
+    -fx-scale-y: 0.97;
+}
+
+/* Botones: degradado horizontal (sin relieve) y halo de color solo al pasar el cursor o con foco de teclado. */
+.btn-primary,
+.btn-primary-blue,
+.btn-accent,
+.btn-create,
+.btn-save {
+    -fx-background-color: linear-gradient(to right, #0369a1, #0284c7);
+}
+
+.btn-primary:hover,
+.btn-primary-blue:hover,
+.btn-accent:hover,
+.btn-create:hover,
+.btn-save:hover {
+    -fx-background-color: linear-gradient(to right, #0284c7, #0ea5e9);
+    -fx-effect: dropshadow(gaussian, rgba(2, 132, 199, 0.45), 14, 0, 0, 3);
+}
+
+.btn-primary:pressed,
+.btn-primary-blue:pressed,
+.btn-accent:pressed,
+.btn-create:pressed,
+.btn-save:pressed {
+    -fx-background-color: #075985;
+    -fx-effect: null;
+}
+
+.btn-secondary:hover,
+.btn-outline:hover,
+.btn-dark:hover,
+.btn-edit:hover,
+.pager-btn:hover {
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: #0284c7;
+    -fx-text-fill: #0369a1;
+}
+
+.btn-secondary:hover .ikonli-font-icon,
+.btn-outline:hover .ikonli-font-icon,
+.btn-dark:hover .ikonli-font-icon,
+.btn-edit:hover .ikonli-font-icon {
+    -fx-icon-color: #0369a1;
+}
+
+.btn-del:hover {
+    -fx-background-color: #e11d48;
+    -fx-border-color: #e11d48;
+    -fx-text-fill: white;
+}
+
+.btn-del:hover .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+.btn-dashed:hover {
+    -fx-background-color: #e0f2fe;
+    -fx-border-color: #0284c7;
+}
+
+.btn-peligro {
+    -fx-background-color: linear-gradient(to right, #be123c, #e11d48);
+}
+
+.btn-peligro:hover {
+    -fx-background-color: linear-gradient(to right, #e11d48, #f43f5e);
+    -fx-effect: dropshadow(gaussian, rgba(225, 29, 72, 0.45), 14, 0, 0, 3);
+}
+
+.btn-icon:hover .ikonli-font-icon,
+.icon-button:hover .ikonli-font-icon {
+    -fx-icon-color: #0369a1;
+}
+
+.btn-icon-danger:hover .ikonli-font-icon,
+.icon-button-danger:hover .ikonli-font-icon {
+    -fx-icon-color: #e11d48;
+}
+
+.button:focus-visible {
+    -fx-effect: dropshadow(gaussian, #38bdf8, 8, 0.6, 0, 0);
+}
+
+.card,
+.row-card,
+.patient-card,
+.pager-card,
+.edit-card {
+    -fx-background-color: rgba(15, 23, 42, 0.06), white;
+    -fx-background-insets: 0 0 -2 0, 0;
+}
+
+.row-card:hover,
+.patient-card:hover {
+    -fx-background-color: rgba(2, 132, 199, 0.22), white;
+    -fx-background-insets: 0 0 -3 0, 0;
+    -fx-border-color: #7dd3fc;
+}
+
+/* Tarjetas con fondo propio de una sola capa: sin el desfase de la sombra. */
+.expediente-identidad {
+    -fx-background-insets: 0;
+}
+
+.kpi-card {
+    -fx-background-color: rgba(15, 23, 42, 0.06), #0ea5e9, white;
+    -fx-background-insets: 0 0 -2 0, 0, 3 0 0 0;
+    -fx-background-radius: 12, 12, 0 0 12 12;
+}
+
+.kpi-card:hover {
+    -fx-border-color: #7dd3fc;
+}
+
+.kpi-card .ikonli-font-icon {
+    -fx-icon-color: #0284c7;
+}
+
+.avatar,
+.avatar-lg {
+    -fx-background-color: linear-gradient(to bottom right, #e0f2fe, #bae6fd);
+}
+
+.avatar-amber {
+    -fx-background-color: linear-gradient(to bottom right, #fef3c7, #fde68a);
+}
+
+/* Gráficas con la paleta del sistema */
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #e2e8f0;
+}
+
+.chart-bar {
+    -fx-bar-fill: linear-gradient(to top, #0369a1, #38bdf8);
+    -fx-background-radius: 6 6 0 0;
+}
+
+.default-color0.chart-pie { -fx-pie-color: #0284c7; }
+.default-color1.chart-pie { -fx-pie-color: #1e40af; }
+.default-color2.chart-pie { -fx-pie-color: #f43f5e; }
+
+/* Barras de desplazamiento delgadas */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4;
+    -fx-background-insets: 2;
+}
+
+.scroll-bar .thumb:hover,
+.scroll-bar .thumb:pressed {
+    -fx-background-color: #94a3b8;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 5;
+}
+
+.scroll-bar:horizontal .increment-button,
+.scroll-bar:horizontal .decrement-button {
+    -fx-padding: 5 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }

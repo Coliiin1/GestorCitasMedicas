@@ -908,9 +908,19 @@ public class BaseDatos {
     }
 
     public boolean guardarBloqueo(HorarioBloqueado bloqueo) {
-        if (bloqueo == null || bloqueo.getFechaInicio() == null || bloqueo.getFechaFin() == null
-                || !bloqueo.getFechaInicio().isBefore(bloqueo.getFechaFin())) {
+        return guardarBloqueos(java.util.Collections.singletonList(bloqueo));
+    }
+
+    /** Guarda todos los bloqueos en una sola transacción: si uno es inválido o se cruza, no se guarda ninguno. */
+    public boolean guardarBloqueos(java.util.List<HorarioBloqueado> lista) {
+        if (lista == null || lista.isEmpty()) {
             return false;
+        }
+        for (HorarioBloqueado bloqueo : lista) {
+            if (bloqueo == null || bloqueo.getFechaInicio() == null || bloqueo.getFechaFin() == null
+                    || !bloqueo.getFechaInicio().isBefore(bloqueo.getFechaFin())) {
+                return false;
+            }
         }
 
         Connection con = getConexion();
@@ -920,51 +930,12 @@ public class BaseDatos {
 
         try {
             con.setAutoCommit(false);
-
-            if (existeBloqueoSuperpuesto(con, bloqueo)) {
-                con.rollback();
-                return false;
-            }
-
-            // El bloqueo cancela las citas agendadas del intervalo en la misma transacción.
-            for (Cita cita : citasActivasEnRango(con, bloqueo.getFechaInicio(), bloqueo.getFechaFin())) {
-                if (!actualizarEstadoCita(con, cita.getIdCita(), Estado.CANCELADA)) {
+            for (HorarioBloqueado bloqueo : lista) {
+                if (!guardarBloqueo(con, bloqueo)) {
                     con.rollback();
                     return false;
                 }
             }
-
-            boolean guardado;
-            if (bloqueo.getIdHorarioBloqueado() > 0) {
-                String sql = "UPDATE Horario_bloqueado SET fecha_inicio = ?, fecha_fin = ? " +
-                        "WHERE id_bloqueo = ?";
-                try (PreparedStatement ps = con.prepareStatement(sql)) {
-                    ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
-                    ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
-                    ps.setInt(3, bloqueo.getIdHorarioBloqueado());
-                    guardado = ps.executeUpdate() > 0;
-                }
-            } else {
-                String sql = "INSERT INTO Horario_bloqueado (fecha_inicio, fecha_fin) VALUES (?, ?)";
-                try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
-                    ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
-                    guardado = ps.executeUpdate() > 0;
-                    if (guardado) {
-                        try (ResultSet rs = ps.getGeneratedKeys()) {
-                            if (rs.next()) {
-                                bloqueo.setIdHorarioBloqueado(rs.getInt(1));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!guardado) {
-                con.rollback();
-                return false;
-            }
-
             con.commit();
             return true;
         } catch (SQLException e) {
@@ -973,6 +944,44 @@ public class BaseDatos {
             restaurarAutoCommit(con);
         }
         return false;
+    }
+
+    private boolean guardarBloqueo(Connection con, HorarioBloqueado bloqueo) throws SQLException {
+        if (existeBloqueoSuperpuesto(con, bloqueo)) {
+            return false;
+        }
+
+        // El bloqueo cancela las citas agendadas del intervalo en la misma transacción.
+        for (Cita cita : citasActivasEnRango(con, bloqueo.getFechaInicio(), bloqueo.getFechaFin())) {
+            if (!actualizarEstadoCita(con, cita.getIdCita(), Estado.CANCELADA)) {
+                return false;
+            }
+        }
+
+        if (bloqueo.getIdHorarioBloqueado() > 0) {
+            String sql = "UPDATE Horario_bloqueado SET fecha_inicio = ?, fecha_fin = ? " +
+                    "WHERE id_bloqueo = ?";
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
+                ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
+                ps.setInt(3, bloqueo.getIdHorarioBloqueado());
+                return ps.executeUpdate() > 0;
+            }
+        }
+        String sql = "INSERT INTO Horario_bloqueado (fecha_inicio, fecha_fin) VALUES (?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setTimestamp(1, toSqlTimestamp(bloqueo.getFechaInicio()));
+            ps.setTimestamp(2, toSqlTimestamp(bloqueo.getFechaFin()));
+            if (ps.executeUpdate() == 0) {
+                return false;
+            }
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    bloqueo.setIdHorarioBloqueado(rs.getInt(1));
+                }
+            }
+            return true;
+        }
     }
 
     public boolean eliminarBloqueo(int idBloqueo) {
@@ -1012,7 +1021,7 @@ public class BaseDatos {
 
         LocalDateTime ahora = LocalDateTime.now();
         for (Cita cita : cargarCitas().values()) {
-            if (cita.getFechaCita() == null || cita.getEstado() == Estado.CANCELADA) {
+            if (cita.getFechaCita() == null || cita.getEstado() != Estado.AGENDADA) {
                 continue;
             }
             LocalDateTime inicioCita = LocalDateTime.ofInstant(
@@ -1041,6 +1050,7 @@ public class BaseDatos {
             return resultado;
         }
 
+        LocalDateTime ahora = LocalDateTime.now();
         String sql = "SELECT id_cita, CURP, fecha, estado FROM Cita";
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -1052,8 +1062,12 @@ public class BaseDatos {
                 }
                 LocalDateTime inicioCita = LocalDateTime.ofInstant(
                         cita.getFechaCita().toInstant(), ZoneId.systemDefault());
-                if (PlanificadorAgenda.seSolapan(inicioCita,
-                        inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS), inicio, fin)) {
+                LocalDateTime finCita = inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS);
+                // Las citas ya vencidas no se cancelan ni se notifican aunque el bloqueo abarque el pasado.
+                if (finCita.isBefore(ahora)) {
+                    continue;
+                }
+                if (PlanificadorAgenda.seSolapan(inicioCita, finCita, inicio, fin)) {
                     resultado.add(cita);
                 }
             }
