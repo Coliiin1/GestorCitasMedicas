@@ -7,7 +7,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Alta / Actualización de Datos del Paciente". Se reutiliza para registrar y editar. -->
-<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.PacienteEditarController">
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.PacienteEditarController">
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox styleClass="page-body">
             <VBox styleClass="edit-card, page-form">

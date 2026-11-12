@@ -1,9 +1,9 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
-import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
+import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.Consulta;
-import com.gestor.gestordecitasmedicas.controlador.ValidacionClinica;
+import com.gestor.gestordecitasmedicas.servicio.ValidacionClinica;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.GridPane;
 import com.gestor.gestordecitasmedicas.modelo.Medicamento;
@@ -32,10 +32,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
+import com.gestor.gestordecitasmedicas.servicio.TextoExpediente;
 import java.util.stream.Stream;
 
-import static com.gestor.gestordecitasmedicas.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private Label lblEstado;

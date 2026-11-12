@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 public interface PanelRefrescable {
     void refrescar();

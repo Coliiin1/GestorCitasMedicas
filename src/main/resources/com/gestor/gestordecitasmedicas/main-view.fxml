@@ -6,7 +6,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Escena estática: solo la barra lateral. El panel derecho (StackPane) se reemplaza con cada *-panel.fxml -->
-<GridPane hgap="12.0" styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.MainController">
+<GridPane hgap="12.0" styleClass="root" stylesheets="@cita.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.MainController">
     <padding>
         <Insets bottom="12.0" left="12.0" right="12.0" top="12.0" />
     </padding>

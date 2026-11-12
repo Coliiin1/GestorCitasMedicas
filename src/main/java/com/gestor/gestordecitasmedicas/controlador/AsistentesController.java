@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import javafx.fxml.FXML;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 
-import static com.gestor.gestordecitasmedicas.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;

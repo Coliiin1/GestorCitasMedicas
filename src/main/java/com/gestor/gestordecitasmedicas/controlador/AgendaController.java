@@ -1,6 +1,6 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
-import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
+import com.gestor.gestordecitasmedicas.servicio.ControladorCorreo;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.DiaSemana;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
@@ -48,8 +48,8 @@ import javafx.event.ActionEvent;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
 
-import static com.gestor.gestordecitasmedicas.Ui.aviso;
-import static com.gestor.gestordecitasmedicas.Ui.comboHora;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.comboHora;
 
 public class AgendaController implements PanelControlado, PanelRefrescable {
     @FXML private GridPane calendario, semana;
@@ -539,7 +539,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (ventana() != null) dialogo.initOwner(ventana());
         dialogo.setTitle(existente == null ? "Agendar nueva cita" : "Reprogramar cita");
         dialogo.getDialogPane().getStylesheets().add(
-                AgendaController.class.getResource("cita.css").toExternalForm());
+                AgendaController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
 
         Label tituloEncabezado = new Label(existente == null ? "AGENDAR NUEVA CITA" : "REPROGRAMAR CITA");
@@ -767,7 +767,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (ventana() != null) dialogo.initOwner(ventana());
         dialogo.setTitle(semana ? "Bloquear semana" : "Bloquear fecha");
         dialogo.getDialogPane().getStylesheets().add(
-                AgendaController.class.getResource("cita.css").toExternalForm());
+                AgendaController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
 
         Label titulo = new Label(semana ? "BLOQUEAR SEMANA" : "BLOQUEAR FECHA");

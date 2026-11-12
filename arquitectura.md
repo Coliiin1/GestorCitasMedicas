@@ -9,8 +9,8 @@ Documento de referencia arquitectónica para el **Gestor de Citas Médicas**, un
 El sistema sigue una **arquitectura monolítica de escritorio en capas (Layered Desktop Architecture)** basada en el patrón **MVC (Modelo–Vista–Controlador)** adaptado a JavaFX:
 
 - **Capa de Presentación (Vista):** Archivos declarativos FXML (`src/main/resources/.../*.fxml`), hojas de estilo CSS (`cita.css`) e iconografía vectorial personalizada mediante **Ikonli** (`FlaticonIcons`).
-- **Capa de Control de Interfaz y Navegación (Controladores FX):** Clases `*Controller` en el paquete raíz `com.gestor.gestordecitasmedicas` que gestionan eventos de usuario, estado visual, caché de paneles y transiciones.
-- **Capa de Servicios y Reglas de Negocio (`controlador` y utilidades de `modelo`):** Servicios especializados para validación clínica (`ValidacionClinica`), formateo de textos normativos (`TextoExpediente`), planificación de horarios (`PlanificadorAgenda`), generación de documentos (`ControladorPDF`) y notificaciones (`ControladorCorreo`).
+- **Capa de Control de Interfaz y Navegación (Controladores FX):** Clases `*Controller` en el paquete `com.gestor.gestordecitasmedicas.controlador` que gestionan eventos de usuario, estado visual, caché de paneles y transiciones.
+- **Capa de Servicios y Reglas de Negocio (`servicio` y utilidades de `modelo`):** Servicios especializados para validación clínica (`ValidacionClinica`), formateo de textos normativos (`TextoExpediente`), planificación de horarios (`PlanificadorAgenda`), generación de documentos (`ControladorPDF`) y notificaciones (`ControladorCorreo`).
 - **Capa de Dominio y Persistencia (`modelo`):** Entidades del dominio clínico (`Paciente`, `Cita`, `Expediente`, `Consulta`, `Receta`, `Medicamento`, `SignosVitales`, `Horario`, `HorarioBloqueado`, `Administrador`, `Asistente`) junto con el gestor centralizado de acceso a datos (`BaseDatos`) y los motores de migración automática (`MigracionClinica`, `MigracionAgenda`).
 
 ```mermaid
@@ -105,11 +105,13 @@ GestorCitasMedicas/
     │   ├── java/com/gestor/gestordecitasmedicas/
     │   │   ├── Launcher.java                # Punto de entrada (evita restricciones de módulo JavaFX)
     │   │   ├── HelloApplication.java        # Inicialización del Stage principal y carga de fuentes TTF
-    │   │   ├── MainController.java          # Contenedor principal (Shell), caché de vistas y control de rol
-    │   │   ├── PanelControlado.java         # Interfaz para inyección del MainController en subpaneles
-    │   │   ├── PanelRefrescable.java        # Interfaz de ciclo de vida para recarga de datos al mostrar
-    │   │   ├── *Controller.java             # Controladores de vistas (Login, Dashboard, Agenda, Cita, Consulta, etc.)
-    │   │   ├── controlador/                 # Servicios transversales y lógica clínica
+    │   │   ├── controlador/                 # Controladores JavaFX de las vistas
+    │   │   │   ├── MainController.java      # Contenedor principal (Shell), caché de vistas y control de rol
+    │   │   │   ├── PanelControlado.java     # Interfaz para inyección del MainController en subpaneles
+    │   │   │   ├── PanelRefrescable.java    # Interfaz de ciclo de vida para recarga de datos al mostrar
+    │   │   │   ├── Ui.java                  # Utilidades compartidas de UI (avisos, combos de hora)
+    │   │   │   └── *Controller.java         # Controladores de vistas (Login, Dashboard, Agenda, Cita, Consulta, etc.)
+    │   │   ├── servicio/                    # Servicios transversales y lógica clínica
     │   │   │   ├── ControladorCorreo.java   # Cliente SMTP y plantillas HTML de confirmación
     │   │   │   ├── ControladorPDF.java      # Generador PDF de Recetas y Expedientes Clínicos
     │   │   │   ├── TextoExpediente.java     # Formateo estructurado de notas e historia clínica

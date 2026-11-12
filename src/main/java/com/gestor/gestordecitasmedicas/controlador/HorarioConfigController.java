@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Cita;
 import com.gestor.gestordecitasmedicas.modelo.DiaSemana;
@@ -34,13 +34,13 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import com.gestor.gestordecitasmedicas.controlador.ControladorCorreo;
+import com.gestor.gestordecitasmedicas.servicio.ControladorCorreo;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import javafx.scene.control.TextArea;
 
-import static com.gestor.gestordecitasmedicas.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 /**
  * Configuración de horario semanal y fechas bloqueadas. Se abre únicamente
@@ -86,7 +86,7 @@ public final class HorarioConfigController {
         }
         dialogo.setTitle("Horario de trabajo y bloqueos");
         dialogo.getDialogPane().getStylesheets().add(
-                HorarioConfigController.class.getResource("cita.css").toExternalForm());
+                HorarioConfigController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
 
         Label titulo = new Label("HORARIO DE TRABAJO Y FECHAS BLOQUEADAS");

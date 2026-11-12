@@ -1,7 +1,7 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
-import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
-import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
+import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
+import com.gestor.gestordecitasmedicas.servicio.TextoExpediente;
 import com.gestor.gestordecitasmedicas.modelo.*;
 import com.itextpdf.text.DocumentException;
 import javafx.animation.PauseTransition;
@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import javafx.geometry.Pos;
 
-import static com.gestor.gestordecitasmedicas.Ui.aviso;
+import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML private Label nombre, folio, curp, telefono, nombreFicha, datosPersonales;

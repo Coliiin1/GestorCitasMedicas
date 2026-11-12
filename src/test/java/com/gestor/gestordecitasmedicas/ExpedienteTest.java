@@ -1,7 +1,8 @@
 package com.gestor.gestordecitasmedicas;
 
-import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
-import com.gestor.gestordecitasmedicas.controlador.TextoExpediente;
+import com.gestor.gestordecitasmedicas.controlador.*;
+import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
+import com.gestor.gestordecitasmedicas.servicio.TextoExpediente;
 import com.gestor.gestordecitasmedicas.modelo.*;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;

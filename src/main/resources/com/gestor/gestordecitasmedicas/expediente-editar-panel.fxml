@@ -5,7 +5,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Editar Expediente Clínico". Se abre desde el expediente del paciente. -->
-<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.ExpedienteEditarController">
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.ExpedienteEditarController">
     <ScrollPane fx:id="editorScroll" fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox styleClass="page-body">
             <VBox styleClass="edit-card, page-form">

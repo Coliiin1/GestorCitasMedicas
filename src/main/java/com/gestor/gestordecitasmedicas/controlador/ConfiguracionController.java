@@ -1,6 +1,6 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
-import com.gestor.gestordecitasmedicas.controlador.ControladorPDF;
+import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;

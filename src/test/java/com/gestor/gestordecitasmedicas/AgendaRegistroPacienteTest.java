@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
+import com.gestor.gestordecitasmedicas.controlador.*;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import org.junit.jupiter.api.Test;
 

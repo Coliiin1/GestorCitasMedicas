@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import javafx.fxml.FXML;

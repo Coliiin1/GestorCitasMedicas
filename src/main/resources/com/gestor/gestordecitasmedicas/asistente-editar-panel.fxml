@@ -5,7 +5,7 @@
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <!-- Panel "Editar Asistente". Accesible solo desde asistentes-panel.fxml. Solo interfaz. -->
-<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.AsistenteEditarController">
+<VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.AsistenteEditarController">
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
         <VBox styleClass="page-body">
             <VBox styleClass="edit-card, page-form">

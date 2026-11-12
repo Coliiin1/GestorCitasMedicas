@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.PlanificadorAgenda;
 import javafx.scene.control.Alert;

@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import javafx.event.ActionEvent;
@@ -109,7 +109,7 @@ public class MainController {
     private void onCerrarSesion() {
         if (!confirmarSalidaDeCita(null)) return;
         try {
-            contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("login-view.fxml")).load());
+            contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/login-view.fxml")).load());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -148,7 +148,7 @@ public class MainController {
 
     private Node cargar(String fxml) {
         try {
-            FXMLLoader loader = new FXMLLoader(MainController.class.getResource(fxml));
+            FXMLLoader loader = new FXMLLoader(MainController.class.getResource("/com/gestor/gestordecitasmedicas/" + fxml));
             Node panel = loader.load();
 
             Object controlador = loader.getController();

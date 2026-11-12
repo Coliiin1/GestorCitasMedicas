@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas.controlador;
+package com.gestor.gestordecitasmedicas.servicio;
 
 import com.gestor.gestordecitasmedicas.modelo.Medicamento;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;

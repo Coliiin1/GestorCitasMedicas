@@ -1,4 +1,4 @@
-package com.gestor.gestordecitasmedicas;
+package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Personal;
 import javafx.animation.Animation;
@@ -131,7 +131,7 @@ public class LoginController {
             return;
         }
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("main-view.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/main-view.fxml"));
             Parent raiz = loader.load();
             ((MainController) loader.getController()).configurarRol(rol, idUsuario);
             txtUsuario.getScene().setRoot(raiz);
