@@ -40,11 +40,13 @@ public class ControladorPDF {
         return new BaseDatos().guardarConfig(CLAVE_CARPETA, ruta);
     }
 
-    private static final BaseColor COLOR_PRIMARIO = new BaseColor(30, 64, 175);
-    private static final Font FUENTE_TITULO = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, COLOR_PRIMARIO);
-    private static final Font FUENTE_SUBTITULO = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL, BaseColor.DARK_GRAY);
+    private static final BaseColor COLOR_PRIMARIO = new BaseColor(26, 117, 188);
+    private static final Font FUENTE_TITULO = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD, COLOR_PRIMARIO);
+    private static final Font FUENTE_SUBTITULO = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.DARK_GRAY);
     private static final Font FUENTE_SECCION = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, COLOR_PRIMARIO);
-    private static final Font FUENTE_ENCABEZADO = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
+    private static final Font FUENTE_ENCABEZADO = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, COLOR_PRIMARIO);
+    private static final Font FUENTE_BLANCA = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.WHITE);
+    private static final Font FUENTE_BLANCA_NEGRITA = new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD, BaseColor.WHITE);
     private static final Font FUENTE_DATO = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
 
     public boolean generarPDF(Receta receta) {
@@ -60,7 +62,6 @@ public class ControladorPDF {
         }
     }
 
-    private static final BaseColor AZUL = new BaseColor(26, 117, 188);
     private static final BaseColor FONDO = new BaseColor(232, 240, 248);
 
     /** Abre el PDF en el visor predeterminado sin bloquear la interfaz; falla en silencio si no hay visor. */
@@ -94,31 +95,23 @@ public class ControladorPDF {
             try {
                 com.itextpdf.text.pdf.PdfContentByte cb = writer.getDirectContent();
                 float h = PageSize.A4.getHeight();
-                Font negrita = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, AZUL);
-                Font chica = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, AZUL);
+                Font negrita = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, COLOR_PRIMARIO);
+                Font chica = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, COLOR_PRIMARIO);
                 Font dato = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.BLACK);
-                Font nombre = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD, AZUL);
+                Font nombre = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD, COLOR_PRIMARIO);
 
                 // Bandas de fondo (y medido desde arriba)
                 cb.setColorFill(FONDO);
                 cb.rectangle(0, h - 130, 595, 130);
-                cb.rectangle(0, h - 640, 595, 340);
+                cb.rectangle(0, h - 620, 595, 365);
                 cb.fill();
-                cb.setColorFill(AZUL);
+                cb.setColorFill(COLOR_PRIMARIO);
                 cb.roundRectangle(20, h - 800, 555, 60, 25);
                 cb.fill();
-                cb.setColorStroke(AZUL);
-                cb.moveTo(205, h - 690); cb.lineTo(390, h - 690); cb.stroke();
+                cb.setColorStroke(COLOR_PRIMARIO);
+                cb.moveTo(205, h - 680); cb.lineTo(390, h - 680); cb.stroke();
 
-                try {
-                    java.net.URL logo = getClass().getResource("/Imagenes/IconoUaemex.png");
-                    if (logo != null) {
-                        com.itextpdf.text.Image img = com.itextpdf.text.Image.getInstance(logo);
-                        img.scaleToFit(75, 85);
-                        img.setAbsolutePosition(30, h - 25 - img.getScaledHeight());
-                        cb.addImage(img);
-                    }
-                } catch (IOException | DocumentException e) { /* shortcut: logo opcional */ }
+                dibujarLogo(cb, cargarLogo(), h - 65);
 
                 String esp = receta.getEspecialidad() == null || receta.getEspecialidad().trim().isEmpty()
                         ? receta.getProfesion() : receta.getEspecialidad();
@@ -132,17 +125,17 @@ public class ControladorPDF {
 
                 campo(cb, "PACIENTE:", texto(receta.getNombrePaciente()), 60, h - 160, negrita, dato);
                 campo(cb, "CURP:", texto(receta.getCurp()), 340, h - 160, negrita, dato);
-                campo(cb, "FECHA NACIMIENTO:", paciente == null ? "-" : TextoExpediente.fecha(paciente.getFechaNacimiento()), 60, h - 185, negrita, dato);
-                campo(cb, "PESO:", sv == null || sv.getPeso() <= 0 ? "-" : sv.getPeso() + " kg", 250, h - 185, negrita, dato);
-                campo(cb, "ESTATURA:", sv == null || sv.getTalla() <= 0 ? "-" : sv.getTalla() + " cm", 340, h - 185, negrita, dato);
+                campo(cb, "FECHA NACIMIENTO:", paciente == null ? "-" : TextoExpediente.fecha(paciente.getFechaNacimiento()), 60, h - 182, negrita, dato);
+                campo(cb, "PESO:", sv == null || sv.getPeso() <= 0 ? "-" : sv.getPeso() + " kg", 250, h - 182, negrita, dato);
+                campo(cb, "ESTATURA:", sv == null || sv.getTalla() <= 0 ? "-" : sv.getTalla() + " cm", 340, h - 182, negrita, dato);
                 campo(cb, "SIGNOS VITALES:", sv == null ? "-" : "PA " + texto(sv.getPresionArterial()) + " | FC " + sv.getFrecuenciaCardiaca()
                         + " | FR " + sv.getFrecuenciaRespiratoria() + " | T " + sv.getTemperatura() + " °C | SpO2 " + sv.getSaturacionOxigeno() + "%",
-                        60, h - 210, negrita, new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.BLACK));
-                campo(cb, "DOMICILIO DEL PACIENTE:", paciente == null ? "-" : texto(paciente.getDomicilio()), 60, h - 235, negrita, dato);
+                        60, h - 204, negrita, new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.BLACK));
+                campo(cb, "DOMICILIO DEL PACIENTE:", paciente == null ? "-" : texto(paciente.getDomicilio()), 60, h - 226, negrita, dato);
 
                 // Diagnóstico, medicamentos e indicaciones: texto con ajuste de línea dentro de la banda
                 ColumnText col = new ColumnText(cb);
-                col.setSimpleColumn(60, h - 665, 535, h - 315);
+                col.setSimpleColumn(60, h - 605, 535, h - 275);
                 Paragraph p = new Paragraph("DIAGNOSTICO: ", negrita);
                 p.add(new Chunk(texto(receta.getDiagnostico()), dato));
                 p.setSpacingAfter(14);
@@ -162,13 +155,29 @@ public class ControladorPDF {
                 }
                 col.go(); // shortcut: una sola página, el excedente se recorta; paginar si hace falta
 
-                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase("FIRMA", negrita), 297, h - 705, 0);
-                Font blanca = new Font(Font.FontFamily.HELVETICA, 10, Font.NORMAL, BaseColor.WHITE);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase("FIRMA", negrita), 297, h - 695, 0);
                 ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(texto(receta.getNombreEstablecimiento()),
-                        new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD, BaseColor.WHITE)), 297, h - 765, 0);
-                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(texto(receta.getDomicilioEstablecimiento()), blanca), 297, h - 782, 0);
+                        FUENTE_BLANCA_NEGRITA), 297, h - 765, 0);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, new Phrase(texto(receta.getDomicilioEstablecimiento()), FUENTE_BLANCA), 297, h - 782, 0);
             } finally { documento.close(); }
         }
+    }
+
+    /** Se carga una vez por documento para no incrustar la imagen en cada página. */
+    private com.itextpdf.text.Image cargarLogo() {
+        try {
+            java.net.URL url = getClass().getResource("/Imagenes/LogoUaemex.png");
+            if (url == null) return null;
+            com.itextpdf.text.Image img = com.itextpdf.text.Image.getInstance(url);
+            img.scaleToFit(75, 85);
+            return img;
+        } catch (IOException | DocumentException e) { return null; } // shortcut: logo opcional
+    }
+
+    private void dibujarLogo(com.itextpdf.text.pdf.PdfContentByte cb, com.itextpdf.text.Image img, float centroY) {
+        if (img == null) return;
+        img.setAbsolutePosition(30, centroY - img.getScaledHeight() / 2);
+        try { cb.addImage(img); } catch (DocumentException e) { /* shortcut: logo opcional */ }
     }
 
     private void texto(com.itextpdf.text.pdf.PdfContentByte cb, String t, float x, float y, Font f) {
@@ -195,18 +204,36 @@ public class ControladorPDF {
         return tabla;
     }
 
-    private void identificarPaginas(PdfWriter writer, final String identificador) {
+    /** Encabezado y pie con el mismo estilo de la receta, repetidos en cada página. */
+    private void identificarPaginas(PdfWriter writer, Expediente expediente, Paciente paciente) {
+        final com.itextpdf.text.Image logo = cargarLogo();
         writer.setPageEvent(new PdfPageEventHelper() {
             @Override public void onEndPage(PdfWriter w, Document d) {
-                w.getDirectContent().saveState();
-                w.getDirectContent().setColorFill(BaseColor.BLACK);
-                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_LEFT,
-                        new Phrase(identificador, FUENTE_DATO), d.left(), d.top() + 22, 0);
-                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_LEFT,
-                        new Phrase("Confidencial | Pendiente de firma autógrafa", FUENTE_SUBTITULO), d.left(), 30, 0);
-                ColumnText.showTextAligned(w.getDirectContent(), Element.ALIGN_RIGHT,
-                        new Phrase("Página " + w.getPageNumber(), FUENTE_DATO), d.right(), 30, 0);
-                w.getDirectContent().restoreState();
+                float h = d.getPageSize().getHeight();
+                com.itextpdf.text.pdf.PdfContentByte fondo = w.getDirectContentUnder();
+                fondo.saveState();
+                fondo.setColorFill(FONDO);
+                fondo.rectangle(0, h - 110, 595, 110);
+                fondo.fill();
+                fondo.setColorFill(COLOR_PRIMARIO);
+                fondo.roundRectangle(20, 20, 555, 55, 25);
+                fondo.fill();
+                fondo.restoreState();
+
+                com.itextpdf.text.pdf.PdfContentByte cb = w.getDirectContent();
+                dibujarLogo(cb, logo, h - 55);
+                texto(cb, "Expediente clínico", 115, h - 50, FUENTE_TITULO);
+                texto(cb, TextoExpediente.nombre(paciente), 115, h - 72, FUENTE_ENCABEZADO);
+                campo(cb, "EXPEDIENTE:", expediente.getIdExpediente() > 0 ? "#" + expediente.getIdExpediente() : "-",
+                        400, h - 50, FUENTE_ENCABEZADO, FUENTE_DATO);
+                campo(cb, "PÁGINA:", String.valueOf(w.getPageNumber()), 400, h - 72, FUENTE_ENCABEZADO, FUENTE_DATO);
+
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
+                        new Phrase("Confidencial | Pendiente de firma autógrafa", FUENTE_SUBTITULO), 297, 85, 0);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
+                        new Phrase(texto(expediente.getNombreEstablecimiento()), FUENTE_BLANCA_NEGRITA), 297, 52, 0);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
+                        new Phrase(texto(expediente.getDomicilioEstablecimiento()), FUENTE_BLANCA), 297, 35, 0);
             }
         });
     }
@@ -217,14 +244,12 @@ public class ControladorPDF {
             throw new IllegalArgumentException("El expediente debe incluir los datos del paciente.");
         }
         Paciente paciente = expediente.getDatosPaciente();
-        Document documento = new Document(PageSize.A4, 40, 40, 65, 60);
+        Document documento = new Document(PageSize.A4, 60, 60, 125, 105);
         try (FileOutputStream salida = new FileOutputStream(archivo)) {
             PdfWriter writer = PdfWriter.getInstance(documento, salida);
-            identificarPaginas(writer, "Expediente #" + expediente.getIdExpediente() + " | " + TextoExpediente.nombre(paciente));
+            identificarPaginas(writer, expediente, paciente);
             documento.open();
             try {
-                documento.add(new Paragraph("Expediente del paciente", FUENTE_TITULO));
-                documento.add(new Paragraph("Consulta externa - copia para revisión y firma autógrafa", FUENTE_SUBTITULO));
                 agregarSeccion(documento, "Ficha de identidad");
                 PdfPTable datos = tablaDatos();
                 agregarFila(datos, "Nombre", TextoExpediente.nombre(paciente));
@@ -255,32 +280,41 @@ public class ControladorPDF {
             }
         }
     }
+    /** Recuadro con el fondo claro de la receta; se parte entre páginas si el texto es largo. */
     private void agregarBloqueClinico(Document documento, String titulo, String contenido) throws DocumentException {
-        Paragraph bloque = new Paragraph();
-        bloque.setSpacingBefore(14);
-        bloque.setKeepTogether(false);
-        bloque.add(new Chunk(titulo + "\n", FUENTE_SECCION));
-        bloque.add(new Chunk(contenido, FUENTE_DATO));
+        PdfPCell celda = new PdfPCell();
+        celda.setBorder(PdfPCell.NO_BORDER);
+        celda.setBackgroundColor(FONDO);
+        celda.setPadding(12);
+        celda.addElement(new Paragraph(titulo.toUpperCase(), FUENTE_ENCABEZADO));
+        Paragraph cuerpo = new Paragraph(contenido, FUENTE_DATO);
+        cuerpo.setSpacingBefore(4);
+        celda.addElement(cuerpo);
+        PdfPTable bloque = new PdfPTable(1);
+        bloque.setWidthPercentage(100);
+        bloque.setSpacingBefore(10);
+        bloque.setSplitLate(false);
+        bloque.addCell(celda);
         documento.add(bloque);
     }
 
     private void agregarSeccion(Document documento, String titulo) throws DocumentException {
-        Paragraph seccion = new Paragraph(titulo, FUENTE_SECCION);
-        seccion.setSpacingBefore(14);
-        seccion.setSpacingAfter(6);
+        Paragraph seccion = new Paragraph(titulo.toUpperCase(), FUENTE_SECCION);
+        seccion.setSpacingBefore(16);
+        seccion.setSpacingAfter(4);
         documento.add(seccion);
     }
 
     private void agregarFila(PdfPTable tabla, String etiqueta, String valor) {
-        PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta, FUENTE_ENCABEZADO));
-        celdaEtiqueta.setBackgroundColor(COLOR_PRIMARIO);
+        PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta.toUpperCase() + ":", FUENTE_ENCABEZADO));
+        celdaEtiqueta.setBorder(PdfPCell.NO_BORDER);
         celdaEtiqueta.setPadding(5);
-        celdaEtiqueta.setHorizontalAlignment(Element.ALIGN_LEFT);
         tabla.addCell(celdaEtiqueta);
 
         PdfPCell celdaValor = new PdfPCell(new Phrase(valor, FUENTE_DATO));
+        celdaValor.setBorder(PdfPCell.BOTTOM);
+        celdaValor.setBorderColor(FONDO);
         celdaValor.setPadding(5);
-        celdaValor.setHorizontalAlignment(Element.ALIGN_LEFT);
         tabla.addCell(celdaValor);
     }
 

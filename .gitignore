@@ -45,3 +45,7 @@ db.properties
 *.sqlite-journal
 *.sqlite-wal
 *.sqlite-shm
+*.pdf
+
+### Carpeta de PDF exportados
+/pdf
