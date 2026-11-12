@@ -3,10 +3,7 @@ package com.gestor.gestordecitasmedicas.controlador;
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -18,9 +15,7 @@ import javafx.scene.layout.VBox;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Optional;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class AsistentesController implements PanelControlado, PanelRefrescable {
     @FXML private TextField txtBuscar;
@@ -128,26 +123,17 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
     }
 
     private void eliminar(Asistente asistente) {
-        ButtonType eliminar = new ButtonType("Eliminar", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Eliminar asistente");
-        confirmacion.setHeaderText("¿Eliminar a " + nombreCompleto(asistente) + "?");
-        confirmacion.setContentText("Esta acción no se puede deshacer.");
-        confirmacion.getButtonTypes().setAll(eliminar, cancelar);
-
-        Optional<ButtonType> respuesta = confirmacion.showAndWait();
-        if (!respuesta.isPresent() || respuesta.get() != eliminar) {
+        if (!Confirmacion.destructiva("¿Eliminar a " + nombreCompleto(asistente) + "?",
+                "Esta acción no se puede deshacer.", "Eliminar asistente")) {
             return;
         }
 
         if (asistente.eliminar()) {
             refrescar();
-            aviso(Alert.AlertType.INFORMATION, "Asistente eliminado",
+            Notificador.exito("Asistente eliminado",
                     "El asistente se eliminó correctamente.");
         } else {
-            aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
+            Notificador.error("No se pudo eliminar",
                     "Ocurrió un error al eliminar el asistente. Inténtalo de nuevo.");
         }
     }

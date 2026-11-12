@@ -2,7 +2,6 @@ package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -116,10 +115,10 @@ public class AsistenteEditarController implements PanelControlado {
     }
 
     private void mostrarError(String mensaje) {
-        Ui.aviso(Alert.AlertType.WARNING, "Datos incompletos", mensaje);
+        Notificador.advertencia("Datos incompletos", mensaje);
     }
 
     private void mostrarInformacion(String titulo, String mensaje) {
-        Ui.aviso(Alert.AlertType.INFORMATION, titulo, mensaje);
+        Notificador.exito(titulo, mensaje);
     }
 }

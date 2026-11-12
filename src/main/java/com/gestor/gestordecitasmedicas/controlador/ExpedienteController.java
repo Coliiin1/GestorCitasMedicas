@@ -17,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import javafx.geometry.Pos;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class ExpedienteController implements PanelRefrescable, PanelControlado {
     @FXML private Label nombre, folio, curp, telefono, nombreFicha, datosPersonales;
@@ -86,7 +85,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
             for (Label label : new Label[]{nombre, nombreFicha, curp, telefono, datosPersonales, alergias, tipoSangre,
                     antecedentes, historialSignos}) label.setText("");
             listaConsultas.getChildren().clear();
-            aviso(Alert.AlertType.ERROR, "Error al cargar", ex.getMessage());
+            Notificador.error("Error al cargar", ex.getMessage());
         }
     }
 
@@ -127,9 +126,9 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         if (new ControladorPDF().generarPDF(receta)) {
             File archivo = new File(ControladorPDF.carpetaSalida(), "receta_" + receta.getIdReceta() + ".pdf");
             ControladorPDF.abrir(archivo);
-            aviso(Alert.AlertType.INFORMATION, "Receta generada", archivo.getAbsolutePath());
+            Notificador.exito("Receta generada", archivo.getAbsolutePath());
         } else {
-            aviso(Alert.AlertType.ERROR, "PDF no generado", "No se pudo generar la receta. Revise que los datos estén completos.");
+            Notificador.error("PDF no generado", "No se pudo generar la receta. Revise que los datos estén completos.");
         }
     }
 
@@ -137,7 +136,7 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         if (mainController == null) return;
         ConsultaController editor = mainController.controlador("consulta-panel.fxml");
         if (!editor.cargarConsultaParaEdicion(consulta)) {
-            aviso(Alert.AlertType.ERROR, "No disponible", "No se encontró la cita vinculada a esta consulta.");
+            Notificador.error("No disponible", "No se encontró la cita vinculada a esta consulta.");
             return;
         }
         mainController.ir("consulta-panel.fxml");
@@ -174,9 +173,9 @@ public class ExpedienteController implements PanelRefrescable, PanelControlado {
         if (archivo == null) return;
         try {
             new ControladorPDF().generarExpediente(archivo, expedienteActual);
-            aviso(Alert.AlertType.INFORMATION, "Expediente exportado", archivo.getAbsolutePath());
+            Notificador.exito("Expediente exportado", archivo.getAbsolutePath());
         } catch (IOException | DocumentException ex) {
-            aviso(Alert.AlertType.ERROR, "Error al exportar", ex.getMessage());
+            Notificador.error("Error al exportar", ex.getMessage());
         }
     }
 }

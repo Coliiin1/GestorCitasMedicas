@@ -15,7 +15,6 @@ import javafx.util.Duration;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -127,7 +126,7 @@ public class LoginController {
         }
         if (rol == null) {
             password.clear();
-            new Alert(Alert.AlertType.WARNING, "Usuario o contraseña incorrectos.").showAndWait();
+            Notificador.advertencia("Acceso denegado", "Usuario o contraseña incorrectos.");
             return;
         }
         try {

@@ -18,11 +18,15 @@
     <!-- Barra lateral -->
     <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS" styleClass="sidebar">
         <VBox VBox.vgrow="ALWAYS">
-            <VBox styleClass="sidebar-header">
-                <padding><Insets bottom="16.0" left="16.0" right="16.0" top="16.0" /></padding>
-                <Label fx:id="lblConsultorio" styleClass="clinic-name" text="Consultorio Medico" />
-                <Label fx:id="lblMedico" styleClass="doctor-name" text="Dr. Jorge Hernandez." />
-            </VBox>
+            <HBox styleClass="sidebar-header" spacing="8.0">
+                <padding><Insets bottom="16.0" left="16.0" right="12.0" top="16.0" /></padding>
+                <VBox HBox.hgrow="ALWAYS" minWidth="0.0">
+                    <Label fx:id="lblConsultorio" styleClass="clinic-name" text="Consultorio Medico" />
+                    <Label fx:id="lblMedico" styleClass="doctor-name" text="Dr. Jorge Hernandez." />
+                </VBox>
+                <!-- Campana de notificaciones: la arma PanelNotificaciones.instalar() -->
+                <Button fx:id="btnNotificaciones" styleClass="campana" />
+            </HBox>
             <VBox fx:id="menu" spacing="4.0">
                 <padding><Insets bottom="12.0" left="12.0" right="12.0" top="12.0" /></padding>
                 <Label styleClass="nav-title" text="MÓDULOS" />

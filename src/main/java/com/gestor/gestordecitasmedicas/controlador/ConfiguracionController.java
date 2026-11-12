@@ -3,7 +3,6 @@ package com.gestor.gestordecitasmedicas.controlador;
 import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -99,27 +98,27 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
     @FXML
     private void onGuardarDatos() {
         if (admin == null) {
-            aviso(Alert.AlertType.ERROR, "No se encontró el registro del administrador.");
+            Notificador.error("Administrador no encontrado", "No se encontró el registro del administrador.");
             return;
         }
         for (Campo c : campos) {
             String t = c.campo.getText().trim();
             if (c.obligatorio && t.isEmpty()) {
-                aviso(Alert.AlertType.WARNING, "El campo " + c.etiqueta + " es obligatorio.");
+                Notificador.advertencia("Datos incompletos", "El campo " + c.etiqueta + " es obligatorio.");
                 return;
             }
             if (t.length() > c.max) {
-                aviso(Alert.AlertType.WARNING, c.etiqueta + " no debe exceder " + c.max + " caracteres.");
+                Notificador.advertencia("Texto demasiado largo", c.etiqueta + " no debe exceder " + c.max + " caracteres.");
                 return;
             }
         }
         for (Campo c : campos) c.escribir.accept(admin, c.campo.getText().trim());
         if (!admin.actualizar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudieron guardar los datos. Inténtalo de nuevo.");
+            Notificador.error("Datos no guardados", "No se pudieron guardar los datos. Inténtalo de nuevo.");
             return;
         }
         mainController.aplicarConfiguracion();
-        aviso(Alert.AlertType.INFORMATION, "Los datos del consultorio se guardaron correctamente.");
+        Notificador.exito("Datos guardados", "Los datos del consultorio se guardaron correctamente.");
     }
 
     @FXML
@@ -131,13 +130,13 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
         File carpeta = selector.showDialog(txtDirectorio.getScene().getWindow());
         if (carpeta == null) return;
         if (!carpeta.canWrite()) {
-            aviso(Alert.AlertType.WARNING, "No hay permiso de escritura en esa carpeta.");
+            Notificador.advertencia("Carpeta sin permiso", "No hay permiso de escritura en esa carpeta.");
             return;
         }
         if (ControladorPDF.guardarCarpetaSalida(carpeta.getAbsolutePath())) {
             txtDirectorio.setText(carpeta.getAbsolutePath());
         } else {
-            aviso(Alert.AlertType.ERROR, "No se pudo guardar el directorio.");
+            Notificador.error("Carpeta no guardada", "No se pudo guardar el directorio.");
         }
     }
 
@@ -152,31 +151,25 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
         }
         String nueva = pwdNueva.getText();
         if (nuevoId <= 0) {
-            aviso(Alert.AlertType.WARNING, "El usuario debe ser un número entero positivo.");
+            Notificador.advertencia("Usuario inválido", "El usuario debe ser un número entero positivo.");
         } else if (!nueva.equals(pwdConfirmar.getText())) {
-            aviso(Alert.AlertType.WARNING, "La confirmación no coincide con la nueva contraseña.");
+            Notificador.advertencia("Contraseñas distintas", "La confirmación no coincide con la nueva contraseña.");
         } else if (nuevoId == idActual && nueva.isEmpty()) {
-            aviso(Alert.AlertType.INFORMATION, "No hay cambios que guardar.");
+            Notificador.info("Sin cambios", "No hay cambios que guardar.");
         } else if (!"admin".equals(Personal.autenticar(idActual, pwdActual.getText()))) {
-            aviso(Alert.AlertType.WARNING, "La contraseña actual es incorrecta.");
+            Notificador.advertencia("Contraseña incorrecta", "La contraseña actual es incorrecta.");
         } else if (!Administrador.usuarioDisponible(nuevoId, idActual)) {
-            aviso(Alert.AlertType.WARNING, "El usuario " + nuevoId + " ya está en uso por otra cuenta.");
+            Notificador.advertencia("Usuario en uso", "El usuario " + nuevoId + " ya está en uso por otra cuenta.");
         } else if (!Administrador.cambiarCredenciales(idActual, nuevoId, nueva)) {
-            aviso(Alert.AlertType.ERROR, "No se pudieron guardar los cambios.");
+            Notificador.error("Cambios no guardados", "No se pudieron guardar los cambios.");
         } else {
             mainController.setIdAdministrador(nuevoId);
             pwdActual.clear();
             pwdNueva.clear();
             pwdConfirmar.clear();
-            aviso(Alert.AlertType.INFORMATION, "Datos de acceso actualizados. Usa el usuario " + nuevoId
+            Notificador.exito("Acceso actualizado", "Datos de acceso actualizados. Usa el usuario " + nuevoId
                     + " y la contraseña vigente en el próximo inicio de sesión.");
         }
     }
 
-    private static void aviso(Alert.AlertType tipo, String mensaje) {
-        Alert alerta = new Alert(tipo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.showAndWait();
-    }
 }

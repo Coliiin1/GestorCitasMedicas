@@ -8,7 +8,6 @@ import com.gestor.gestordecitasmedicas.modelo.PlanificadorAgenda;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -40,7 +39,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import javafx.scene.control.TextArea;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 /**
  * Configuración de horario semanal y fechas bloqueadas. Se abre únicamente
@@ -328,7 +326,7 @@ public final class HorarioConfigController {
         LocalTime inicio = comboInicio.getSelectionModel().getSelectedItem();
         LocalTime fin = comboFin.getSelectionModel().getSelectedItem();
         if (dia == null || inicio == null || fin == null || !inicio.isBefore(fin)) {
-            aviso(Alert.AlertType.WARNING, "Tramo inválido",
+            Notificador.advertencia("Tramo inválido",
                     "Selecciona un día y un horario donde el inicio sea anterior al fin.");
             return;
         }
@@ -346,7 +344,7 @@ public final class HorarioConfigController {
                 continue;
             }
             if (PlanificadorAgenda.tramoSeSolapa(existente, horario)) {
-                aviso(Alert.AlertType.WARNING, "Tramo superpuesto",
+                Notificador.advertencia("Tramo superpuesto",
                         "Ya existe un tramo activo ese día en un horario que se cruza.");
                 return;
             }
@@ -357,7 +355,7 @@ public final class HorarioConfigController {
             for (Cita cita : citas) {
                 LocalDateTime fecha = cita.fechaHora();
                 if (!horario.isEstado() || !cubre(horario, fecha)) {
-                    aviso(Alert.AlertType.WARNING, "Hay citas en ese tramo",
+                    Notificador.advertencia("Hay citas en ese tramo",
                             "No se puede modificar o desactivar el tramo porque hay "
                                     + citas.size() + " cita(s) activa(s). Reprograma o cancela primero.");
                     return;
@@ -366,7 +364,7 @@ public final class HorarioConfigController {
         }
 
         if (!horario.guardar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudo guardar",
+            Notificador.error("No se pudo guardar",
                     "El tramo no se guardó. Revisa que no se cruce con otro tramo activo.");
             return;
         }
@@ -392,7 +390,7 @@ public final class HorarioConfigController {
             return;
         }
         if (!horario.eliminar()) {
-            aviso(Alert.AlertType.WARNING, "No se pudo eliminar",
+            Notificador.advertencia("No se pudo eliminar",
                     "El tramo tiene citas activas o no existe. Reprograma o cancela las citas primero.");
             return;
         }
@@ -416,7 +414,7 @@ public final class HorarioConfigController {
         LocalDate desde = bloqueoDesde.getValue();
         LocalDate hasta = bloqueoHasta.getValue();
         if (desde == null || hasta == null || hasta.isBefore(desde)) {
-            aviso(Alert.AlertType.WARNING, "Fechas inválidas",
+            Notificador.advertencia("Fechas inválidas",
                     "Selecciona un rango de fechas válido.");
             return;
         }
@@ -430,7 +428,7 @@ public final class HorarioConfigController {
             LocalTime horaInicio = bloqueoHoraInicio.getSelectionModel().getSelectedItem();
             LocalTime horaFin = bloqueoHoraFin.getSelectionModel().getSelectedItem();
             if (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin)) {
-                aviso(Alert.AlertType.WARNING, "Horas inválidas",
+                Notificador.advertencia("Horas inválidas",
                         "La hora de inicio debe ser anterior a la hora de fin.");
                 return;
             }
@@ -443,7 +441,7 @@ public final class HorarioConfigController {
             if (existente.getIdHorarioBloqueado() != idEditando
                     && PlanificadorAgenda.seSolapan(inicio, fin,
                     existente.getFechaInicio(), existente.getFechaFin())) {
-                aviso(Alert.AlertType.WARNING, "Bloqueo superpuesto",
+                Notificador.advertencia("Bloqueo superpuesto",
                         "Ya existe un bloqueo que se cruza con ese periodo.");
                 return;
             }
@@ -460,7 +458,7 @@ public final class HorarioConfigController {
         bloqueo.setFechaFin(fin);
 
         if (!bloqueo.guardar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudo guardar",
+            Notificador.error("No se pudo guardar",
                     "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
             return;
         }
@@ -503,7 +501,7 @@ public final class HorarioConfigController {
             return;
         }
         if (!bloqueo.eliminar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudo eliminar",
+            Notificador.error("No se pudo eliminar",
                     "El bloqueo no se eliminó. Inténtalo de nuevo.");
             return;
         }
@@ -562,14 +560,7 @@ public final class HorarioConfigController {
     }
 
     private boolean confirmar(String titulo, String mensaje) {
-        ButtonType aceptar = new ButtonType("Eliminar", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-        alerta.setTitle(titulo);
-        alerta.setHeaderText(null);
-        alerta.setContentText(mensaje);
-        alerta.getButtonTypes().setAll(aceptar, cancelar);
-        return alerta.showAndWait().orElse(cancelar) == aceptar;
+        return Confirmacion.destructiva(titulo, mensaje, "Eliminar");
     }
 
     /** Lista las citas que se cancelarán al bloquear y pide confirmación; true si no hay citas o se acepta. */
@@ -591,23 +582,18 @@ public final class HorarioConfigController {
         lista.setEditable(false);
         lista.setPrefRowCount(Math.min(citas.size(), 10) + 1);
 
-        ButtonType aceptar = new ButtonType("Cancelar citas y bloquear", ButtonBar.ButtonData.OK_DONE);
-        ButtonType volver = new ButtonType("Volver", ButtonBar.ButtonData.CANCEL_CLOSE);
-        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION);
-        alerta.setTitle("Citas que se cancelarán");
-        alerta.setHeaderText("Se cancelarán " + citas.size() + " cita(s) agendada(s) en este periodo:");
-        alerta.getDialogPane().setContent(lista);
-        alerta.getButtonTypes().setAll(aceptar, volver);
-        return alerta.showAndWait().orElse(volver) == aceptar;
+        return Confirmacion.preguntar("¿Cancelar las citas del periodo?",
+                "Se cancelarán " + citas.size() + " cita(s) agendada(s) en este periodo:",
+                "Cancelar citas y bloquear", true, lista);
     }
 
     /** Resumen del envío de correos de cancelación; lo reutilizan Agenda y Consulta. */
     static void avisoNotificacion(int enviados, int total) {
         if (enviados == total) {
-            aviso(Alert.AlertType.INFORMATION, "Cancelación notificada",
+            Notificador.exito("Cancelación notificada",
                     "Se notificó por correo a " + enviados + " paciente(s).");
         } else {
-            aviso(Alert.AlertType.WARNING, "Notificación incompleta",
+            Notificador.advertencia("Notificación incompleta",
                     "Se notificó por correo a " + enviados + " de " + total + " paciente(s). "
                             + "Los demás no tienen correo o el SMTP no está configurado.");
         }

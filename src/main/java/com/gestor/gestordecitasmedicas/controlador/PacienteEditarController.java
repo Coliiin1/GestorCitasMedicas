@@ -3,7 +3,6 @@ package com.gestor.gestordecitasmedicas.controlador;
 import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -226,10 +225,10 @@ public class PacienteEditarController implements PanelControlado {
     }
 
     private void mostrarError(String mensaje) {
-        Ui.aviso(Alert.AlertType.WARNING, "Datos incompletos", mensaje);
+        Notificador.advertencia("Datos incompletos", mensaje);
     }
 
     private void mostrarInformacion(String titulo, String mensaje) {
-        Ui.aviso(Alert.AlertType.INFORMATION, titulo, mensaje);
+        Notificador.exito(titulo, mensaje);
     }
 }

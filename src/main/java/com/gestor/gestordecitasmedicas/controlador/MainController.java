@@ -5,9 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -25,6 +23,7 @@ public class MainController {
     @FXML private Button btnConfig;
     @FXML private Label lblConsultorio;
     @FXML private Label lblMedico;
+    @FXML private Button btnNotificaciones;
 
     private boolean esAdmin;
     private int idAdmin;
@@ -39,6 +38,11 @@ public class MainController {
         List<Node> l = new ArrayList<>(menu.getChildren());
         l.add(btnConfig);
         return l;
+    }
+
+    @FXML
+    private void initialize() {
+        PanelNotificaciones.instalar(btnNotificaciones);
     }
 
     public void setIdAdministrador(int id) {
@@ -91,12 +95,10 @@ public class MainController {
     private boolean confirmarSalidaDeCita(String destino) {
         ConsultaController consulta = (ConsultaController) controladores.get("consulta-panel.fxml");
         if (consulta == null || !consulta.enCurso() || "consulta-panel.fxml".equals(destino)) return true;
-        Alert alerta = new Alert(Alert.AlertType.CONFIRMATION,
-                "Hay una cita en curso. ¿Desea salir de la cita y abrir el panel seleccionado? Se perderá el progreso no guardado.",
-                ButtonType.YES, ButtonType.NO);
-        alerta.setTitle("Cita en curso");
-        alerta.setHeaderText("¿Salir de la cita en curso?");
-        if (alerta.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) return false;
+        if (!Confirmacion.destructiva("¿Salir de la cita en curso?",
+                "Hay una cita en curso. Si sales, se perderá el progreso no guardado.", "Salir de la cita")) {
+            return false;
+        }
         consulta.abandonar();
         return true;
     }
@@ -108,6 +110,8 @@ public class MainController {
     @FXML
     private void onCerrarSesion() {
         if (!confirmarSalidaDeCita(null)) return;
+        PanelNotificaciones.cerrar();
+        Notificador.limpiar(); // el historial es de la sesión
         try {
             contenido.getScene().setRoot(new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/login-view.fxml")).load());
         } catch (IOException e) {

@@ -35,7 +35,10 @@ public enum FlaticonIcons implements Ikon {
     TRIANGLE_WARNING("fi-rr-triangle-warning", 0xF047),
     ENVELOPE("fi-rr-envelope", 0xE5FE),
     LOCK("fi-rr-lock", 0xE9C5),
-    SETTINGS("fi-rr-settings", 0xEDA3);
+    SETTINGS("fi-rr-settings", 0xEDA3),
+    BELL("fi-rr-bell", 0xE187),
+    INFO("fi-rr-info", 0xE8CE),
+    CROSS_SMALL("fi-rr-cross-small", 0xE4D0);
 
     private final String description;
     private final int code;

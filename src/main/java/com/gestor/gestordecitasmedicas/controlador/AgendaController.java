@@ -13,7 +13,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -48,7 +47,6 @@ import javafx.event.ActionEvent;
 import javafx.scene.layout.Priority;
 import javafx.stage.Window;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 import static com.gestor.gestordecitasmedicas.controlador.Ui.comboHora;
 
 public class AgendaController implements PanelControlado, PanelRefrescable {
@@ -446,7 +444,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private void onAgendarNueva() {
         List<LocalTime> disponibles = PlanificadorAgenda.iniciosDisponibles(seleccion, horarios, bloqueos);
         if (disponibles.isEmpty()) {
-            aviso(Alert.AlertType.WARNING, "Sin disponibilidad",
+            Notificador.advertencia("Sin disponibilidad",
                     PlanificadorAgenda.tieneBloqueo(seleccion, bloqueos)
                             ? "La fecha seleccionada está bloqueada."
                             : "No hay horario de trabajo configurado para la fecha seleccionada.");
@@ -479,22 +477,19 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         if (citaSeleccionada == null) {
             return;
         }
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Cancelar cita");
-        confirmacion.setHeaderText(null);
-        confirmacion.setContentText("¿Cancelar la cita #" + citaSeleccionada.getIdCita() + " del paciente "
-                + Paciente.nombreParaMostrar(pacienteSeleccionado, citaSeleccionada.getCurp()) + "?");
-        if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+        if (!Confirmacion.destructiva("¿Cancelar la cita?", "Se cancelará la cita #" + citaSeleccionada.getIdCita()
+                + " de " + Paciente.nombreParaMostrar(pacienteSeleccionado, citaSeleccionada.getCurp())
+                + " y se notificará al paciente por correo.", "Cancelar cita")) {
             return;
         }
         if (!citaSeleccionada.cancelar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
+            Notificador.error("No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
         Cita cancelada = citaSeleccionada;
         limpiarFicha();
         refrescar();
-        aviso(Alert.AlertType.INFORMATION, "Cita cancelada", "La cita se marcó como cancelada.");
+        Notificador.exito("Cita cancelada", "La cita se marcó como cancelada.");
         ControladorCorreo.notificarCancelaciones(List.of(cancelada), Paciente.todos(),
                 HorarioConfigController::avisoNotificacion);
     }
@@ -674,14 +669,14 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
             if (fecha == null || hora == null || (existente == null && paciente == null)) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Datos incompletos",
+                Notificador.advertencia("Datos incompletos",
                         "Selecciona paciente, fecha y hora para la cita.");
                 return;
             }
 
             if (!PlanificadorAgenda.esInicioDisponible(fecha, hora, horarios, bloqueos)) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Horario no disponible",
+                Notificador.advertencia("Horario no disponible",
                         PlanificadorAgenda.tieneBloqueo(fecha, bloqueos)
                                 ? "La fecha seleccionada está bloqueada."
                                 : "La hora seleccionada está fuera del horario de trabajo.");
@@ -691,7 +686,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             Cita ocupada = Cita.ocupadaEn(fecha, hora, existente == null ? 0 : existente.getIdCita());
             if (ocupada != null) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Horario ocupado",
+                Notificador.advertencia("Horario ocupado",
                         "Ya existe la cita #" + ocupada.getIdCita() + " en ese horario.");
                 return;
             }
@@ -716,7 +711,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
             if (!guardado) {
                 event.consume();
-                aviso(Alert.AlertType.ERROR, "No se pudo guardar",
+                Notificador.error("No se pudo guardar",
                         "La cita no se guardó. Puedes volver a intentarlo.");
                 return;
             }
@@ -739,7 +734,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             mes = YearMonth.from(seleccion);
             limpiarFicha();
             refrescar();
-            aviso(Alert.AlertType.INFORMATION,
+            Notificador.exito(
                     existente == null ? "Cita agendada" : "Cita reprogramada",
                     "La agenda se actualizó correctamente.");
         }
@@ -817,7 +812,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             LocalDate finDia = dpFin.getValue();
             if (inicioDia == null || finDia == null || finDia.isBefore(inicioDia)) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Fechas inválidas",
+                Notificador.advertencia("Fechas inválidas",
                         "Selecciona un rango de fechas válido.");
                 return;
             }
@@ -832,7 +827,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 LocalTime horaFin = comboFin.getSelectionModel().getSelectedItem();
                 if (horaInicio == null || horaFin == null || !horaInicio.isBefore(horaFin)) {
                     event.consume();
-                    aviso(Alert.AlertType.WARNING, "Horas inválidas",
+                    Notificador.advertencia("Horas inválidas",
                             "La hora de inicio debe ser anterior a la hora de fin.");
                     return;
                 }
@@ -848,7 +843,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
 
             if (PlanificadorAgenda.estaBloqueado(inicio, fin, bloqueos)) {
                 event.consume();
-                aviso(Alert.AlertType.WARNING, "Bloqueo superpuesto",
+                Notificador.advertencia("Bloqueo superpuesto",
                         "Ya existe un bloqueo que se cruza con ese periodo.");
                 return;
             }
@@ -858,7 +853,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             bloqueo.setFechaFin(fin);
             if (!bloqueo.guardar()) {
                 event.consume();
-                aviso(Alert.AlertType.ERROR, "No se pudo bloquear",
+                Notificador.error("No se pudo bloquear",
                         "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
             } else if (!conflictos.isEmpty()) {
                 ControladorCorreo.notificarCancelaciones(conflictos, Paciente.todos(),
@@ -890,19 +885,19 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
     private void enviarConfirmacionAsync(Paciente paciente, Cita cita, Date fechaAnterior) {
         boolean reprogramada = fechaAnterior != null;
         if (paciente == null || cita == null) {
-            aviso(Alert.AlertType.WARNING, "Correo no enviado",
+            Notificador.advertencia("Correo no enviado",
                     "No se encontró el paciente de la cita, así que no se envió la confirmación.");
             return;
         }
         if (paciente.getCorreo() == null || paciente.getCorreo().trim().isEmpty()) {
-            aviso(Alert.AlertType.INFORMATION, "Correo no enviado",
+            Notificador.info("Correo no enviado",
                     "El paciente no tiene un correo registrado; no se envió la confirmación.");
             return;
         }
 
         ControladorCorreo controlador = new ControladorCorreo();
         if (!controlador.estaConfigurado()) {
-            aviso(Alert.AlertType.WARNING, "Correo no enviado",
+            Notificador.advertencia("Correo no enviado",
                     "La cita se guardó, pero la configuración SMTP está incompleta. "
                             + "Crea correo.properties o define SMTP_USER, SMTP_PASSWORD y SMTP_FROM.");
             return;
@@ -915,12 +910,12 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                     : controlador.enviarConfirmacionCita(paciente, cita);
             Platform.runLater(() -> {
                 if (enviado) {
-                    aviso(Alert.AlertType.INFORMATION,
+                    Notificador.exito(
                             reprogramada ? "Reprogramación enviada" : "Confirmación enviada",
                             "Se envió " + (reprogramada ? "el aviso de reprogramación" : "la confirmación")
                                     + " de la cita a " + destinatario + ".");
                 } else {
-                    aviso(Alert.AlertType.WARNING, "Correo no enviado",
+                    Notificador.advertencia("Correo no enviado",
                             "La cita se guardó, pero no se pudo enviar el correo a "
                                     + destinatario + ". Revisa la configuración SMTP.");
                 }

@@ -10,9 +10,7 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -22,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class CitaController implements PanelControlado, PanelRefrescable {
     @FXML private Label lblTimer, lblImc, lblPaciente, lblPacienteBanner;
@@ -146,15 +143,12 @@ public class CitaController implements PanelControlado, PanelRefrescable {
         if (citaActual == null) {
             return;
         }
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.setTitle("Cancelar consulta");
-        confirmacion.setHeaderText(null);
-        confirmacion.setContentText("¿Cancelar la cita #" + citaActual.getIdCita() + "?");
-        if (confirmacion.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+        if (!Confirmacion.destructiva("¿Cancelar la cita?", "Se cancelará la cita #" + citaActual.getIdCita()
+                + " y se notificará al paciente por correo.", "Cancelar cita")) {
             return;
         }
         if (!citaActual.cancelar()) {
-            aviso(Alert.AlertType.ERROR, "No se pudo cancelar", "La cita no se actualizó en la base de datos.");
+            Notificador.error("No se pudo cancelar", "La cita no se actualizó en la base de datos.");
             return;
         }
         ControladorCorreo.notificarCancelaciones(List.of(citaActual), Paciente.todos(),
@@ -168,18 +162,18 @@ public class CitaController implements PanelControlado, PanelRefrescable {
     @FXML
     private void onSiguiente() {
         if (citaActual == null || mainController == null) {
-            aviso(Alert.AlertType.INFORMATION, "Sin cita",
+            Notificador.info("Sin cita",
                     "Selecciona una cita desde la agenda para iniciar la consulta.");
             return;
         }
         if (pacienteActual == null) {
-            aviso(Alert.AlertType.ERROR, "Paciente no disponible",
+            Notificador.error("Paciente no disponible",
                     "El paciente de esta cita ya no está registrado.");
             return;
         }
         String faltantes = signosFaltantes();
         if (!faltantes.isEmpty()) {
-            aviso(Alert.AlertType.WARNING, "Signos vitales incompletos",
+            Notificador.advertencia("Signos vitales incompletos",
                     "Complete todos los signos vitales con valores válidos antes de continuar:\n" + faltantes);
             return;
         }

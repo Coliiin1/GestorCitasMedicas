@@ -14,7 +14,6 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -35,7 +34,6 @@ import java.util.List;
 import com.gestor.gestordecitasmedicas.servicio.TextoExpediente;
 import java.util.stream.Stream;
 
-import static com.gestor.gestordecitasmedicas.controlador.Ui.aviso;
 
 public class ConsultaController implements PanelControlado, PanelRefrescable {
     @FXML private Label lblEstado;
@@ -325,10 +323,10 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             File archivo = new File(new File(ControladorPDF.carpetaSalida()),
                     "receta_" + receta.getIdReceta() + ".pdf");
             ControladorPDF.abrir(archivo);
-            aviso(Alert.AlertType.INFORMATION, "Receta guardada",
+            Notificador.exito("Receta guardada",
                     "La receta se guardó y el PDF se generó en:\n" + archivo.getAbsolutePath());
         } else {
-            aviso(Alert.AlertType.ERROR, "PDF no generado",
+            Notificador.error("PDF no generado",
                     "La receta se guardó, pero no se pudo generar el PDF.");
         }
     }
@@ -337,7 +335,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
     private void onFinalizar() {
         if (!guardarAtencion(true, false)) return;
         if (modoEdicion) {
-            aviso(Alert.AlertType.INFORMATION, "Consulta actualizada", "Los cambios se guardaron en la consulta.");
+            Notificador.exito("Consulta actualizada", "Los cambios se guardaron en la consulta.");
             Paciente actual = paciente;
             limpiar();
             if (mainController != null && actual != null) {
@@ -347,7 +345,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             }
             return;
         }
-        aviso(Alert.AlertType.INFORMATION, "Consulta finalizada",
+        Notificador.exito("Consulta finalizada",
                 "La nota y la receta se guardaron. Imprima el expediente y la receta para que el profesional los firme de forma autógrafa.");
         limpiar();
         if (mainController != null) {
@@ -393,7 +391,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             try {
                 destino.cargarDatosPrescriptor();
             } catch (IllegalStateException ex) {
-                aviso(Alert.AlertType.ERROR, "Datos del prescriptor no disponibles", ex.getMessage());
+                Notificador.error("Datos del prescriptor no disponibles", ex.getMessage());
                 return false;
             }
         }
@@ -415,11 +413,11 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         nota.setReceta(destino);
         List<String> errores = ValidacionClinica.atencion(nota, destino, requiereReceta);
         if (!errores.isEmpty()) {
-            aviso(Alert.AlertType.WARNING, "Datos clínicos incompletos", String.join("\n", errores));
+            Notificador.advertencia("Datos clínicos incompletos", String.join("\n", errores));
             return false;
         }
         if (!nota.guardarAtencion(cita, destino, finalizar)) {
-            aviso(Alert.AlertType.ERROR, "No se pudo guardar", "La nota y la receta no se guardaron. Revise la conexión y vuelva a intentar.");
+            Notificador.error("No se pudo guardar", "La nota y la receta no se guardaron. Revise la conexión y vuelva a intentar.");
             return false;
         }
         receta = destino;
