@@ -12,7 +12,13 @@
                 <Label styleClass="panel-title" text="CONFIGURACIÓN GENERAL" />
                 <Label styleClass="card-subtitle" text="Datos del consultorio, directorio de archivos y cuenta de administrador." />
             </VBox>
-            <CheckBox fx:id="chkOscuro" onAction="#onModoOscuro" styleClass="field-label" text="MODO OSCURO" />
+            <Label styleClass="field-label" text="MODO OSCURO" />
+            <!-- El pulgar (sol/luna) lo mueve ConfiguracionController.pintarTema() -->
+            <ToggleButton fx:id="swTema" accessibleText="Modo oscuro" onAction="#onTema" styleClass="tema-switch">
+                <graphic>
+                    <StackPane styleClass="tema-pulgar"><FontIcon iconLiteral="fi-rr-sun" /></StackPane>
+                </graphic>
+            </ToggleButton>
         </HBox>
     </HBox>
 

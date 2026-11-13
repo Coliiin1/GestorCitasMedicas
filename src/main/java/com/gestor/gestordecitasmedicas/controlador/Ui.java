@@ -15,6 +15,9 @@ import javafx.scene.control.Label;
 import javafx.util.Duration;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.ImageView;
+import javafx.scene.transform.Transform;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -42,6 +45,26 @@ public final class Ui {
 
     static void setOscuro(boolean oscuro) {
         PREFS.putBoolean("modoOscuro", oscuro);
+    }
+
+    /** Guarda la preferencia y cambia de tema con un fundido: una foto del tema anterior se desvanece sobre el nuevo. */
+    static void cambiarTema(boolean oscuro) {
+        StackPane capa = capa(); // antes de guardar: crear la capa aplica el tema guardado y la foto saldría ya cambiada
+        setOscuro(oscuro);
+        if (capa == null) return;
+        SnapshotParameters p = new SnapshotParameters();
+        double escala = capa.getScene().getWindow().getOutputScaleX(); // sin esto la foto sale borrosa en pantallas al 125-150 %
+        p.setTransform(Transform.scale(escala, escala));
+        ImageView antes = new ImageView(capa.snapshot(p, null));
+        antes.setFitWidth(capa.getWidth());
+        antes.setFitHeight(capa.getHeight());
+        antes.setMouseTransparent(true);
+        tema(capa);
+        capa.getChildren().add(antes);
+        FadeTransition f = new FadeTransition(Duration.millis(280), antes);
+        f.setToValue(0);
+        f.setOnFinished(e -> capa.getChildren().remove(antes));
+        f.play();
     }
 
     /**

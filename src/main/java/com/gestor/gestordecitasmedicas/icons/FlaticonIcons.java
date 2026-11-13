@@ -38,7 +38,9 @@ public enum FlaticonIcons implements Ikon {
     SETTINGS("fi-rr-settings", 0xEDA3),
     BELL("fi-rr-bell", 0xE187),
     INFO("fi-rr-info", 0xE8CE),
-    CROSS_SMALL("fi-rr-cross-small", 0xE4D0);
+    CROSS_SMALL("fi-rr-cross-small", 0xE4D0),
+    SUN("fi-rr-sun", 0xEF1E),
+    MOON("fi-rr-moon", 0xEA96);
 
     private final String description;
     private final int code;

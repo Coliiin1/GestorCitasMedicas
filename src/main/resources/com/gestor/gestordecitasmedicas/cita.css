@@ -74,6 +74,28 @@
     -tx-emerald-700: #047857;
     -tx-amber-700: #b45309;
     -tx-blue-800: #1e40af;
+
+    /* Acentos y barra lateral: fijos en claro, apagados en oscuro. */
+    -bg-sidebar: #1e293b;
+    -bg-sidebar-fin: #0f172a;
+    -bg-sidebar-hover: #334155;
+    -acento: #0369a1;
+    -acento-2: #0284c7;
+    -acento-3: #0ea5e9;
+    -acento-prof: #075985;
+    -acento-brillo: #38bdf8;
+    -foco: #0ea5e9;
+    -peligro: #e11d48;
+    -peligro-2: #be123c;
+    -peligro-3: #f43f5e;
+    -halo: rgba(2, 132, 199, 0.45);
+    -halo-peligro: rgba(225, 29, 72, 0.45);
+    -sombra: rgba(15, 23, 42, 0.14);
+}
+
+/* LCD + Manrope sin hinting de Windows se ve dentado; gris da bordes limpios a cualquier escala. */
+.text {
+    -fx-font-smoothing-type: gray;
 }
 
 .root {
@@ -84,50 +106,67 @@
 
 /* Modo oscuro: Ui.tema() pone la clase "oscuro" en la raíz de cada escena/diálogo. */
 .root.oscuro, .dialog-pane.oscuro {
-    -bg-white: #1e293b;
-    -bg-slate-50: #172033;
-    -bg-slate-100: #0f172a;
-    -bg-slate-200: #334155;
-    -bg-slate-300: #475569;
-    -bg-slate-400: #64748b;
-    -bg-slate-500: #94a3b8;
-    -bg-sky-50: #0c2a3d;
-    -bg-sky-100: #0c3a55;
-    -bg-sky-200: #075985;
-    -bg-sky-300: #0369a1;
-    -bg-rose-50: #3a1220;
-    -bg-rose-200: #881337;
-    -bg-emerald-50: #062e24;
-    -bg-emerald-100: #064e3b;
-    -bg-emerald-200: #065f46;
-    -bg-emerald-300: #047857;
-    -bg-amber-50: #33240a;
-    -bg-amber-100: #451a03;
-    -bg-amber-200: #78350f;
-    -bg-blue-100: #1e3a8a;
-    -bg-blue-300: #1d4ed8;
+    /* Grafito neutro en tres niveles (fondo < hundido < tarjeta) y acentos apagados: nada debe brillar. */
+    -bg-white: #1c1f26;
+    -bg-slate-50: #171a1f;
+    -bg-slate-100: #121417;
+    -bg-slate-200: #2a2f38;
+    -bg-slate-300: #3a404b;
+    -bg-slate-400: #5a6270;
+    -bg-slate-500: #838b98;
+    -bg-sky-50: #1a2530;
+    -bg-sky-100: #1e2c3a;
+    -bg-sky-200: #2a3f54;
+    -bg-sky-300: #36536e;
+    -bg-rose-50: #2a1c20;
+    -bg-rose-200: #5a2f38;
+    -bg-emerald-50: #19261f;
+    -bg-emerald-100: #1e3028;
+    -bg-emerald-200: #2a4538;
+    -bg-emerald-300: #36594a;
+    -bg-amber-50: #29231a;
+    -bg-amber-100: #332b1d;
+    -bg-amber-200: #4d3f26;
+    -bg-blue-100: #222c40;
+    -bg-blue-300: #34466b;
 
-    -tx-slate-900: #f1f5f9;
-    -tx-slate-800: #e2e8f0;
-    -tx-slate-700: #cbd5e1;
-    -tx-slate-600: #cbd5e1;
-    -tx-slate-500: #94a3b8;
-    -tx-slate-400: #64748b;
-    -tx-sky-800: #7dd3fc;
-    -tx-sky-700: #38bdf8;
-    -tx-sky-600: #38bdf8;
-    -tx-rose-700: #fb7185;
-    -tx-rose-600: #fb7185;
-    -tx-red-700: #f87171;
-    -tx-emerald-800: #6ee7b7;
-    -tx-emerald-700: #34d399;
-    -tx-amber-700: #fbbf24;
-    -tx-blue-800: #93c5fd;
+    -tx-slate-900: #e6e8eb;
+    -tx-slate-800: #d3d7dd;
+    -tx-slate-700: #c2c7cf;
+    -tx-slate-600: #aab1bc;
+    -tx-slate-500: #8b93a0;
+    -tx-slate-400: #838b98;
+    -tx-sky-800: #9cc3e0;
+    -tx-sky-700: #7fb2d9;
+    -tx-sky-600: #7fb2d9;
+    -tx-rose-700: #e08a96;
+    -tx-rose-600: #e08a96;
+    -tx-red-700: #e08585;
+    -tx-emerald-800: #93cdb2;
+    -tx-emerald-700: #7cc4a4;
+    -tx-amber-700: #d9b36a;
+    -tx-blue-800: #9db8e0;
+
+    -bg-sidebar: #0c0d10;
+    -bg-sidebar-fin: #0c0d10;
+    -bg-sidebar-hover: #22262e;
+    -acento: #2c6690;
+    -acento-2: #33739f;
+    -acento-3: #3c80ae;
+    -acento-prof: #24567a;
+    -acento-brillo: #7fb2d9;
+    -foco: #5b9bc7;
+    -peligro: #a8404f;
+    -peligro-2: #963846;
+    -peligro-3: #b54c5b;
+    -halo: transparent;
+    -halo-peligro: transparent;
+    -sombra: rgba(0, 0, 0, 0.5);
 
     /* Controles de modena sin estilo propio (popups, menús, DatePicker). */
-    -fx-base: #1e293b;
-    -fx-control-inner-background: #1e293b;
-    -fx-accent: #0284c7;
+    -fx-base: #1c1f26;
+    -fx-control-inner-background: #1c1f26;
+    -fx-accent: #3d7ea8;
 }
 
 /* Editor clínico: misma tipografía, colores y controles que los demás formularios. */
@@ -158,12 +197,12 @@
    Sidebar
    --------------------------------------------------------------------- */
 .sidebar {
-    -fx-background-color: #1e293b;
+    -fx-background-color: -bg-sidebar;
     -fx-background-radius: 12;
 }
 
 .sidebar-header {
-    -fx-border-color: transparent transparent #334155 transparent;
+    -fx-border-color: transparent transparent -bg-sidebar-hover transparent;
     -fx-padding: 16;
 }
 
@@ -174,7 +213,7 @@
 }
 
 .doctor-name {
-    -fx-text-fill: #38bdf8;
+    -fx-text-fill: -acento-brillo;
     -fx-font-size: 11px;
 }
 
@@ -202,7 +241,7 @@
 }
 
 .nav-item:hover {
-    -fx-background-color: #334155;
+    -fx-background-color: -bg-sidebar-hover;
     -fx-text-fill: white;
 }
 
@@ -212,7 +251,7 @@
 
 .nav-item-active,
 .nav-item-active:hover {
-    -fx-background-color: #0284c7;
+    -fx-background-color: -acento-2;
     -fx-text-fill: white;
 }
 
@@ -221,12 +260,12 @@
 }
 
 .nav-logout {
-    -fx-background-color: #e11d48;
+    -fx-background-color: -peligro;
     -fx-text-fill: white;
 }
 
 .nav-logout:hover {
-    -fx-background-color: #be123c;
+    -fx-background-color: -peligro-2;
     -fx-text-fill: white;
 }
 
@@ -607,7 +646,7 @@
 .btn-accent,
 .btn-create,
 .btn-save {
-    -fx-background-color: #0369a1;
+    -fx-background-color: -acento;
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -624,7 +663,7 @@
 .btn-accent:hover,
 .btn-create:hover,
 .btn-save:hover {
-    -fx-background-color: #075985;
+    -fx-background-color: -acento-prof;
 }
 
 .btn-primary .ikonli-font-icon,
@@ -794,8 +833,8 @@
 }
 
 .pager-btn-active {
-    -fx-background-color: #0369a1;
-    -fx-border-color: #0369a1;
+    -fx-background-color: -acento;
+    -fx-border-color: -acento;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
@@ -819,7 +858,7 @@
 
 .search-field:focused,
 .form-field:focused {
-    -fx-border-color: #0ea5e9;
+    -fx-border-color: -foco;
     -fx-effect: dropshadow(gaussian, -bg-sky-200, 6, 0.5, 0, 0);
 }
 
@@ -845,7 +884,7 @@
 
 .combo-field:focused,
 .date-field:focused {
-    -fx-border-color: #0ea5e9;
+    -fx-border-color: -foco;
 }
 
 .combo-field .list-cell {
@@ -863,6 +902,32 @@
 .combo-field .arrow,
 .date-field .arrow {
     -fx-background-color: -bg-slate-500;
+}
+
+/* Lista desplegable: misma forma que los campos (radio 8) en vez del rectángulo de modena. */
+.combo-box-popup > .list-view {
+    -fx-background-color: -bg-white;
+    -fx-background-radius: 8;
+    -fx-border-color: -bg-slate-200;
+    -fx-border-radius: 8;
+    -fx-padding: 4; /* evita que las celdas tapen las esquinas */
+    -fx-effect: dropshadow(gaussian, -sombra, 16, 0, 0, 4);
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-text-fill: -tx-slate-800;
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:hover {
+    -fx-background-color: -bg-slate-100;
+}
+
+.combo-box-popup > .list-view > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected {
+    -fx-background-color: -bg-sky-50;
+    -fx-text-fill: -tx-sky-700;
 }
 
 .date-field .text-field {
@@ -888,7 +953,7 @@
 }
 
 .vital-input:focused {
-    -fx-border-color: #0ea5e9;
+    -fx-border-color: -foco;
     -fx-effect: dropshadow(gaussian, -bg-sky-200, 6, 0.5, 0, 0);
 }
 
@@ -907,7 +972,7 @@
 }
 
 .reason-area:focused {
-    -fx-border-color: #0ea5e9;
+    -fx-border-color: -foco;
 }
 
 /* ---------------------------------------------------------------------
@@ -937,7 +1002,7 @@
 }
 
 .step-circle-active {
-    -fx-background-color: #0369a1;
+    -fx-background-color: -acento;
     -fx-border-color: -bg-sky-200;
     -fx-text-fill: white;
 }
@@ -976,7 +1041,7 @@
 }
 
 .day-head-sel {
-    -fx-background-color: #0284c7;
+    -fx-background-color: -acento-2;
     -fx-text-fill: white;
 }
 
@@ -1008,7 +1073,7 @@
 }
 
 .cal-sel {
-    -fx-background-color: #0284c7;
+    -fx-background-color: -acento-2;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
@@ -1041,7 +1106,7 @@
 }
 
 .slot:hover {
-    -fx-border-color: #0284c7;
+    -fx-border-color: -acento-2;
 }
 
 .slot .info-value {
@@ -1149,7 +1214,7 @@
 
 /* Variante resaltada del botón secundario (acción de regreso) */
 .btn-secondary.btn-back {
-    -fx-border-color: #0369a1;
+    -fx-border-color: -acento;
     -fx-text-fill: -tx-sky-700;
     -fx-font-weight: bold;
 }
@@ -1164,7 +1229,7 @@
 }
 
 .notice-icon {
-    -fx-background-color: #0369a1;
+    -fx-background-color: -acento;
     -fx-text-fill: white;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -1247,8 +1312,8 @@
     -fx-background-color: -bg-slate-50;
 }
 .expediente-tabs > .tab-header-area .tab:selected {
-    -fx-background-color: #0369a1;
-    -fx-border-color: #0369a1;
+    -fx-background-color: -acento;
+    -fx-border-color: -acento;
 }
 .expediente-tabs > .tab-header-area .tab .tab-label {
     -fx-text-fill: -tx-slate-600;
@@ -1277,7 +1342,7 @@
 
 /* Login: panel visual con la paleta del sidebar */
 .login-hero {
-    -fx-background-color: #1e293b;
+    -fx-background-color: -bg-sidebar;
     -fx-background-radius: 12;
     -fx-border-color: -bg-slate-200;
     -fx-border-radius: 12;
@@ -1294,7 +1359,7 @@
     -fx-border-color: -bg-slate-200;
     -fx-border-radius: 12;
     -fx-padding: 16;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 24, 0, 0, 8);
+    -fx-effect: dropshadow(gaussian, -sombra, 24, 0, 0, 8);
 }
 
 .login-marca-caja {
@@ -1347,7 +1412,7 @@
 }
 
 .login-punto-activo {
-    -fx-background-color: #0369a1;
+    -fx-background-color: -acento;
     -fx-min-width: 24;
     -fx-pref-width: 24;
     -fx-max-width: 24;
@@ -1491,7 +1556,7 @@
 }
 
 .estado-info .toast-progreso {
-    -fx-background-color: #0369a1;
+    -fx-background-color: -acento;
 }
 
 .estado-advertencia .icono-estado {
@@ -1519,7 +1584,7 @@
 }
 
 .estado-error .toast-progreso {
-    -fx-background-color: #be123c;
+    -fx-background-color: -peligro-2;
 }
 
 .campana {
@@ -1535,7 +1600,7 @@
 
 .campana:hover,
 .campana-abierta {
-    -fx-background-color: #334155;
+    -fx-background-color: -bg-sidebar-hover;
 }
 
 .campana .ikonli-font-icon {
@@ -1544,7 +1609,7 @@
 }
 
 .campana-contador {
-    -fx-background-color: #e11d48;
+    -fx-background-color: -peligro;
     -fx-background-radius: 4;
     -fx-text-fill: white;
     -fx-font-size: 11px;
@@ -1674,7 +1739,7 @@
 }
 
 .btn-peligro {
-    -fx-background-color: #e11d48;
+    -fx-background-color: -peligro;
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -1686,7 +1751,7 @@
 }
 
 .btn-peligro:hover {
-    -fx-background-color: #be123c;
+    -fx-background-color: -peligro-2;
 }
 
 .confirm-dialogo .button:focused {
@@ -1703,12 +1768,12 @@
 }
 
 .sidebar {
-    -fx-background-color: linear-gradient(to bottom, #1e293b, #0f172a);
+    -fx-background-color: linear-gradient(to bottom, -bg-sidebar, -bg-sidebar-fin);
 }
 
 .nav-item-active,
 .nav-item-active:hover {
-    -fx-background-color: linear-gradient(to right, #0284c7, #0ea5e9);
+    -fx-background-color: linear-gradient(to right, -acento-2, -acento-3);
 }
 
 .button:pressed {
@@ -1722,7 +1787,7 @@
 .btn-accent,
 .btn-create,
 .btn-save {
-    -fx-background-color: linear-gradient(to right, #0369a1, #0284c7);
+    -fx-background-color: linear-gradient(to right, -acento, -acento-2);
 }
 
 .btn-primary:hover,
@@ -1730,8 +1795,8 @@
 .btn-accent:hover,
 .btn-create:hover,
 .btn-save:hover {
-    -fx-background-color: linear-gradient(to right, #0284c7, #0ea5e9);
-    -fx-effect: dropshadow(gaussian, rgba(2, 132, 199, 0.45), 14, 0, 0, 3);
+    -fx-background-color: linear-gradient(to right, -acento-2, -acento-3);
+    -fx-effect: dropshadow(gaussian, -halo, 14, 0, 0, 3);
 }
 
 .btn-primary:pressed,
@@ -1739,7 +1804,7 @@
 .btn-accent:pressed,
 .btn-create:pressed,
 .btn-save:pressed {
-    -fx-background-color: #075985;
+    -fx-background-color: -acento-prof;
     -fx-effect: null;
 }
 
@@ -1749,7 +1814,7 @@
 .btn-edit:hover,
 .pager-btn:hover {
     -fx-background-color: -bg-sky-50;
-    -fx-border-color: #0284c7;
+    -fx-border-color: -acento-2;
     -fx-text-fill: -tx-sky-700;
 }
 
@@ -1761,8 +1826,8 @@
 }
 
 .btn-del:hover {
-    -fx-background-color: #e11d48;
-    -fx-border-color: #e11d48;
+    -fx-background-color: -peligro;
+    -fx-border-color: -peligro;
     -fx-text-fill: white;
 }
 
@@ -1772,16 +1837,16 @@
 
 .btn-dashed:hover {
     -fx-background-color: -bg-sky-100;
-    -fx-border-color: #0284c7;
+    -fx-border-color: -acento-2;
 }
 
 .btn-peligro {
-    -fx-background-color: linear-gradient(to right, #be123c, #e11d48);
+    -fx-background-color: linear-gradient(to right, -peligro-2, -peligro);
 }
 
 .btn-peligro:hover {
-    -fx-background-color: linear-gradient(to right, #e11d48, #f43f5e);
-    -fx-effect: dropshadow(gaussian, rgba(225, 29, 72, 0.45), 14, 0, 0, 3);
+    -fx-background-color: linear-gradient(to right, -peligro, -peligro-3);
+    -fx-effect: dropshadow(gaussian, -halo-peligro, 14, 0, 0, 3);
 }
 
 .btn-icon:hover .ikonli-font-icon,
@@ -1795,7 +1860,7 @@
 }
 
 .button:focus-visible {
-    -fx-effect: dropshadow(gaussian, #38bdf8, 8, 0.6, 0, 0);
+    -fx-effect: dropshadow(gaussian, -acento-brillo, 8, 0.6, 0, 0);
 }
 
 .card,
@@ -1820,7 +1885,7 @@
 }
 
 .kpi-card {
-    -fx-background-color: rgba(15, 23, 42, 0.06), #0ea5e9, -bg-white;
+    -fx-background-color: rgba(15, 23, 42, 0.06), -foco, -bg-white;
     -fx-background-insets: 0 0 -2 0, 0, 3 0 0 0;
     -fx-background-radius: 12, 12, 0 0 12 12;
 }
@@ -1856,13 +1921,13 @@
 }
 
 .chart-bar {
-    -fx-bar-fill: linear-gradient(to top, #0369a1, #38bdf8);
+    -fx-bar-fill: linear-gradient(to top, -acento, -acento-brillo);
     -fx-background-radius: 6 6 0 0;
 }
 
-.default-color0.chart-pie { -fx-pie-color: #0284c7; }
+.default-color0.chart-pie { -fx-pie-color: -acento-2; }
 .default-color1.chart-pie { -fx-pie-color: #1e40af; }
-.default-color2.chart-pie { -fx-pie-color: #f43f5e; }
+.default-color2.chart-pie { -fx-pie-color: -peligro-3; }
 
 /* Barras de desplazamiento delgadas */
 .scroll-bar {
@@ -1900,4 +1965,54 @@
 .scroll-bar .decrement-arrow {
     -fx-shape: " ";
     -fx-padding: 0;
+}
+
+/* Gajo azul marino del pastel: ilegible sobre grafito. */
+.oscuro .default-color1.chart-pie { -fx-pie-color: #8a9bd0; }
+
+/* ---------------------------------------------------------------------
+   Interruptor de tema (sol/luna) en Configuración general.
+   El pulgar lo desliza ConfiguracionController; recorrido = 52 - 2*3 - 22 = 24.
+   --------------------------------------------------------------------- */
+.tema-switch {
+    -fx-background-color: -bg-slate-300;
+    -fx-background-radius: 14;
+    -fx-background-insets: 0;
+    -fx-padding: 3;
+    -fx-min-width: 52;
+    -fx-pref-width: 52;
+    -fx-max-width: 52;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+}
+
+.tema-switch:focus-visible {
+    -fx-background-color: -foco, -bg-slate-300;
+    -fx-background-insets: -2, 0;
+    -fx-background-radius: 16, 14;
+}
+
+.tema-pulgar {
+    -fx-background-color: white;
+    -fx-background-radius: 11;
+    -fx-min-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 22;
+    -fx-max-height: 22;
+}
+
+.tema-pulgar .ikonli-font-icon {
+    -fx-icon-color: #d97706;
+    -fx-icon-size: 12;
+}
+
+.tema-switch:selected .tema-pulgar {
+    -fx-background-color: #d3d7dd;
+}
+
+.tema-switch:selected .tema-pulgar .ikonli-font-icon {
+    -fx-icon-color: #1c1f26;
 }

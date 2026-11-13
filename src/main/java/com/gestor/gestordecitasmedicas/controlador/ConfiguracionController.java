@@ -2,14 +2,18 @@ package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.util.Duration;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.function.BiConsumer;
@@ -45,7 +49,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
     @FXML private PasswordField pwdActual;
     @FXML private PasswordField pwdNueva;
     @FXML private PasswordField pwdConfirmar;
-    @FXML private CheckBox chkOscuro;
+    @FXML private ToggleButton swTema;
 
     private MainController mainController;
     private Administrador admin;
@@ -77,13 +81,24 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             col += c.span;
             if (col >= 12) { col = 0; fila++; }
         }
-        chkOscuro.setSelected(Ui.oscuro());
+        swTema.setSelected(Ui.oscuro());
+        pintarTema(false);
     }
 
     @FXML
-    private void onModoOscuro() {
-        Ui.setOscuro(chkOscuro.isSelected());
-        Ui.tema(chkOscuro.getScene().getRoot());
+    private void onTema() {
+        Ui.cambiarTema(swTema.isSelected());
+        pintarTema(true);
+    }
+
+    /** Pone el pulgar del interruptor en su lado (24 px = recorrido definido en cita.css) con el icono del tema. */
+    private void pintarTema(boolean animar) {
+        boolean oscuro = swTema.isSelected();
+        Pane pulgar = (Pane) swTema.getGraphic();
+        ((FontIcon) pulgar.getChildren().get(0)).setIconLiteral(oscuro ? "fi-rr-moon" : "fi-rr-sun");
+        TranslateTransition t = new TranslateTransition(Duration.millis(animar ? 160 : 1), pulgar);
+        t.setToX(oscuro ? 24 : 0);
+        t.play();
     }
 
     @Override
