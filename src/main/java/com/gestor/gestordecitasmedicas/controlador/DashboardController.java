@@ -2,12 +2,14 @@ package com.gestor.gestordecitasmedicas.controlador;
 
 import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
+import com.gestor.gestordecitasmedicas.modelo.Consulta;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
 import com.gestor.gestordecitasmedicas.modelo.PlanificadorAgenda;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -222,7 +224,26 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
         }
         fila.setAlignment(Pos.CENTER_LEFT);
         fila.getStyleClass().add("row-card");
+        fila.setCursor(Cursor.HAND);
+        fila.setOnMouseClicked(e -> abrirEnAgenda(cita));
         return fila;
+    }
+
+    private void abrirEnAgenda(Cita cita) {
+        if (mainController == null) return;
+        AgendaController agenda = mainController.controlador("agenda-panel.fxml");
+        agenda.seleccionarCita(cita);
+        mainController.ir("agenda-panel.fxml");
+    }
+
+    private void abrirConsulta(Receta receta) {
+        if (mainController == null) return;
+        ConsultaController editor = mainController.controlador("consulta-panel.fxml");
+        if (!editor.cargarConsultaParaEdicion(Consulta.deCita(receta.getIdCita()))) {
+            Notificador.error("No disponible", "No se encontró la cita vinculada a esta consulta.");
+            return;
+        }
+        mainController.ir("consulta-panel.fxml");
     }
 
     @FXML
@@ -316,6 +337,8 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
             HBox fila = new HBox(12, fecha, nombre, diag);
             fila.setAlignment(Pos.CENTER_LEFT);
             fila.getStyleClass().add("row-card");
+            fila.setCursor(Cursor.HAND);
+            fila.setOnMouseClicked(e -> abrirConsulta(r));
             actividad.getChildren().add(fila);
         }
     }

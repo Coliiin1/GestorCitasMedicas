@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas;
 
+import com.gestor.gestordecitasmedicas.controlador.Ui;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -25,6 +26,8 @@ public class HelloApplication extends Application {
         cargarFuentes();
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("login-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1368, 768);
+        Ui.tema(scene.getRoot());
+        scene.rootProperty().addListener((o, anterior, nueva) -> Ui.tema(nueva)); // login ↔ principal
         stage.setTitle("Gestor de Citas Medicas");
         stage.setMinWidth(1280);
         stage.setMinHeight(720);
