@@ -22,14 +22,41 @@ import javafx.stage.Window;
 import javafx.util.StringConverter;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /** Utilidades de interfaz compartidas por los controladores. */
-final class Ui {
+public final class Ui {
     private static final String ID_CAPA = "capa-superior";
     private static final String CSS = Ui.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm();
+    private static final Preferences PREFS = Preferences.userNodeForPackage(Ui.class);
 
     private Ui() {
+    }
+
+    /** Preferencia de modo oscuro (se guarda por usuario de Windows). */
+    public static boolean oscuro() {
+        return PREFS.getBoolean("modoOscuro", false);
+    }
+
+    static void setOscuro(boolean oscuro) {
+        PREFS.putBoolean("modoOscuro", oscuro);
+    }
+
+    /**
+     * Aplica el tema actual al nodo y a cada .root anidado: las vistas FXML llevan styleClass="root" propio y,
+     * sin la clase, volverían a declarar los colores claros debajo de la capa superior.
+     */
+    public static void tema(Node raiz) {
+        if (raiz == null) return;
+        boolean oscuro = oscuro();
+        List<Node> nodos = new ArrayList<>(raiz.lookupAll(".root"));
+        nodos.add(raiz);
+        for (Node n : nodos) {
+            n.getStyleClass().remove("oscuro");
+            if (oscuro) n.getStyleClass().add("oscuro");
+        }
     }
 
     /**
@@ -48,6 +75,7 @@ final class Ui {
         capa.getStylesheets().add(CSS);
         scene.setRoot(capa); // primero se suelta la raíz anterior: un nodo no puede ser raíz y a la vez hijo
         capa.getChildren().add(raiz);
+        tema(capa); // el listener de raíz ya corrió, pero sin la vista colgada todavía
         if (foco != null) foco.requestFocus(); // al re-colgar la raíz se pierde el foco del campo activo
         return capa;
     }

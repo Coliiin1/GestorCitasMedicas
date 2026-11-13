@@ -134,6 +134,13 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         }
     }
 
+    /** Selecciona la cita en el calendario; ir("agenda-panel.fxml") la muestra en la ficha vía refrescar(). */
+    public void seleccionarCita(Cita cita) {
+        citaSeleccionada = cita;
+        seleccion = cita.fechaHora().toLocalDate();
+        mes = YearMonth.from(seleccion);
+    }
+
     private void mostrarBotonesAdmin(boolean visible) {
         if (btnConfigHorario != null) {
             btnConfigHorario.setVisible(visible);
@@ -541,6 +548,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().getStylesheets().add(
                 AgendaController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
+        Ui.tema(dialogo.getDialogPane());
 
         Label tituloEncabezado = new Label(existente == null ? "AGENDAR NUEVA CITA" : "REPROGRAMAR CITA");
         tituloEncabezado.getStyleClass().add("field-label");
@@ -770,6 +778,7 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         dialogo.getDialogPane().getStylesheets().add(
                 AgendaController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
+        Ui.tema(dialogo.getDialogPane());
 
         Label titulo = new Label(semana ? "BLOQUEAR SEMANA" : "BLOQUEAR FECHA");
         titulo.getStyleClass().add("field-label");

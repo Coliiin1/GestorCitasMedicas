@@ -12,6 +12,7 @@
                 <Label styleClass="panel-title" text="CONFIGURACIÓN GENERAL" />
                 <Label styleClass="card-subtitle" text="Datos del consultorio, directorio de archivos y cuenta de administrador." />
             </VBox>
+            <CheckBox fx:id="chkOscuro" onAction="#onModoOscuro" styleClass="field-label" text="MODO OSCURO" />
         </HBox>
     </HBox>
 

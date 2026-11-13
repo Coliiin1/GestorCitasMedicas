@@ -3,6 +3,7 @@ package com.gestor.gestordecitasmedicas.controlador;
 import com.gestor.gestordecitasmedicas.servicio.ControladorPDF;
 import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -44,6 +45,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
     @FXML private PasswordField pwdActual;
     @FXML private PasswordField pwdNueva;
     @FXML private PasswordField pwdConfirmar;
+    @FXML private CheckBox chkOscuro;
 
     private MainController mainController;
     private Administrador admin;
@@ -75,6 +77,13 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             col += c.span;
             if (col >= 12) { col = 0; fila++; }
         }
+        chkOscuro.setSelected(Ui.oscuro());
+    }
+
+    @FXML
+    private void onModoOscuro() {
+        Ui.setOscuro(chkOscuro.isSelected());
+        Ui.tema(chkOscuro.getScene().getRoot());
     }
 
     @Override

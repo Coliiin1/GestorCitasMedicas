@@ -88,6 +88,7 @@ public final class HorarioConfigController {
         dialogo.getDialogPane().getStylesheets().add(
                 HorarioConfigController.class.getResource("/com/gestor/gestordecitasmedicas/cita.css").toExternalForm());
         dialogo.getDialogPane().getStyleClass().add("expediente-editor");
+        Ui.tema(dialogo.getDialogPane());
 
         Label titulo = new Label("HORARIO DE TRABAJO Y FECHAS BLOQUEADAS");
         titulo.getStyleClass().add("card-title");
