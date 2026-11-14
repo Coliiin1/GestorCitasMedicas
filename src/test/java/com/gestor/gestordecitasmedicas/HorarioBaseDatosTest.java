@@ -95,14 +95,16 @@ class HorarioBaseDatosTest {
         Cita pasada = cita(paciente, ayer.atTime(10, 0));
         Cita futura = cita(paciente, manana.atTime(10, 0));
         Cita fueraDelRango = cita(paciente, manana.atTime(15, 0));
+        Cita hoyTemprano = cita(paciente, LocalDate.now().atStartOfDay());
 
-        // Abarca desde ayer: la cita vencida no debe cancelarse ni contarse.
+        // Abarca desde ayer: la de ayer es historial; la de hoy sí se cancela aunque su hora ya haya pasado.
         LocalDateTime inicio = ayer.atStartOfDay();
         LocalDateTime fin = manana.atTime(13, 0);
-        assertEquals(1, bd.citasActivasEnRango(inicio, fin).size());
+        assertEquals(2, bd.citasActivasEnRango(inicio, fin).size());
         assertTrue(bd.guardarBloqueo(bloqueo(inicio, fin)));
 
         assertEquals(Estado.AGENDADA, bd.cargarCitas().get(pasada.getIdCita()).getEstado());
+        assertEquals(Estado.CANCELADA, bd.cargarCitas().get(hoyTemprano.getIdCita()).getEstado());
         assertEquals(Estado.CANCELADA, bd.cargarCitas().get(futura.getIdCita()).getEstado());
         assertEquals(Estado.AGENDADA, bd.cargarCitas().get(fueraDelRango.getIdCita()).getEstado());
         assertEquals(1, bd.cargarBloqueos().size());
@@ -133,7 +135,7 @@ class HorarioBaseDatosTest {
     }
 
     @Test
-    void noEliminaUnTramoConCitasFuturasActivas() {
+    void eliminarUnTramoCancelaSusCitasFuturas() {
         Horario horario = tramo(DiaSemana.LUNES, "09:00", "13:00");
         assertTrue(bd.guardarHorario(horario));
 
@@ -142,12 +144,24 @@ class HorarioBaseDatosTest {
         Cita cita = cita(paciente, proximoLunes.atTime(10, 0));
 
         assertEquals(1, bd.citasActivasEnHorario(horario).size());
-        assertFalse(bd.eliminarHorario(horario.getIdHorario()));
-
-        cita.setEstado(Estado.CANCELADA);
-        assertTrue(bd.actualizarCita(cita));
-        assertTrue(bd.citasActivasEnHorario(horario).isEmpty());
         assertTrue(bd.eliminarHorario(horario.getIdHorario()));
+        assertEquals(Estado.CANCELADA, bd.cargarCitas().get(cita.getIdCita()).getEstado());
+    }
+
+    @Test
+    void editarUnTramoCancelaSoloLasCitasQueQuedanFuera() {
+        Horario horario = tramo(DiaSemana.MARTES, "09:00", "13:00");
+        assertTrue(bd.guardarHorario(horario));
+
+        LocalDate proximoMartes = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.TUESDAY));
+        Paciente paciente = paciente();
+        Cita dentro = cita(paciente, proximoMartes.atTime(9, 0));
+        Cita fuera = cita(paciente, proximoMartes.atTime(12, 0));
+
+        horario.setHoraFin(LocalTime.of(11, 0));
+        assertTrue(bd.guardarHorario(horario));
+        assertEquals(Estado.AGENDADA, bd.cargarCitas().get(dentro.getIdCita()).getEstado());
+        assertEquals(Estado.CANCELADA, bd.cargarCitas().get(fuera.getIdCita()).getEstado());
     }
 
     @AfterAll static void cerrar() {

@@ -125,15 +125,8 @@ public class LoginController {
 
     @FXML
     private void onIngresar() {
-        String rol = null;
-        int idUsuario = 0;
-        try {
-            String id = txtUsuario.getText().trim().replaceFirst("^#", "");
-            idUsuario = Integer.parseInt(id);
-            rol = Personal.autenticar(idUsuario, password.getText());
-        } catch (NumberFormatException ignorada) {
-            // usuario no numérico: se trata como credenciales incorrectas
-        }
+        String idUsuario = txtUsuario.getText().trim().toUpperCase(java.util.Locale.ROOT);
+        String rol = Personal.autenticar(idUsuario, password.getText());
         if (rol == null) {
             password.clear();
             Ui.sacudir(password.getParent());

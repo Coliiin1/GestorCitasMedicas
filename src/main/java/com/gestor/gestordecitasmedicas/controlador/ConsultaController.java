@@ -253,7 +253,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         VBox col1 = new VBox(4, etiqueta("Dosis y posología"), fila.dosis);
         GridPane.setHgrow(col1, Priority.ALWAYS);
         campos.add(col1, 1, 0);
-        fila.duracion.setText(valor(m.getDuradcion()));
+        fila.duracion.setText(valor(m.getDuracion()));
         fila.duracion.getStyleClass().add("search-field");
         fila.duracion.setPromptText("Ej. 7 días");
         VBox col2 = new VBox(4, etiqueta("Duración del tratamiento"), fila.duracion);
@@ -291,7 +291,9 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         Button eliminar = new Button("Eliminar medicamento");
         eliminar.getStyleClass().addAll("btn-icon", "btn-icon-danger");
         // btn-icon fija 36 px de ancho (pensado para iconos); con texto se colapsaba, así que se libera el ancho.
-        eliminar.setStyle("-fx-min-width: USE_PREF_SIZE; -fx-pref-width: USE_COMPUTED_SIZE; -fx-max-width: USE_PREF_SIZE; -fx-padding: 0 12;");        eliminar.setOnAction(e -> {
+        // En CSS no existen USE_PREF_SIZE/USE_COMPUTED_SIZE: -1 es USE_COMPUTED_SIZE (el botón mide lo que su texto).
+        eliminar.setStyle("-fx-min-width: -1; -fx-pref-width: -1; -fx-max-width: -1; -fx-padding: 0 12;");
+        eliminar.setOnAction(e -> {
             medicamentosBox.getChildren().remove(fila.contenedor);
             filas.remove(fila);
             actualizarContador();
@@ -406,14 +408,6 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
         nota.setEvolucion(valor(txtEvolucion.getText()));
         nota.setExploracionFisica(valor(txtExploracion.getText()));
         nota.setResultadosEstudios(valor(txtEstudios.getText()));
-        nota.setDiagnostico(destino.getDiagnostico());
-        nota.setIndicaciones(destino.getIndicaciones());
-        nota.setNombreMedico(destino.getNombreMedico());
-        nota.setCedulaMedico(destino.getCedulaMedico());
-        nota.setNombrePaciente(destino.getNombrePaciente());
-        nota.setEdadPaciente(destino.getEdadPaciente());
-        nota.setSexoPaciente(destino.getSexoPaciente());
-        nota.setSignosVitales(signos);
         nota.setReceta(destino);
         List<String> errores = ValidacionClinica.atencion(nota, destino, requiereReceta);
         if (!errores.isEmpty()) {
@@ -438,7 +432,7 @@ public class ConsultaController implements PanelControlado, PanelRefrescable {
             m.setNombreMedicamento(valor(fila.nombre.getText()));
             m.setDenominacionDistintiva(valor(fila.distintiva.getText()));
             m.setDosis(valor(fila.dosis.getText()));
-            m.setDuradcion(valor(fila.duracion.getText()));
+            m.setDuracion(valor(fila.duracion.getText()));
             m.setCantidad(valor(fila.cantidad.getText()));
             m.setGrupoRegulatorio(fila.grupo.getValue());
             lista.add(m);

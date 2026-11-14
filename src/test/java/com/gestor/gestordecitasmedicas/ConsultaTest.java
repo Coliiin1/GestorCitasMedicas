@@ -86,7 +86,6 @@ class ConsultaTest {
 
         Consulta consulta = new Consulta();
         consulta.setIdCita(cita.getIdCita());
-        consulta.setIdExpediente(expediente.getIdExpediente());
         consulta.setFechaConsulta(LocalDateTime.of(2026, 11, 15, 10, 30));
         consulta.setPadecimiento("Faringitis");
         consulta.setMotivo("Dolor de garganta");
@@ -97,7 +96,6 @@ class ConsultaTest {
         Consulta porId = bd.cargarConsultaPorId(consulta.getIdConsulta());
         assertNotNull(porId);
         assertEquals(cita.getIdCita(), porId.getIdCita());
-        assertEquals(expediente.getIdExpediente(), porId.getIdExpediente());
         assertEquals(LocalDateTime.of(2026, 11, 15, 10, 30), porId.getFechaConsulta());
         assertEquals("Faringitis", porId.getPadecimiento());
         assertEquals("Dolor de garganta", porId.getMotivo());
@@ -106,7 +104,7 @@ class ConsultaTest {
         Consulta porCita = bd.cargarConsultaPorCita(cita.getIdCita());
         assertNotNull(porCita);
         assertEquals(consulta.getIdConsulta(), porCita.getIdConsulta());
-        assertEquals(1, bd.cargarConsultasPorExpediente(expediente.getIdExpediente()).size());
+        assertEquals(1, bd.cargarConsultasPorCurp(paciente.getCurp()).size());
 
         consulta.setPadecimiento("Amigdalitis");
         consulta.setFechaConsulta(LocalDateTime.of(2026, 11, 15, 11, 0));
@@ -118,7 +116,7 @@ class ConsultaTest {
         assertTrue(bd.eliminarConsulta(consulta.getIdConsulta()));
         assertNull(bd.cargarConsultaPorId(consulta.getIdConsulta()));
         assertNull(bd.cargarConsultaPorCita(cita.getIdCita()));
-        assertTrue(bd.cargarConsultasPorExpediente(expediente.getIdExpediente()).isEmpty());
+        assertTrue(bd.cargarConsultasPorCurp(paciente.getCurp()).isEmpty());
     }
 
     @Test void finalizarConsultaGuardaTodoYReutilizaRegistros() {
@@ -134,7 +132,6 @@ class ConsultaTest {
         assertEquals(Estado.ATENDIDA, cita.getEstado());
         assertTrue(receta.getIdReceta() > 0);
         assertTrue(consulta.getIdConsulta() > 0);
-        assertEquals(expediente.getIdExpediente(), consulta.getIdExpediente());
         assertNotNull(consulta.getFechaConsulta());
         assertEquals(receta.getIdReceta(), consulta.getReceta().getIdReceta());
 
@@ -173,7 +170,7 @@ class ConsultaTest {
         assertEquals(idReceta, receta.getIdReceta());
         assertEquals(idConsulta, segunda.getIdConsulta());
         assertEquals(1, bd.cargarRecetas().size());
-        assertEquals(1, bd.cargarConsultasPorExpediente(expediente.getIdExpediente()).size());
+        assertEquals(1, bd.cargarConsultasPorCurp(paciente.getCurp()).size());
         assertEquals("Cuadro viral en remisión", bd.cargarRecetaPorCita(cita.getIdCita()).getDiagnostico());
         assertEquals(1, bd.cargarRecetaPorCita(cita.getIdCita()).getMedicamentos().size());
         assertEquals("Cuadro viral en remisión", bd.cargarConsultaPorCita(cita.getIdCita()).getPadecimiento());
@@ -195,7 +192,6 @@ class ConsultaTest {
         Expediente creado = bd.cargarExpedientePorCurp(paciente.getCurp());
         assertNotNull(creado);
         assertTrue(creado.getIdExpediente() > 0);
-        assertEquals(creado.getIdExpediente(), consulta.getIdExpediente());
         assertEquals(1, creado.getConsultas().size());
     }
 
@@ -213,7 +209,7 @@ class ConsultaTest {
         assertEquals(0, receta.getIdReceta());
         assertEquals(0, consulta.getIdConsulta());
         assertTrue(bd.cargarRecetas().isEmpty());
-        assertTrue(bd.cargarConsultasPorExpediente(expediente.getIdExpediente()).isEmpty());
+        assertTrue(bd.cargarConsultasPorCurp(paciente.getCurp()).isEmpty());
     }
 
     @AfterAll static void cerrar() {

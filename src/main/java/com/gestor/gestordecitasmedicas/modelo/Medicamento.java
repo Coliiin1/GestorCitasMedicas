@@ -8,7 +8,7 @@ public class Medicamento {
     private String dosis;
     private String concentracion;
     private String frecuencia;
-    private String duradcion;
+    private String duracion;
 
     public int getIdDetalleReceta() {
         return idDetalleReceta;
@@ -58,12 +58,12 @@ public class Medicamento {
         this.frecuencia = frecuencia;
     }
 
-    public String getDuradcion() {
-        return duradcion;
+    public String getDuracion() {
+        return duracion;
     }
 
-    public void setDuradcion(String duradcion) {
-        this.duradcion = duradcion;
+    public void setDuracion(String duracion) {
+        this.duracion = duracion;
     }
 
     private String presentacion;

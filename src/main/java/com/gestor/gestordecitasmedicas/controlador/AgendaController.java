@@ -302,7 +302,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
             }
             int dia = fechas.indexOf(fecha.toLocalDate());
             int hora = horas.indexOf(fecha.toLocalTime().withSecond(0).withNano(0));
-            if (dia < 0 || hora < 0 || turnos[hora][dia] != null) {
+            // Una cita activa reemplaza a una cancelada en la misma celda.
+            if (dia < 0 || hora < 0 || (turnos[hora][dia] != null
+                    && turnos[hora][dia].cita.getEstado() != Estado.CANCELADA)) {
                 continue;
             }
             turnos[hora][dia] = new Turno(cita, pacientes.get(cita.getCurp()));
@@ -323,6 +325,9 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                     atendidas++;
                 } else if (turno.cita.getEstado() == Estado.CANCELADA) {
                     canceladas++;
+                    if (PlanificadorAgenda.esInicioDisponible(fechas.get(c), horas.get(h), horarios, bloqueos)) {
+                        libres++;
+                    }
                 } else {
                     agendadas++;
                 }
@@ -391,13 +396,14 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
                 cerrado.setMinWidth(0);
                 return cerrado;
             }
-            Button libre = new Button("+ Disponible");
-            libre.getStyleClass().add("slot-free");
-            libre.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            libre.setMinWidth(0);
-            libre.setPrefWidth(0);
-            libre.setOnAction(e -> dialogoCita(null, fecha, hora));
-            return libre;
+            return botonLibre("+ Disponible", fecha, hora);
+        }
+        // Un horario cancelado queda libre para agendar; se deja la nota para no perder el historial.
+        if (turno.cita.getEstado() == Estado.CANCELADA
+                && PlanificadorAgenda.esInicioDisponible(fecha, hora, horarios, bloqueos)) {
+            return botonLibre("+ Disponible\nCancelada: "
+                    + Paciente.nombreParaMostrar(turno.paciente, turno.cita.getCurp())
+                    + " (#" + turno.cita.getIdCita() + ")", fecha, hora);
         }
         Label estado = new Label(Estado.etiqueta(turno.cita.getEstado()));
         estado.getStyleClass().add("caption");
@@ -419,6 +425,16 @@ public class AgendaController implements PanelControlado, PanelRefrescable {
         celda.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         celda.setOnAction(e -> mostrarCita(turno, fechaLarga(fecha), hora));
         return celda;
+    }
+
+    private Button botonLibre(String texto, LocalDate fecha, LocalTime hora) {
+        Button libre = new Button(texto);
+        libre.getStyleClass().add("slot-free");
+        libre.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        libre.setMinWidth(0);
+        libre.setPrefWidth(0);
+        libre.setOnAction(e -> dialogoCita(null, fecha, hora));
+        return libre;
     }
 
     private void mostrarCita(Turno turno, String fecha, LocalTime hora) {

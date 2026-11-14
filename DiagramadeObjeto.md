@@ -29,7 +29,7 @@ objectDiagram
     }
 
     object administradorDrLopez {
-        idAdministrador = 1
+        idAdministrador = "LOPEHECA01"
         cedulaProfesional = "12345678"
         institucionAcademica = "UNAM"
         domicilio = "Consultorio 5, CDMX"
@@ -39,7 +39,7 @@ objectDiagram
     }
 
     object asistenteAna {
-        idAsistente = 101
+        idAsistente = "MARTRUAN01"
         contrasena = "********"
         nombre = "Ana"
         apellidoPaterno = "Martínez"
@@ -57,7 +57,6 @@ objectDiagram
 
     object consulta1 {
         idConsulta = 2001
-        idExpediente = 5001
         idCita = 1001
         fechaConsulta = 2026-11-12 09:40:00
         padecimiento = "Hipertensión arterial"
@@ -78,10 +77,16 @@ objectDiagram
     object receta1 {
         idReceta = 3001
         idCita = 1001
-        idAdministrador = 1
+        idAdministrador = "LOPEHECA01"
         curp = "GOMJ800101HDFRNN09"
         fecha = 2026-11-12
         diagnostico = "Hipertensión arterial"
+        indicaciones = "Dieta baja en sodio"
+        nombreMedico = "Carlos López Hernández"
+        cedulaMedico = "12345678"
+        nombrePaciente = "Juan Gómez"
+        edadPaciente = "46 años"
+        sexoPaciente = "Masculino"
     }
 
     object medicamento1 {
@@ -91,7 +96,7 @@ objectDiagram
         dosis = "10 mg"
         concentracion = "10 mg/tableta"
         frecuencia = "Cada 24 horas"
-        duradcion = "30 días"
+        duracion = "30 días"
     }
 
     object medicamento2 {
@@ -101,7 +106,7 @@ objectDiagram
         dosis = "25 mg"
         concentracion = "25 mg/tableta"
         frecuencia = "Cada 24 horas"
-        duradcion = "30 días"
+        duracion = "30 días"
     }
 
     main --> pacienteJuan : administra
@@ -115,8 +120,7 @@ objectDiagram
     expedienteJuan o-- pacienteJuan : datos del paciente
     expedienteJuan *-- receta1 : contiene
     expedienteJuan *-- consulta1 : registra
-    consulta1 --> receta1 : genera
-    consulta1 --> signosVitales1 : registra
+    consulta1 --> receta1 : lee diagnóstico, signos y datos de médico/paciente
     consulta1 --> cita1 : corresponde a
     receta1 *-- medicamento1 : prescribe
     receta1 *-- medicamento2 : prescribe

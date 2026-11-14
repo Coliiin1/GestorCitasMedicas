@@ -1,5 +1,6 @@
 package com.gestor.gestordecitasmedicas.modelo;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
@@ -57,14 +58,24 @@ public class Horario {
         return new BaseDatos().guardarHorario(this);
     }
 
-    /** Elimina el tramo; falla si todavía tiene citas activas. */
+    /** Elimina el tramo y cancela sus citas activas en la misma transacción. */
     public boolean eliminar() {
         return new BaseDatos().eliminarHorario(getIdHorario());
     }
 
-    /** Citas AGENDADAS que caen dentro de este tramo. */
+    /** Citas AGENDADAS de hoy en adelante que caen dentro de este tramo. */
     public ArrayList<Cita> citasActivas() {
         return new BaseDatos().citasActivasEnHorario(this);
+    }
+
+    /** True si una cita que empieza en {@code fecha} cabe completa en este tramo. */
+    public boolean cubre(LocalDateTime fecha) {
+        if (fecha == null || dia == null || horaInicio == null || horaFin == null
+                || dia != DiaSemana.desdeDayOfWeek(fecha.getDayOfWeek())) {
+            return false;
+        }
+        return !fecha.toLocalTime().isBefore(horaInicio) && !fecha.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS)
+                .isAfter(fecha.toLocalDate().atTime(horaFin));
     }
 
     public static ArrayList<Horario> todos() {

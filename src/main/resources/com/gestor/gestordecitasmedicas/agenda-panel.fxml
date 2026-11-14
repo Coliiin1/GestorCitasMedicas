@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<!-- Panel "Gestión de Citas" (Stitch e2ec849f...). Referencia en docs/stitch/citas.png. Calendario y agenda los llena AgendaController -->
+<!-- Panel "Agenda Médica" (Stitch e2ec849f...). Referencia en docs/stitch/citas.png. Calendario y agenda los llena AgendaController -->
 <VBox styleClass="workspace" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gestor.gestordecitasmedicas.controlador.AgendaController">
     <HBox alignment="CENTER" styleClass="page-header">
         <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="page-content" HBox.hgrow="ALWAYS">
             <VBox spacing="4.0" minWidth="0.0" HBox.hgrow="ALWAYS">
-                <Label minWidth="0.0" styleClass="panel-title" text="GESTIÓN Y CONTROL DE CITAS MÉDICAS" wrapText="true" />
+                <Label minWidth="0.0" styleClass="panel-title" text="AGENDA MÉDICA" wrapText="true" />
                 <Label minWidth="0.0" styleClass="card-subtitle" text="Planificación semanal de consultas ambulatorias y triaje general" wrapText="true" />
             </VBox>
             <Button fx:id="btnConfigHorario" minWidth="-Infinity" onAction="#onConfigurarHorario" styleClass="btn-secondary" text="Horario y bloqueos">
@@ -43,13 +43,19 @@
                     </HBox>
                     <HBox alignment="CENTER_LEFT" spacing="12.0">
                         <Label minWidth="-Infinity" styleClass="caption" text="SEMÁFORO:" />
-                        <Label minWidth="-Infinity" styleClass="chip, chip-green" text="Disponible">
+                        <Label minWidth="-Infinity" styleClass="chip, estado-libre" text="Disponible">
                             <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                         </Label>
-                        <Label minWidth="-Infinity" styleClass="chip, chip-amber" text="En Sala">
+                        <Label minWidth="-Infinity" styleClass="chip, estado-agendada" text="Agendada">
                             <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                         </Label>
-                        <Label minWidth="-Infinity" styleClass="chip, chip-blood" text="Ocupado">
+                        <Label minWidth="-Infinity" styleClass="chip, estado-atendida" text="Atendida">
+                            <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
+                        </Label>
+                        <Label minWidth="-Infinity" styleClass="chip, estado-cancelada" text="Cancelada">
+                            <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
+                        </Label>
+                        <Label minWidth="-Infinity" styleClass="chip, estado-off" text="No laborable">
                             <graphic><FontIcon iconLiteral="fi-rr-circle" iconSize="8" /></graphic>
                         </Label>
                     </HBox>

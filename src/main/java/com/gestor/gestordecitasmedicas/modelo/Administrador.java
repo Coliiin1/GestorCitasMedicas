@@ -2,7 +2,7 @@ package com.gestor.gestordecitasmedicas.modelo;
 
 public class Administrador extends Personal {
 
-    private int idAdministrador;
+    private String idAdministrador;
     private String cedulaProfesional;
     private String institucionAcademica;
     private String domicilio;
@@ -23,11 +23,11 @@ public class Administrador extends Personal {
     public String getDomicilioEstablecimiento() { return domicilioEstablecimiento; }
     public void setDomicilioEstablecimiento(String v) { this.domicilioEstablecimiento = v; }
 
-    public int getIdAdministrador() {
+    public String getIdAdministrador() {
         return idAdministrador;
     }
 
-    public void setIdAdministrador(int idAdministrador) {
+    public void setIdAdministrador(String idAdministrador) {
         this.idAdministrador = idAdministrador;
     }
 
@@ -57,7 +57,8 @@ public class Administrador extends Personal {
 
     // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
 
-    public static Administrador buscar(int idAdministrador) {
+    /** Administrador con ese id de acceso; {@code null} busca el primero (consultorio de un solo médico). */
+    public static Administrador buscar(String idAdministrador) {
         return new BaseDatos().obtenerAdministrador(idAdministrador);
     }
 
@@ -66,13 +67,8 @@ public class Administrador extends Personal {
         return new BaseDatos().actualizarAdministrador(this);
     }
 
-    /** true si {@code nuevoId} no lo usa otra cuenta distinta de {@code idActual}. */
-    public static boolean usuarioDisponible(int nuevoId, int idActual) {
-        return new BaseDatos().idUsuarioLibre(nuevoId, idActual);
-    }
-
-    /** Cambia el usuario (id) y, si {@code nuevaContrasena} no está vacía, la contraseña. */
-    public static boolean cambiarCredenciales(int idActual, int nuevoId, String nuevaContrasena) {
-        return new BaseDatos().actualizarCredencialesAdmin(idActual, nuevoId, nuevaContrasena);
+    /** El id de acceso se genera al crear la cuenta y no cambia; solo la contraseña es editable. */
+    public static boolean cambiarContrasena(String idAdministrador, String nuevaContrasena) {
+        return new BaseDatos().actualizarContrasenaAdmin(idAdministrador, nuevaContrasena);
     }
 }

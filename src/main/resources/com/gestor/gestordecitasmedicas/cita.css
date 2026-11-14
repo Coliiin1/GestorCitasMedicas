@@ -75,6 +75,24 @@
     -tx-amber-700: #b45309;
     -tx-blue-800: #1e40af;
 
+    /* Estados de cita (agenda, semáforo, Dashboard): pastel con algo de saturación, sin llegar a neón. */
+    -agenda-libre-fondo: #e9f5ee;
+    -agenda-libre-hover: #dcefe3;
+    -agenda-libre-borde: #a9d4b8;
+    -agenda-libre-texto: #2f6e4a;
+    -agenda-agendada-fondo: #e8f1fa;
+    -agenda-agendada-borde: #a9c7e4;
+    -agenda-agendada-texto: #2b5f8f;
+    -agenda-atendida-fondo: #ecebf8;
+    -agenda-atendida-borde: #b7b5e2;
+    -agenda-atendida-texto: #4b4f9e;
+    -agenda-cancelada-fondo: #fbeaec;
+    -agenda-cancelada-borde: #eab6bd;
+    -agenda-cancelada-texto: #9b3747;
+    -agenda-off-fondo: #f3f4f6;
+    -agenda-off-borde: #d1d6dd;
+    -agenda-off-texto: #6f7783;
+
     /* Acentos y barra lateral: fijos en claro, apagados en oscuro. */
     -bg-sidebar: #1e293b;
     -bg-sidebar-fin: #0f172a;
@@ -146,6 +164,23 @@
     -tx-emerald-700: #7cc4a4;
     -tx-amber-700: #d9b36a;
     -tx-blue-800: #9db8e0;
+
+    -agenda-libre-fondo: #1e2622;
+    -agenda-libre-hover: #24302a;
+    -agenda-libre-borde: #34473c;
+    -agenda-libre-texto: #8fb8a0;
+    -agenda-agendada-fondo: #1e242c;
+    -agenda-agendada-borde: #34424f;
+    -agenda-agendada-texto: #8fa9c2;
+    -agenda-atendida-fondo: #20232e;
+    -agenda-atendida-borde: #3a4260;
+    -agenda-atendida-texto: #a6a3d4;
+    -agenda-cancelada-fondo: #2a2123;
+    -agenda-cancelada-borde: #4f383d;
+    -agenda-cancelada-texto: #c4949c;
+    -agenda-off-fondo: #1c1f24;
+    -agenda-off-borde: #2e333b;
+    -agenda-off-texto: #7d8590;
 
     -bg-sidebar: #0c0d10;
     -bg-sidebar-fin: #0c0d10;
@@ -618,6 +653,18 @@
     -fx-icon-color: -tx-sky-700;
 }
 
+/* Semáforo de la agenda: mismos colores que las celdas (.slot-*). */
+.chip.estado-libre { -fx-background-color: -agenda-libre-fondo; -fx-border-color: -agenda-libre-borde; -fx-text-fill: -agenda-libre-texto; }
+.chip.estado-agendada { -fx-background-color: -agenda-agendada-fondo; -fx-border-color: -agenda-agendada-borde; -fx-text-fill: -agenda-agendada-texto; }
+.chip.estado-atendida { -fx-background-color: -agenda-atendida-fondo; -fx-border-color: -agenda-atendida-borde; -fx-text-fill: -agenda-atendida-texto; }
+.chip.estado-cancelada { -fx-background-color: -agenda-cancelada-fondo; -fx-border-color: -agenda-cancelada-borde; -fx-text-fill: -agenda-cancelada-texto; }
+.chip.estado-off { -fx-background-color: -agenda-off-fondo; -fx-border-color: -agenda-off-borde; -fx-text-fill: -agenda-off-texto; }
+.chip.estado-libre .ikonli-font-icon { -fx-icon-color: -agenda-libre-texto; }
+.chip.estado-agendada .ikonli-font-icon { -fx-icon-color: -agenda-agendada-texto; }
+.chip.estado-atendida .ikonli-font-icon { -fx-icon-color: -agenda-atendida-texto; }
+.chip.estado-cancelada .ikonli-font-icon { -fx-icon-color: -agenda-cancelada-texto; }
+.chip.estado-off .ikonli-font-icon { -fx-icon-color: -agenda-off-texto; }
+
 .chip-gray .ikonli-font-icon {
     -fx-icon-color: -tx-slate-500;
 }
@@ -1079,17 +1126,17 @@
 }
 
 .cal-off {
-    -fx-background-color: -bg-slate-50;
-    -fx-text-fill: -tx-slate-400;
-    -fx-border-color: -bg-slate-200;
+    -fx-background-color: -agenda-off-fondo;
+    -fx-text-fill: -agenda-off-texto;
+    -fx-border-color: -agenda-off-borde;
     -fx-border-width: 1;
     -fx-border-radius: 8;
 }
 
 .cal-blocked {
-    -fx-background-color: -bg-rose-50;
-    -fx-text-fill: -tx-rose-700;
-    -fx-border-color: -bg-rose-200;
+    -fx-background-color: -agenda-cancelada-fondo;
+    -fx-text-fill: -agenda-cancelada-texto;
+    -fx-border-color: -agenda-cancelada-borde;
     -fx-border-width: 1;
     -fx-border-radius: 8;
 }
@@ -1114,57 +1161,39 @@
 }
 
 .slot-agendada {
-    -fx-background-color: -bg-sky-50;
-    -fx-border-color: -bg-sky-200;
+    -fx-background-color: -agenda-agendada-fondo;
+    -fx-border-color: -agenda-agendada-borde;
+}
+
+.slot-agendada .caption {
+    -fx-text-fill: -agenda-agendada-texto;
 }
 
 .slot-atendida {
-    -fx-background-color: -bg-blue-100;
-    -fx-border-color: #60a5fa;
+    -fx-background-color: -agenda-atendida-fondo;
+    -fx-border-color: -agenda-atendida-borde;
 }
 
 .slot-atendida .caption {
-    -fx-text-fill: -tx-blue-800;
+    -fx-text-fill: -agenda-atendida-texto;
 }
 
 .slot-cancelada {
-    -fx-background-color: -bg-rose-50;
-    -fx-border-color: -bg-rose-200;
+    -fx-background-color: -agenda-cancelada-fondo;
+    -fx-border-color: -agenda-cancelada-borde;
 }
 
-.slot-completada {
-    -fx-background-color: -bg-blue-100;
-    -fx-border-color: #60a5fa;
-}
-
-.slot-confirmada {
-    -fx-background-color: -bg-sky-50;
-    -fx-border-color: -bg-sky-200;
-}
-
-.slot-en-espera {
-    -fx-background-color: -bg-amber-50;
-    -fx-border-color: #f59e0b;
-    -fx-border-width: 2;
-}
-
-.slot-reservado {
-    -fx-background-color: -bg-rose-50;
-    -fx-border-color: -bg-rose-200;
-}
-
-.slot-cierre {
-    -fx-background-color: -bg-slate-100;
-    -fx-border-color: -bg-slate-300;
+.slot-cancelada .caption {
+    -fx-text-fill: -agenda-cancelada-texto;
 }
 
 .slot-free {
     -fx-alignment: CENTER;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: -tx-emerald-700;
-    -fx-background-color: -bg-emerald-50;
-    -fx-border-color: -bg-emerald-200;
+    -fx-text-fill: -agenda-libre-texto;
+    -fx-background-color: -agenda-libre-fondo;
+    -fx-border-color: -agenda-libre-borde;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
     -fx-padding: 8;
@@ -1172,18 +1201,17 @@
 }
 
 .slot-free:hover {
-    -fx-background-color: -bg-emerald-100;
-    -fx-border-color: -bg-emerald-300;
-    -fx-text-fill: -tx-emerald-800;
+    -fx-background-color: -agenda-libre-hover;
+    -fx-border-color: -agenda-libre-texto;
 }
 
 .slot-off {
     -fx-alignment: CENTER;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: -tx-slate-400;
-    -fx-background-color: -bg-slate-50;
-    -fx-border-color: -bg-slate-200;
+    -fx-text-fill: -agenda-off-texto;
+    -fx-background-color: -agenda-off-fondo;
+    -fx-border-color: -agenda-off-borde;
     -fx-border-style: segments(4, 3);
     -fx-border-radius: 8;
     -fx-background-radius: 8;
@@ -1921,13 +1949,15 @@
 }
 
 .chart-bar {
-    -fx-bar-fill: linear-gradient(to top, -acento, -acento-brillo);
+    /* Directo en el fondo: modena hace derive(-fx-bar-fill) y derive() no acepta degradados. */
+    -fx-background-color: linear-gradient(to top, -acento, -acento-brillo);
     -fx-background-radius: 6 6 0 0;
 }
 
-.default-color0.chart-pie { -fx-pie-color: -acento-2; }
-.default-color1.chart-pie { -fx-pie-color: #1e40af; }
-.default-color2.chart-pie { -fx-pie-color: -peligro-3; }
+/* Pastel del Dashboard en orden del enum Estado: Agendadas, Atendidas, Canceladas. */
+.default-color0.chart-pie { -fx-pie-color: -agenda-agendada-texto; }
+.default-color1.chart-pie { -fx-pie-color: -agenda-atendida-texto; }
+.default-color2.chart-pie { -fx-pie-color: -agenda-cancelada-texto; }
 
 /* Barras de desplazamiento delgadas */
 .scroll-bar {
@@ -1967,8 +1997,6 @@
     -fx-padding: 0;
 }
 
-/* Gajo azul marino del pastel: ilegible sobre grafito. */
-.oscuro .default-color1.chart-pie { -fx-pie-color: #8a9bd0; }
 
 /* ---------------------------------------------------------------------
    Interruptor de tema (sol/luna) en Configuración general.

@@ -9,16 +9,16 @@ Aplicación de escritorio para consultorios médicos de consulta externa, desarr
 
 | Módulo | Descripción |
 |---|---|
-| **Inicio de sesión** | Autenticación por ID numérico y contraseña contra SQLite; hay dos roles: administrador (médico) y asistente. |
+| **Inicio de sesión** | Autenticación por id de acceso (10 caracteres generados con los datos de la persona) y contraseña contra SQLite; hay dos roles: administrador (médico) y asistente. |
 | **Dashboard** | Indicadores del día y gráficas (`BarChart`, `PieChart`) de citas agendadas y atendidas. |
 | **Agenda** | Vista mensual/semanal; crear, reprogramar y cancelar citas de 60 minutos dentro de los horarios activos. |
-| **Horarios y bloqueos** | Varios tramos por día de la semana y bloqueos por rango de fecha/hora con motivo (solo administrador). |
+| **Horarios y bloqueos** | Varios tramos por día de la semana y bloqueos por rango de fecha/hora (solo administrador). |
 | **Pacientes** | Alta, edición, búsqueda por nombre o CURP y baja; validación de CURP, teléfono y correo, con tipo de sangre y alergias opcionales. Se puede dar de alta a un paciente desde el diálogo de cita. |
 | **Recepción (cita en curso)** | Registro de signos vitales y paso a la consulta. |
 | **Consulta y receta** | Nota de evolución, diagnóstico y medicamentos estructurados; guardado transaccional y exportación de la receta a PDF. |
 | **Expediente clínico** | Historia clínica ambulatoria, historial de consultas, recetas y evolución de signos vitales; edición integrada y exportación a PDF. |
 | **Asistentes** | CRUD del personal de recepción (solo administrador). |
-| **Configuración** | Datos del consultorio y del médico, credenciales de acceso y carpeta de destino de los PDF. |
+| **Configuración** | Datos del consultorio y del médico, contraseña de acceso y carpeta de destino de los PDF. |
 | **Notificaciones por correo** | Avisos HTML de confirmación, reprogramación y cancelación de citas vía SMTP, enviados en segundo plano. |
 | **Auditoría** | Tablas `Version_*` y triggers que guardan la versión anterior de expedientes, consultas y recetas antes de cada cambio o baja. |
 
@@ -49,7 +49,7 @@ Monolito de escritorio en capas con patrón **MVC**. El detalle completo (diagra
 - **Vista**: archivos FXML y `cita.css` en `src/main/resources/com/gestor/gestordecitasmedicas/`.
 - **Controladores** (`controlador/`): `MainController` hace de *shell* con menú lateral, caché de paneles y control de rol; los paneles implementan `PanelControlado` y `PanelRefrescable`.
 - **Servicios** (`servicio/`): `ValidacionClinica`, `TextoExpediente`, `ControladorPDF` y `ControladorCorreo`.
-- **Modelo y persistencia** (`modelo/`): entidades de dominio, `BaseDatos` (JDBC), `PlanificadorAgenda` y las migraciones automáticas `MigracionClinica` y `MigracionAgenda`.
+- **Modelo y persistencia** (`modelo/`): entidades de dominio, `BaseDatos` (JDBC), `PlanificadorAgenda` `MigracionClinica` (tablas y disparadores de versiones) y `MigracionAgenda` (horario inicial).
 
 ## Estructura del proyecto
 
@@ -102,10 +102,12 @@ db.url=jdbc:sqlite:citas_medicas.db
 db.password=<contraseña>
 ```
 
-Si el archivo o la contraseña faltan, la aplicación se cierra por seguridad. En el primer arranque se crean automáticamente las tablas, se aplican las migraciones y se registran:
+Si el archivo o la contraseña faltan, la aplicación se cierra por seguridad. En el primer arranque se crean automáticamente las tablas y se registran:
 
-- un administrador por defecto (**ID `1`, contraseña `admin`**);
+- un administrador por defecto (**ID `SISTXXAD01`, contraseña `admin`**);
 - el horario laboral inicial de lunes a viernes (09:00–13:00 y 16:00–18:00).
+
+No hay migración entre versiones del esquema: si `citas_medicas.db` se creó con una versión anterior, la aplicación la rechaza y hay que borrar el archivo para que se regenere.
 
 > [!IMPORTANT]
 > El administrador por defecto tiene la cédula de ejemplo `00000000`, así que la validación no permite emitir recetas con él. Completa los datos reales del médico y del establecimiento en **Configuración** y cambia la contraseña.
@@ -150,7 +152,7 @@ También puedes ejecutar `Launcher` directamente desde el IDE.
 .\mvnw test
 ```
 
-La suite tiene **33 pruebas** en 9 clases (agenda, horarios, migraciones, citas y recetas, consultas, expediente, formatos clínicos, iconos y alta de pacientes desde la agenda). Cada prueba usa una base SQLite temporal mediante la propiedad `gestor.db.url`, así que `citas_medicas.db` no se modifica.
+La suite tiene **47 pruebas** en 11 clases (agenda, horarios, esquema y horario inicial, citas y recetas, consultas, expediente, formatos clínicos, iconos, carpetas de paciente, notificaciones y alta de pacientes desde la agenda). Cada prueba usa una base SQLite temporal mediante la propiedad `gestor.db.url`, así que `citas_medicas.db` no se modifica.
 
 ## Documentación
 

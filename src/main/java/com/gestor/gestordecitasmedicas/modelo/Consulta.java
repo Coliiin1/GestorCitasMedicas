@@ -4,14 +4,12 @@ import java.time.LocalDateTime;
 
 public class Consulta {
     private int idConsulta;
-    private int idExpediente;
     private int idCita;
     private LocalDateTime fechaConsulta;
     private String padecimiento;
     private String motivo;
     private String observaciones;
     private Receta receta;
-    private SignosVitales signosVitales;
 
     public int getIdConsulta() {
         return idConsulta;
@@ -19,14 +17,6 @@ public class Consulta {
 
     public void setIdConsulta(int idConsulta) {
         this.idConsulta = idConsulta;
-    }
-
-    public int getIdExpediente() {
-        return idExpediente;
-    }
-
-    public void setIdExpediente(int idExpediente) {
-        this.idExpediente = idExpediente;
     }
 
     public LocalDateTime getFechaConsulta() {
@@ -53,13 +43,16 @@ public class Consulta {
         this.receta = receta;
     }
 
-    public SignosVitales getSignosVitales() {
-        return signosVitales;
-    }
+    // Diagnóstico, indicaciones, signos y datos de médico/paciente se guardan una sola vez, en la receta de la cita.
 
-    public void setSignosVitales(SignosVitales signosVitales) {
-        this.signosVitales = signosVitales;
-    }
+    public SignosVitales getSignosVitales() { return receta == null ? null : receta.getSignosVitales(); }
+    public String getDiagnostico() { return receta == null ? null : receta.getDiagnostico(); }
+    public String getIndicaciones() { return receta == null ? null : receta.getIndicaciones(); }
+    public String getNombreMedico() { return receta == null ? null : receta.getNombreMedico(); }
+    public String getCedulaMedico() { return receta == null ? null : receta.getCedulaMedico(); }
+    public String getNombrePaciente() { return receta == null ? null : receta.getNombrePaciente(); }
+    public String getEdadPaciente() { return receta == null ? null : receta.getEdadPaciente(); }
+    public String getSexoPaciente() { return receta == null ? null : receta.getSexoPaciente(); }
 
     public String getObservaciones() {
         return observaciones;
@@ -97,37 +90,9 @@ public class Consulta {
     public String getResultadosEstudios() { return resultadosEstudios; }
     public void setResultadosEstudios(String valor) { this.resultadosEstudios = valor; }
 
-    private String diagnostico;
-    public String getDiagnostico() { return diagnostico; }
-    public void setDiagnostico(String valor) { this.diagnostico = valor; }
-
     private String pronostico;
     public String getPronostico() { return pronostico; }
     public void setPronostico(String valor) { this.pronostico = valor; }
-
-    private String indicaciones;
-    public String getIndicaciones() { return indicaciones; }
-    public void setIndicaciones(String valor) { this.indicaciones = valor; }
-
-    private String nombreMedico;
-    public String getNombreMedico() { return nombreMedico; }
-    public void setNombreMedico(String valor) { this.nombreMedico = valor; }
-
-    private String cedulaMedico;
-    public String getCedulaMedico() { return cedulaMedico; }
-    public void setCedulaMedico(String valor) { this.cedulaMedico = valor; }
-
-    private String nombrePaciente;
-    public String getNombrePaciente() { return nombrePaciente; }
-    public void setNombrePaciente(String valor) { this.nombrePaciente = valor; }
-
-    private String edadPaciente;
-    public String getEdadPaciente() { return edadPaciente; }
-    public void setEdadPaciente(String valor) { this.edadPaciente = valor; }
-
-    private String sexoPaciente;
-    public String getSexoPaciente() { return sexoPaciente; }
-    public void setSexoPaciente(String valor) { this.sexoPaciente = valor; }
 
     // ---- Lógica de negocio: delegan la persistencia a BaseDatos ----
 

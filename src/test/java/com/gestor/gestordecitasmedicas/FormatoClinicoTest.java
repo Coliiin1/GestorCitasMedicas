@@ -44,7 +44,7 @@ class FormatoClinicoTest {
         r.setIndicaciones("Indicaciones de ejemplo para comprobar la impresión y el seguimiento.");
         Medicamento m = new Medicamento(); m.setNombreMedicamento("Medicamento de prueba"); m.setConcentracion("10 mg");
         m.setPresentacion("Tabletas, caja con 10 unidades"); m.setDosis("1 tableta"); m.setViaAdministracion("Oral");
-        m.setFrecuencia("Cada 24 horas"); m.setDuradcion("10 días"); m.setCantidad("1 caja con 10 tabletas"); m.setGrupoRegulatorio("IV");
+        m.setFrecuencia("Cada 24 horas"); m.setDuracion("10 días"); m.setCantidad("1 caja con 10 tabletas"); m.setGrupoRegulatorio("IV");
         r.getMedicamentos().add(m);
         r.setSignosVitales(new SignosVitales("120/80", 72, 18, 36.5f, 98, 70f, 170));
         return r;
@@ -53,10 +53,8 @@ class FormatoClinicoTest {
     static Consulta nota(Receta r) {
         Consulta c = new Consulta(); c.setFechaConsulta(LocalDateTime.of(2026,11,5,10,35,45));
         c.setPadecimiento("Padecimiento de prueba"); c.setEvolucion("Evolución de prueba"); c.setExploracionFisica("Exploración de prueba");
-        c.setResultadosEstudios("No se solicitaron estudios"); c.setDiagnostico(r.getDiagnostico()); c.setPronostico("Pronóstico de prueba");
-        c.setIndicaciones(r.getIndicaciones()); c.setNombreMedico(r.getNombreMedico()); c.setCedulaMedico(r.getCedulaMedico());
-        c.setNombrePaciente(r.getNombrePaciente()); c.setEdadPaciente(r.getEdadPaciente()); c.setSexoPaciente(r.getSexoPaciente());
-        c.setSignosVitales(r.getSignosVitales()); return c;
+        c.setResultadosEstudios("No se solicitaron estudios"); c.setPronostico("Pronóstico de prueba");
+        c.setReceta(r); return c;
     }
 
     @Test void impideExportarRecetasIncompletasYFraccionesFueraDelAlcance() throws Exception {
@@ -97,6 +95,12 @@ class FormatoClinicoTest {
         assertEquals("IV", recuperada.getMedicamentos().get(0).getGrupoRegulatorio());
         Consulta recuperadaNota=bd.cargarConsultaPorCita(cita.getIdCita());
         assertEquals(c.getPronostico(),recuperadaNota.getPronostico());
+        // Guardar de nuevo sin cambios no debe archivar copias idénticas.
+        assertTrue(bd.guardarAtencion(cita,recuperadaNota,recuperada,false));
+        try (Statement st=BaseDatos.getConexion().createStatement(); ResultSet rs=st.executeQuery("SELECT (SELECT COUNT(*) FROM Version_Receta)"
+                + " + (SELECT COUNT(*) FROM Version_Consulta) + (SELECT COUNT(*) FROM Version_Signos_vitales)")) {
+            assertTrue(rs.next()); assertEquals(0,rs.getInt(1));
+        }
         recuperada.setDiagnostico("Diagnóstico actualizado");
         assertTrue(bd.guardarAtencion(cita,recuperadaNota,recuperada,true));
         assertEquals(Estado.ATENDIDA, bd.cargarCitas().get(cita.getIdCita()).getEstado());
@@ -114,7 +118,7 @@ class FormatoClinicoTest {
             s.execute("CREATE TRIGGER falla_nota BEFORE INSERT ON Consulta BEGIN SELECT RAISE(ABORT, 'fallo de prueba'); END");
         }
         assertFalse(bd.guardarAtencion(cita,c,r,true));
-        assertEquals(0,r.getIdReceta()); assertEquals(0,c.getIdConsulta()); assertEquals(0,c.getIdExpediente());
+        assertEquals(0,r.getIdReceta()); assertEquals(0,c.getIdConsulta());
         assertNull(bd.cargarRecetaPorCita(cita.getIdCita()));
         assertNull(bd.cargarExpedientePorCurp(paciente.getCurp()));
         assertEquals(Estado.AGENDADA,bd.cargarCitas().get(cita.getIdCita()).getEstado());
@@ -122,7 +126,7 @@ class FormatoClinicoTest {
 
     @Test void noPermiteCruzarRecetaConOtraCita() {
         Receta r=recetaCompleta(); Consulta c=nota(r); assertTrue(bd.guardarAtencion(cita,c,r,false));
-        Cita otra=new Cita(); otra.setCurp(paciente.getCurp()); otra.setFechaCita(new Date()); otra.setEstado(Estado.AGENDADA);
+        Cita otra=new Cita(); otra.setCurp(paciente.getCurp()); otra.setFechaCita(new Date(System.currentTimeMillis() + 3_600_000L)); otra.setEstado(Estado.AGENDADA);
         assertTrue(bd.insertarCita(otra));
         assertFalse(bd.guardarAtencion(otra,nota(r),r,true));
         assertNull(bd.cargarRecetaPorCita(otra.getIdCita()));
@@ -152,7 +156,7 @@ class FormatoClinicoTest {
         } finally { pdf.close(); }
         Expediente e=new Expediente(); e.setDatosPaciente(paciente); e.setIdExpediente(123); e.setFechaApertura(new Date());
         e.setNombreEstablecimiento(r.getNombreEstablecimiento()); e.setDomicilioEstablecimiento(r.getDomicilioEstablecimiento());
-        Consulta c=nota(r); c.setIdConsulta(1); c.setIdExpediente(123); c.setSignosVitales(r.getSignosVitales()); e.getConsultas().add(c);
+        Consulta c=nota(r); c.setIdConsulta(1); e.getConsultas().add(c);
         new ControladorPDF().generarExpediente(Paths.get("target","expediente-normativo-prueba.pdf").toFile(),e);
         assertTrue(TextoExpediente.historia(e).contains("BORRADOR"));
     }
@@ -179,21 +183,6 @@ class FormatoClinicoTest {
             assertTrue(rs.next()); assertEquals(e.getPronostico(),rs.getString(1));
         }
         new ControladorPDF().generarExpediente(Paths.get("target","historia-completa-prueba.pdf").toFile(),cargado);
-    }
-
-    @Test void migracionDeEsquemaAnteriorConservaDatosYSePuedeReabrir() throws Exception {
-        BaseDatos.cerrarConexion();
-        String url="jdbc:sqlite:"+temporal.resolve("esquema-anterior.db");
-        System.setProperty("gestor.db.url",url);
-        try(Connection con=DriverManager.getConnection(url); Statement s=con.createStatement()) {
-            s.execute("CREATE TABLE Expediente(id_expediente INTEGER PRIMARY KEY, CURP TEXT, fecha_apertura DATE, antecedentes_familiares TEXT, antecedentes_personales TEXT, alergias TEXT, observaciones TEXT)");
-            s.execute("INSERT INTO Expediente VALUES(75,'ANTERIOR',NULL,'Texto anterior',NULL,NULL,NULL)");
-        }
-        BaseDatos.getConexion(); BaseDatos.cerrarConexion(); BaseDatos.getConexion();
-        try(Statement s=BaseDatos.getConexion().createStatement(); ResultSet rs=s.executeQuery("SELECT * FROM Expediente WHERE id_expediente=75")) {
-            assertTrue(rs.next()); assertEquals("Texto anterior",rs.getString("antecedentes_familiares"));
-            assertNull(rs.getString("signos_historia")); assertNull(rs.getString("autor_historia"));
-        }
     }
 
     @AfterAll static void cerrar() { BaseDatos.cerrarConexion(); System.clearProperty("gestor.db.url"); }

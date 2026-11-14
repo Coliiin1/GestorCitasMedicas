@@ -26,7 +26,7 @@ public class MainController {
     @FXML private Button btnNotificaciones;
 
     private boolean esAdmin;
-    private int idAdmin;
+    private String idAdmin;
     // Último botón del menú con resaltado, para conservarlo en paneles fuera del menú (p. ej. edición).
     private Button ultimoActivo;
     // Se cachean para conservar el estado de cada panel (p. ej. el cronómetro de la cita).
@@ -45,11 +45,7 @@ public class MainController {
         PanelNotificaciones.instalar(btnNotificaciones);
     }
 
-    public void setIdAdministrador(int id) {
-        idAdmin = id;
-    }
-
-    public int idAdministrador() {
+    public String idAdministrador() {
         return idAdmin;
     }
 
@@ -60,7 +56,7 @@ public class MainController {
     /** Muestra en la barra lateral los datos del consultorio guardados en la tabla Administrador. */
     public void aplicarConfiguracion() {
         // Sin sesión de admin se toma el primer administrador (el consultorio es de un solo médico).
-        Administrador a = Administrador.buscar(esAdmin ? idAdmin : 1);
+        Administrador a = Administrador.buscar(esAdmin ? idAdmin : null);
         if (a == null) return;
         if (a.getNombreEstablecimiento() != null && !a.getNombreEstablecimiento().trim().isEmpty())
             lblConsultorio.setText(a.getNombreEstablecimiento());
@@ -68,7 +64,7 @@ public class MainController {
     }
 
     /** Ajusta menú y navegación según el rol ("admin" o "asis") y abre la pantalla inicial. */
-    public void configurarRol(String rol, int idUsuario) {
+    public void configurarRol(String rol, String idUsuario) {
         esAdmin = "admin".equals(rol);
         idAdmin = idUsuario;
         aplicarConfiguracion();

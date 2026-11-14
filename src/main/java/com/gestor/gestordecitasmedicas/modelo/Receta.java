@@ -8,7 +8,7 @@ public class Receta {
 
     private int idReceta;
     private int idCita;
-    private int idAdministrador;
+    private String idAdministrador;
     private String curp;
     private Date fecha;
     private String diagnostico;
@@ -31,11 +31,11 @@ public class Receta {
         this.idCita = idCita;
     }
 
-    public int getIdAdministrador() {
+    public String getIdAdministrador() {
         return idAdministrador;
     }
 
-    public void setIdAdministrador(int idAdministrador) {
+    public void setIdAdministrador(String idAdministrador) {
         this.idAdministrador = idAdministrador;
     }
 

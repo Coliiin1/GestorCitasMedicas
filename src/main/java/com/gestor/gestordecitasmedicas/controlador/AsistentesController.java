@@ -90,7 +90,7 @@ public class AsistentesController implements PanelControlado, PanelRefrescable {
         Label nombre = new Label(nombreCompleto(asistente));
         nombre.getStyleClass().add("row-name");
 
-        Label detalle = new Label("ID: #" + asistente.getIdAsistente());
+        Label detalle = new Label("ID: " + asistente.getIdAsistente());
         detalle.getStyleClass().add("hint");
 
         VBox datos = new VBox(4, nombre, detalle);

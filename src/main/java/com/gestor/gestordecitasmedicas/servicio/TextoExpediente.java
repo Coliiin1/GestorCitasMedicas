@@ -104,7 +104,7 @@ public final class TextoExpediente {
                     .append("\nPaciente al atender: ").append(valor(c.getNombrePaciente()))
                     .append(" | Edad: ").append(valor(c.getEdadPaciente()))
                     .append(" | Sexo: ").append(valor(c.getSexoPaciente()))
-                    .append(" | Expediente: ").append(c.getIdExpediente())
+                    .append(" | Expediente: ").append(e.getIdExpediente())
                     .append("\nMotivo: ").append(valor(c.getMotivo()))
                     .append("\nPadecimiento: ").append(valor(c.getPadecimiento()))
                     .append(opcional("Evolución", c.getEvolucion()))
@@ -142,7 +142,7 @@ public final class TextoExpediente {
             for (Medicamento m : r.getMedicamentos()) {
                 texto.append("\nMedicamento: ").append(valor(m.getNombreMedicamento()))
                         .append("\nDosis y posología: ").append(valor(m.getDosis()))
-                        .append(" | Duración: ").append(valor(m.getDuradcion()));
+                        .append(" | Duración: ").append(valor(m.getDuracion()));
                 extra(texto, "Marca", m.getDenominacionDistintiva());
                 extra(texto, "Cantidad", m.getCantidad());
                 extra(texto, "Tipo de receta", m.getGrupoRegulatorio());

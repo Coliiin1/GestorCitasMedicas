@@ -356,19 +356,17 @@ public final class HorarioConfigController {
             }
         }
 
+        List<Cita> fuera = new ArrayList<>();
         if (horarioEditando != null) {
-            int fuera = 0;
             for (Cita cita : horarioEditando.citasActivas()) {
-                if (!horario.isEstado() || !cubre(horario, cita.fechaHora())) {
-                    fuera++;
+                if (!horario.isEstado() || !horario.cubre(cita.fechaHora())) {
+                    fuera.add(cita);
                 }
             }
-            if (fuera > 0) {
-                Notificador.advertencia("Hay citas en ese tramo",
-                        "No se puede modificar o desactivar el tramo porque " + fuera
-                                + " cita(s) agendada(s) quedarían fuera de horario. Reprograma o cancela primero.");
-                return;
-            }
+        }
+        String motivo = confirmarCancelacionCitas(fuera);
+        if (motivo == null) {
+            return;
         }
 
         if (!horario.guardar()) {
@@ -376,6 +374,7 @@ public final class HorarioConfigController {
                     "El tramo no se guardó. Revisa que no se cruce con otro tramo activo.");
             return;
         }
+        notificar(fuera, motivo);
         cambios = true;
         limpiarFormularioHorario();
         recargarListas();
@@ -397,11 +396,16 @@ public final class HorarioConfigController {
                         + PlanificadorAgenda.formatoHora(horario.getHoraFin()) + "?")) {
             return;
         }
-        if (!horario.eliminar()) {
-            Notificador.advertencia("No se pudo eliminar",
-                    "El tramo tiene citas activas o no existe. Reprograma o cancela las citas primero.");
+        List<Cita> afectadas = horario.citasActivas();
+        String motivo = confirmarCancelacionCitas(afectadas);
+        if (motivo == null) {
             return;
         }
+        if (!horario.eliminar()) {
+            Notificador.error("No se pudo eliminar", "El tramo no se eliminó. Inténtalo de nuevo.");
+            return;
+        }
+        notificar(afectadas, motivo);
         cambios = true;
         if (horarioEditando != null && horarioEditando.getIdHorario() == horario.getIdHorario()) {
             limpiarFormularioHorario();
@@ -488,11 +492,15 @@ public final class HorarioConfigController {
             Notificador.error("No se pudo guardar", "El bloqueo no se guardó. Revisa el rango e inténtalo de nuevo.");
             return false;
         }
-        if (!conflictos.isEmpty()) {
-            ControladorCorreo.notificarCancelaciones(
-                    conflictos, Paciente.todos(), motivo, HorarioConfigController::avisoNotificacion);
-        }
+        notificar(conflictos, motivo);
         return true;
+    }
+
+    private static void notificar(List<Cita> canceladas, String motivo) {
+        if (!canceladas.isEmpty()) {
+            ControladorCorreo.notificarCancelaciones(
+                    canceladas, Paciente.todos(), motivo, HorarioConfigController::avisoNotificacion);
+        }
     }
 
     private void editarBloqueo(HorarioBloqueado bloqueo) {
@@ -551,21 +559,6 @@ public final class HorarioConfigController {
         btnGuardarBloqueo.setText("Agregar bloqueo");
     }
 
-    private static boolean cubre(Horario horario, LocalDateTime fecha) {
-        if (horario == null || fecha == null || horario.getDia() == null
-                || horario.getHoraInicio() == null || horario.getHoraFin() == null) {
-            return false;
-        }
-        DiaSemana dia = DiaSemana.desdeDayOfWeek(fecha.getDayOfWeek());
-        if (dia != horario.getDia()) {
-            return false;
-        }
-        LocalDateTime inicio = fecha.toLocalDate().atTime(horario.getHoraInicio());
-        LocalDateTime fin = fecha.toLocalDate().atTime(horario.getHoraFin());
-        return !fecha.isBefore(inicio) && !fecha.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS)
-                .isAfter(fin);
-    }
-
     private static VBox campo(String etiqueta, Node control) {
         Label label = new Label(etiqueta);
         label.getStyleClass().add("field-label");
@@ -592,7 +585,7 @@ public final class HorarioConfigController {
     }
 
     /**
-     * Lista las citas que se cancelarán al bloquear y pide confirmación con un motivo opcional. Devuelve null si
+     * Lista las citas que se cancelarán (por un bloqueo o un cambio de tramo) y pide confirmación con un motivo opcional. Devuelve null si
      * se rechaza; si no, el motivo escrito ("" si no hay citas o se dejó vacío). El motivo solo se usa en el
      * correo a los pacientes: no se guarda.
      */
@@ -618,9 +611,9 @@ public final class HorarioConfigController {
         motivo.setPromptText("Motivo (opcional): se incluye en el correo a los pacientes");
         motivo.getStyleClass().add("form-field");
 
-        boolean aceptado = Confirmacion.preguntar("¿Cancelar las citas del periodo?",
-                "Se cancelarán " + citas.size() + " cita(s) agendada(s) en este periodo:",
-                "Cancelar citas y bloquear", true, new VBox(8, lista, motivo));
+        boolean aceptado = Confirmacion.preguntar("¿Cancelar las citas afectadas?",
+                "Se cancelarán " + citas.size() + " cita(s) agendada(s) que quedan fuera de horario:",
+                "Cancelar citas y continuar", true, new VBox(8, lista, motivo));
         return aceptado ? motivo.getText().trim() : null;
     }
 

@@ -295,13 +295,14 @@ public class ControladorCorreo {
 
     private String textoEstado(Estado estado) {
         String texto = "Agendada";
-        String color = "#047857";
+        // Mismos tonos que -agenda-*-texto (modo claro) en cita.css.
+        String color = "#2b5f8f";
         if (estado == Estado.CANCELADA) {
             texto = "Cancelada";
-            color = "#be123c";
+            color = "#9b3747";
         } else if (estado == Estado.ATENDIDA) {
             texto = "Atendida";
-            color = "#0369a1";
+            color = "#4b4f9e";
         }
         return "<div style=\"font-size:15px;line-height:24px;font-weight:700;color:" + color + ";\">" + texto + "</div>";
     }

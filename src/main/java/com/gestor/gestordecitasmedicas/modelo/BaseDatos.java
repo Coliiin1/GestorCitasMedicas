@@ -20,6 +20,7 @@ import java.util.Properties;
 public class BaseDatos {
     private static Connection conexion = null;
     private static String urlActual = null;
+    private static final int VERSION_ESQUEMA = 2;
 
     private static Properties cargarConfig() {
         Properties p = new Properties();
@@ -97,22 +98,34 @@ public class BaseDatos {
     private static void inicializarBaseDatos() throws SQLException {
         String[] sentencias = {
                 "CREATE TABLE IF NOT EXISTS Administrador (" +
-                        "id_administrador INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "id_administrador VARCHAR(10) PRIMARY KEY NOT NULL CHECK (length(id_administrador) = 10), " +
                         "nombre VARCHAR(20) NOT NULL, " +
                         "apellido_paterno VARCHAR(20) NOT NULL, " +
                         "apellido_materno VARCHAR(20), " +
                         "contraseña VARCHAR(255) NOT NULL, " +
                         "cedula VARCHAR(8), " +
                         "institución VARCHAR(20), " +
-                        "domicilio VARCHAR(100))",
+                        "domicilio VARCHAR(100), " +
+                        "profesion TEXT, " +
+                        "especialidad TEXT, " +
+                        "registro_especialidad TEXT, " +
+                        "nombre_establecimiento TEXT, " +
+                        "domicilio_establecimiento TEXT)",
                 "CREATE TABLE IF NOT EXISTS Asistente (" +
-                        "id_asistente INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "id_asistente VARCHAR(10) PRIMARY KEY NOT NULL CHECK (length(id_asistente) = 10), " +
                         "nombre VARCHAR(20) NOT NULL, " +
                         "apellido_paterno VARCHAR(20) NOT NULL, " +
                         "apellido_materno VARCHAR(20), " +
                         "contraseña VARCHAR(255) NOT NULL)",
+                // El login busca en ambas tablas: un id de acceso no puede existir en las dos.
+                "CREATE TRIGGER IF NOT EXISTS id_acceso_unico_asistente BEFORE INSERT ON Asistente " +
+                        "WHEN EXISTS (SELECT 1 FROM Administrador WHERE id_administrador = NEW.id_asistente) " +
+                        "BEGIN SELECT RAISE(ABORT, 'id de acceso en uso'); END",
+                "CREATE TRIGGER IF NOT EXISTS id_acceso_unico_administrador BEFORE INSERT ON Administrador " +
+                        "WHEN EXISTS (SELECT 1 FROM Asistente WHERE id_asistente = NEW.id_administrador) " +
+                        "BEGIN SELECT RAISE(ABORT, 'id de acceso en uso'); END",
                 "CREATE TABLE IF NOT EXISTS Paciente (" +
-                        "CURP VARCHAR(18) PRIMARY KEY, " +
+                        "CURP VARCHAR(18) PRIMARY KEY NOT NULL, " +
                         "nombre VARCHAR(20) NOT NULL, " +
                         "apellido_paterno VARCHAR(20) NOT NULL, " +
                         "apellido_materno VARCHAR(20), " +
@@ -123,76 +136,128 @@ public class BaseDatos {
                         "correo VARCHAR(50))",
                 "CREATE TABLE IF NOT EXISTS Expediente (" +
                         "id_expediente INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "CURP VARCHAR(18) NOT NULL, " +
+                        "CURP VARCHAR(18) NOT NULL UNIQUE, " +
                         "fecha_apertura DATE, " +
                         "antecedentes_familiares TEXT, " +
                         "antecedentes_personales TEXT, " +
                         "alergias TEXT, " +
                         "observaciones TEXT, " +
+                        "tipo_sangre TEXT, " +
+                        "tipo_establecimiento TEXT, " +
+                        "nombre_establecimiento TEXT, " +
+                        "domicilio_establecimiento TEXT, " +
+                        "institucion_establecimiento TEXT, " +
+                        "propietario TEXT, " +
+                        "grupo_etnico TEXT, " +
+                        "antecedentes_no_patologicos TEXT, " +
+                        "consumo_sustancias TEXT, " +
+                        "padecimiento_actual TEXT, " +
+                        "interrogatorio_sistemas TEXT, " +
+                        "exploracion_fisica TEXT, " +
+                        "resultados_estudios TEXT, " +
+                        "diagnostico TEXT, " +
+                        "pronostico TEXT, " +
+                        "indicacion_terapeutica TEXT, " +
+                        "autor_historia TEXT, " +
+                        "cedula_historia TEXT, " +
+                        "fecha_hora_historia TEXT, " +
+                        "signos_historia TEXT, " +
                         "FOREIGN KEY (CURP) REFERENCES Paciente(CURP) ON DELETE CASCADE)",
                 "CREATE TABLE IF NOT EXISTS Cita (" +
                         "id_cita INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "CURP VARCHAR(18) NOT NULL, " +
-                        "fecha DATE, " +
-                        "estado VARCHAR(10), " +
+                        "fecha TIMESTAMP NOT NULL, " +
+                        "estado VARCHAR(10) NOT NULL CHECK (estado IN ('AGENDADA', 'ATENDIDA', 'CANCELADA')), " +
                         "FOREIGN KEY (CURP) REFERENCES Paciente(CURP) ON DELETE CASCADE)",
+                // Diagnóstico, indicaciones y datos de médico/paciente viven en la Receta de la misma cita.
                 "CREATE TABLE IF NOT EXISTS Consulta (" +
                         "id_consulta INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "id_cita INTEGER NOT NULL, " +
-                        "id_expediente INTEGER NOT NULL, " +
-                        "fecha DATE, " +
+                        "id_cita INTEGER NOT NULL UNIQUE, " +
+                        "fecha TIMESTAMP NOT NULL, " +
                         "padecimiento TEXT, " +
                         "motivo TEXT, " +
                         "observaciones TEXT, " +
-                        "FOREIGN KEY (id_cita) REFERENCES Cita(id_cita) ON DELETE CASCADE, " +
-                        "FOREIGN KEY (id_expediente) REFERENCES Expediente(id_expediente) ON DELETE CASCADE)",
+                        "evolucion TEXT, " +
+                        "exploracion_fisica TEXT, " +
+                        "resultados_estudios TEXT, " +
+                        "pronostico TEXT, " +
+                        "FOREIGN KEY (id_cita) REFERENCES Cita(id_cita) ON DELETE CASCADE)",
+                // Los datos de médico, consultorio y paciente son la fotografía del momento de la atención.
                 "CREATE TABLE IF NOT EXISTS Receta (" +
                         "id_receta INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "id_administrador INTEGER NOT NULL, " +
-                        "id_cita INTEGER NOT NULL, " +
-                        "fecha DATE, " +
+                        "id_administrador VARCHAR(10) NOT NULL, " +
+                        "id_cita INTEGER NOT NULL UNIQUE, " +
+                        "fecha TIMESTAMP NOT NULL, " +
                         "diagnostico TEXT, " +
+                        "indicaciones TEXT, " +
+                        "nombre_medico TEXT, " +
+                        "cedula_medico TEXT, " +
+                        "profesion TEXT, " +
+                        "institucion_titulo TEXT, " +
+                        "domicilio_medico TEXT, " +
+                        "especialidad TEXT, " +
+                        "registro_especialidad TEXT, " +
+                        "nombre_establecimiento TEXT, " +
+                        "domicilio_establecimiento TEXT, " +
+                        "nombre_paciente TEXT, " +
+                        "edad_paciente TEXT, " +
+                        "sexo_paciente TEXT, " +
                         "FOREIGN KEY (id_administrador) REFERENCES Administrador(id_administrador) ON DELETE RESTRICT, " +
                         "FOREIGN KEY (id_cita) REFERENCES Cita(id_cita) ON DELETE CASCADE)",
                 "CREATE TABLE IF NOT EXISTS Detalle_receta (" +
                         "id_detalle_receta INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "id_receta INTEGER NOT NULL, " +
-                        "nombre_medicamento TEXT, " +
+                        "nombre_medicamento TEXT NOT NULL, " +
                         "concentracion VARCHAR(20), " +
                         "dosis VARCHAR(20), " +
                         "frecuencia VARCHAR(20), " +
                         "duracion VARCHAR(20), " +
+                        "presentacion TEXT, " +
+                        "via_administracion TEXT, " +
+                        "denominacion_distintiva TEXT, " +
+                        "cantidad TEXT, " +
+                        "grupo_regulatorio TEXT, " +
                         "FOREIGN KEY (id_receta) REFERENCES Receta(id_receta) ON DELETE CASCADE)",
                 "CREATE TABLE IF NOT EXISTS Signos_vitales (" +
                         "id_signos_vitales INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "id_receta INTEGER NOT NULL, " +
-                        "presion_arterial VARCHAR(3), " +
-                        "frecuencia_cardiaca VARCHAR(3), " +
-                        "frecuencia_respiratoria VARCHAR(3), " +
+                        "id_receta INTEGER NOT NULL UNIQUE, " +
+                        "presion_arterial VARCHAR(7), " +
+                        "frecuencia_cardiaca INTEGER, " +
+                        "frecuencia_respiratoria INTEGER, " +
                         "temperatura_corporal REAL, " +
                         "peso REAL, " +
-                        "talla REAL, " +
+                        "talla INTEGER, " +
                         "saturacion_oxigeno INTEGER, " +
                         "FOREIGN KEY (id_receta) REFERENCES Receta(id_receta) ON DELETE CASCADE)",
                 "CREATE TABLE IF NOT EXISTS Horario (" +
                         "id_horario INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "dia INTEGER, " +
-                        "hora_inicio TIME, " +
-                        "hora_fin TIME, " +
-                        "estado BOOLEAN)",
+                        "dia INTEGER NOT NULL, " +
+                        "hora_inicio TIME NOT NULL, " +
+                        "hora_fin TIME NOT NULL, " +
+                        "estado BOOLEAN NOT NULL, " +
+                        "UNIQUE (dia, hora_inicio, hora_fin), " +
+                        "CHECK (hora_inicio < hora_fin))",
                 "CREATE TABLE IF NOT EXISTS Horario_bloqueado (" +
                         "id_bloqueo INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         "fecha_inicio TIMESTAMP NOT NULL, " +
                         "fecha_fin TIMESTAMP NOT NULL, " +
-                        "motivo TEXT)",
-                "CREATE TABLE IF NOT EXISTS Configuracion (clave TEXT PRIMARY KEY, valor TEXT)"
+                        "CHECK (fecha_inicio < fecha_fin))",
+                "CREATE TABLE IF NOT EXISTS Configuracion (clave TEXT PRIMARY KEY, valor TEXT)",
+                // Un turno solo admite una cita vigente (misma regla que Cita.ocupadaEn).
+                "CREATE UNIQUE INDEX IF NOT EXISTS ux_cita_turno ON Cita(fecha) WHERE estado <> 'CANCELADA'",
+                "CREATE INDEX IF NOT EXISTS idx_cita_curp ON Cita(CURP)",
+                "CREATE INDEX IF NOT EXISTS idx_detalle_receta ON Detalle_receta(id_receta)",
+                "CREATE INDEX IF NOT EXISTS idx_horario_dia_estado ON Horario(dia, estado)",
+                "CREATE INDEX IF NOT EXISTS idx_bloqueo_rango ON Horario_bloqueado(fecha_inicio, fecha_fin)"
         };
 
         conexion.setAutoCommit(false);
         try (Statement stmt = conexion.createStatement()) {
+            exigirEsquemaActual(stmt);
             for (String sentencia : sentencias) {
                 stmt.execute(sentencia);
             }
+            stmt.execute("PRAGMA user_version = " + VERSION_ESQUEMA);
             MigracionClinica.aplicar(conexion);
             MigracionAgenda.aplicar(conexion);
             insertarAdministradorPorDefecto(stmt);
@@ -205,14 +270,45 @@ public class BaseDatos {
         }
     }
 
+    /** Una base creada con otro esquema no se migra: se rechaza para no mezclar estructuras. */
+    private static void exigirEsquemaActual(Statement stmt) throws SQLException {
+        int version;
+        int tablas;
+        try (ResultSet rs = stmt.executeQuery("PRAGMA user_version")) {
+            version = rs.getInt(1);
+        }
+        try (ResultSet rs = stmt.executeQuery(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")) {
+            tablas = rs.getInt(1);
+        }
+        if (tablas > 0 && version != VERSION_ESQUEMA) {
+            throw new SQLException("la base es de una versión anterior del sistema; "
+                    + "borra el archivo .db para que se regenere.");
+        }
+    }
+
     private static void insertarAdministradorPorDefecto(Statement stmt) throws SQLException {
         try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM Administrador")) {
             if (rs.next() && rs.getInt(1) == 0) {
-                stmt.executeUpdate("INSERT INTO Administrador " +
-                        "(nombre, apellido_paterno, apellido_materno, \"contraseña\", cedula, \"institución\", domicilio) " +
-                        "VALUES ('Administrador', 'Sistema', '', 'admin', '00000000', 'Sistema', '')");
+                stmt.executeUpdate("INSERT INTO Administrador (id_administrador, " +
+                        "nombre, apellido_paterno, apellido_materno, \"contraseña\", cedula, \"institución\", domicilio) " +
+                        "VALUES ('" + Personal.generarUsuario("Administrador", "Sistema", "", new java.util.HashSet<>())
+                        + "', 'Administrador', 'Sistema', '', 'admin', '00000000', 'Sistema', '')");
             }
         }
+    }
+
+    /** Ids de acceso ya usados por administradores y asistentes. */
+    private static java.util.Set<String> idsDeAcceso(Connection con) throws SQLException {
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        try (Statement s = con.createStatement();
+             ResultSet rs = s.executeQuery(
+                     "SELECT id_asistente FROM Asistente UNION SELECT id_administrador FROM Administrador")) {
+            while (rs.next()) {
+                ids.add(rs.getString(1));
+            }
+        }
+        return ids;
     }
 
     public static void cerrarConexion() {
@@ -236,21 +332,23 @@ public class BaseDatos {
             return false;
         }
 
-        String sql = "INSERT INTO Asistente (nombre, apellido_paterno, apellido_materno, \"contraseña\") " +
-                "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO Asistente (id_asistente, nombre, apellido_paterno, apellido_materno, \"contraseña\") " +
+                "VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, valor(asistente.getNombre()));
-            ps.setString(2, valor(asistente.getApellidoPaterno()));
-            ps.setString(3, asistente.getApellidoMaterno());
-            ps.setString(4, valor(asistente.getContrasena()));
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            String id = Personal.generarUsuario(asistente.getNombre(), asistente.getApellidoPaterno(),
+                    asistente.getApellidoMaterno(), idsDeAcceso(con));
+            if (id == null) {
+                return false;
+            }
+            ps.setString(1, id);
+            ps.setString(2, valor(asistente.getNombre()));
+            ps.setString(3, valor(asistente.getApellidoPaterno()));
+            ps.setString(4, asistente.getApellidoMaterno());
+            ps.setString(5, valor(asistente.getContrasena()));
 
             if (ps.executeUpdate() > 0) {
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        asistente.setIdAsistente(rs.getInt(1));
-                    }
-                }
+                asistente.setIdAsistente(id);
                 return true;
             }
         } catch (SQLException e) {
@@ -259,7 +357,7 @@ public class BaseDatos {
         return false;
     }
 
-    public boolean eliminarAsistente(int idAsistente) {
+    public boolean eliminarAsistente(String idAsistente) {
         Connection con = getConexion();
         if (con == null) {
             return false;
@@ -268,7 +366,7 @@ public class BaseDatos {
         String sql = "DELETE FROM Asistente WHERE id_asistente = ?";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idAsistente);
+            ps.setString(1, idAsistente);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al eliminar asistente: " + e.getMessage());
@@ -277,7 +375,7 @@ public class BaseDatos {
     }
 
     public boolean actualizarAsistente(Asistente asistente) {
-        if (asistente == null || asistente.getIdAsistente() <= 0) {
+        if (asistente == null || asistente.getIdAsistente() == null) {
             return false;
         }
 
@@ -294,7 +392,7 @@ public class BaseDatos {
             ps.setString(2, valor(asistente.getApellidoPaterno()));
             ps.setString(3, asistente.getApellidoMaterno());
             ps.setString(4, valor(asistente.getContrasena()));
-            ps.setInt(5, asistente.getIdAsistente());
+            ps.setString(5, asistente.getIdAsistente());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al actualizar asistente: " + e.getMessage());
@@ -302,14 +400,16 @@ public class BaseDatos {
         return false;
     }
 
-    public Administrador obtenerAdministrador(int id) {
+    /** {@code id} null devuelve el primer administrador (el consultorio es de un solo médico). */
+    public Administrador obtenerAdministrador(String id) {
         Connection con = getConexion();
         if (con == null) return null;
         String sql = "SELECT nombre, apellido_paterno, apellido_materno, cedula, \"institución\", domicilio, " +
                 "profesion, especialidad, registro_especialidad, nombre_establecimiento, domicilio_establecimiento " +
                 "FROM Administrador WHERE id_administrador = ?";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            if (id == null) id = obtenerIdAdministradorPorDefecto(con);
+            ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return null;
                 Administrador a = new Administrador();
@@ -351,7 +451,7 @@ public class BaseDatos {
             ps.setString(9, a.getRegistroEspecialidad());
             ps.setString(10, a.getNombreEstablecimiento());
             ps.setString(11, a.getDomicilioEstablecimiento());
-            ps.setInt(12, a.getIdAdministrador());
+            ps.setString(12, a.getIdAdministrador());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error al actualizar administrador: " + e.getMessage());
@@ -359,62 +459,16 @@ public class BaseDatos {
         return false;
     }
 
-    /** Un id de acceso es libre si no lo usa ningún otro administrador ni asistente (el login busca en ambas tablas). */
-    public boolean idUsuarioLibre(int id, int idAdminActual) {
+    public boolean actualizarContrasenaAdmin(String id, String nuevaContrasena) {
         Connection con = getConexion();
-        if (con == null || id <= 0) return false;
-        String sql = "SELECT 1 FROM Asistente WHERE id_asistente = ? " +
-                "UNION SELECT 1 FROM Administrador WHERE id_administrador = ? AND id_administrador <> ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.setInt(2, id);
-            ps.setInt(3, idAdminActual);
-            try (ResultSet rs = ps.executeQuery()) {
-                return !rs.next();
-            }
+        if (con == null || nuevaContrasena == null || nuevaContrasena.isEmpty()) return false;
+        try (PreparedStatement ps = con.prepareStatement(
+                "UPDATE Administrador SET \"contraseña\" = ? WHERE id_administrador = ?")) {
+            ps.setString(1, nuevaContrasena);
+            ps.setString(2, id);
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error al validar usuario: " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * Cambia el id de acceso y/o la contraseña del administrador. nuevaContrasena vacía/null la conserva.
-     * El id es clave foránea de Receta, por eso se actualiza ahí en la misma transacción.
-     */
-    public boolean actualizarCredencialesAdmin(int idActual, int nuevoId, String nuevaContrasena) {
-        Connection con = getConexion();
-        if (con == null || nuevoId <= 0) return false;
-        boolean cambiaPass = nuevaContrasena != null && !nuevaContrasena.isEmpty();
-        try {
-            con.setAutoCommit(false);
-            try (Statement st = con.createStatement()) {
-                st.execute("PRAGMA defer_foreign_keys = ON");
-            }
-            try (PreparedStatement ps = con.prepareStatement(
-                    "UPDATE Administrador SET id_administrador = ?" + (cambiaPass ? ", \"contraseña\" = ?" : "")
-                            + " WHERE id_administrador = ?")) {
-                int i = 1;
-                ps.setInt(i++, nuevoId);
-                if (cambiaPass) ps.setString(i++, nuevaContrasena);
-                ps.setInt(i, idActual);
-                if (ps.executeUpdate() == 0) throw new SQLException("Administrador no encontrado");
-            }
-            if (nuevoId != idActual) {
-                try (PreparedStatement ps = con.prepareStatement(
-                        "UPDATE Receta SET id_administrador = ? WHERE id_administrador = ?")) {
-                    ps.setInt(1, nuevoId);
-                    ps.setInt(2, idActual);
-                    ps.executeUpdate();
-                }
-            }
-            con.commit();
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar credenciales: " + e.getMessage());
-            try { con.rollback(); } catch (SQLException ignorada) { }
-        } finally {
-            try { con.setAutoCommit(true); } catch (SQLException ignorada) { }
+            System.err.println("Error al actualizar la contraseña: " + e.getMessage());
         }
         return false;
     }
@@ -447,9 +501,9 @@ public class BaseDatos {
     }
 
     /** Devuelve "admin", "asis" o null si las credenciales no coinciden. */
-    public String autenticar(int id, String contrasena) {
+    public String autenticar(String id, String contrasena) {
         Connection con = getConexion();
-        if (con == null || contrasena == null || contrasena.isEmpty()) {
+        if (con == null || id == null || contrasena == null || contrasena.isEmpty()) {
             return null;
         }
         String[][] tablas = {
@@ -458,7 +512,7 @@ public class BaseDatos {
         for (String[] t : tablas) {
             String sql = "SELECT 1 FROM " + t[0] + " WHERE " + t[1] + " = ? AND \"contraseña\" = ?";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setInt(1, id);
+                ps.setString(1, id);
                 ps.setString(2, contrasena);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
@@ -485,7 +539,7 @@ public class BaseDatos {
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Asistente asistente = new Asistente(rs.getInt("id_asistente"));
+                Asistente asistente = new Asistente(rs.getString("id_asistente"));
                 asistente.setNombre(rs.getString("nombre"));
                 asistente.setApellidoPaterno(rs.getString("apellido_paterno"));
                 asistente.setApellidoMaterno(rs.getString("apellido_materno"));
@@ -789,6 +843,17 @@ public class BaseDatos {
 
             boolean guardado;
             if (horario.getIdHorario() > 0) {
+                // Las citas que el tramo editado (o desactivado) deja fuera se cancelan.
+                Horario anterior = buscarHorario(con, horario.getIdHorario());
+                if (anterior != null) {
+                    for (Cita cita : citasActivasEnHorario(anterior)) {
+                        if ((!horario.isEstado() || !horario.cubre(cita.fechaHora()))
+                                && !actualizarEstadoCita(con, cita.getIdCita(), Estado.CANCELADA)) {
+                            con.rollback();
+                            return false;
+                        }
+                    }
+                }
                 String sql = "UPDATE Horario SET dia = ?, hora_inicio = ?, hora_fin = ?, estado = ? " +
                         "WHERE id_horario = ?";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -845,9 +910,16 @@ public class BaseDatos {
         try {
             con.setAutoCommit(false);
             Horario horario = buscarHorario(con, idHorario);
-            if (horario == null || !citasActivasEnHorario(horario).isEmpty()) {
+            if (horario == null) {
                 con.rollback();
                 return false;
+            }
+            // Sin el tramo las citas quedan fuera de horario: se cancelan en la misma transacción.
+            for (Cita cita : citasActivasEnHorario(horario)) {
+                if (!actualizarEstadoCita(con, cita.getIdCita(), Estado.CANCELADA)) {
+                    con.rollback();
+                    return false;
+                }
             }
 
             try (PreparedStatement ps = con.prepareStatement("DELETE FROM Horario WHERE id_horario = ?")) {
@@ -1019,14 +1091,14 @@ public class BaseDatos {
             return resultado;
         }
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime hoy = LocalDate.now().atStartOfDay();
         for (Cita cita : cargarCitas().values()) {
             if (cita.getFechaCita() == null || cita.getEstado() != Estado.AGENDADA) {
                 continue;
             }
             LocalDateTime inicioCita = LocalDateTime.ofInstant(
                     cita.getFechaCita().toInstant(), ZoneId.systemDefault());
-            if (inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS).isBefore(ahora)) {
+            if (inicioCita.isBefore(hoy)) {
                 continue;
             }
             DiaSemana dia = DiaSemana.desdeDayOfWeek(inicioCita.getDayOfWeek());
@@ -1050,7 +1122,7 @@ public class BaseDatos {
             return resultado;
         }
 
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime hoy = LocalDate.now().atStartOfDay();
         String sql = "SELECT id_cita, CURP, fecha, estado FROM Cita";
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -1063,8 +1135,8 @@ public class BaseDatos {
                 LocalDateTime inicioCita = LocalDateTime.ofInstant(
                         cita.getFechaCita().toInstant(), ZoneId.systemDefault());
                 LocalDateTime finCita = inicioCita.plusMinutes(PlanificadorAgenda.DURACION_CITA_MINUTOS);
-                // Las citas ya vencidas no se cancelan ni se notifican aunque el bloqueo abarque el pasado.
-                if (finCita.isBefore(ahora)) {
+                // Las citas de días anteriores son historial; las de hoy sí se cancelan aunque ya haya pasado su hora.
+                if (inicioCita.isBefore(hoy)) {
                     continue;
                 }
                 if (PlanificadorAgenda.seSolapan(inicioCita, finCita, inicio, fin)) {
@@ -1317,7 +1389,7 @@ public class BaseDatos {
                     expediente.setFechaHoraHistoria(rs.getString("fecha_hora_historia"));
                     expediente.setSignosHistoria(rs.getString("signos_historia"));
                     expediente.setDatosPaciente(cargarPacientePorCurp(curp));
-                    expediente.setConsultas(cargarConsultasPorExpediente(expediente.getIdExpediente()));
+                    expediente.setConsultas(cargarConsultasPorCurp(curp));
                     expediente.setRecetas(cargarRecetasPorCurp(curp));
                     return expediente;
                 }
@@ -1328,51 +1400,29 @@ public class BaseDatos {
         return null;
     }
 
-    public ArrayList<Consulta> cargarConsultasPorExpediente(int idExpediente) {
+    /** Notas de todas las citas del paciente, de la más reciente a la más antigua, con su receta. */
+    public ArrayList<Consulta> cargarConsultasPorCurp(String curp) {
         ArrayList<Consulta> consultas = new ArrayList<>();
         Connection con = getConexion();
         if (con == null) {
             throw new IllegalStateException("No hay conexión para cargar las consultas.");
         }
-        String sql = "SELECT * "
-                + "FROM Consulta WHERE id_expediente = ? ORDER BY fecha DESC, id_consulta DESC";
+        String sql = "SELECT k.* FROM Consulta k JOIN Cita c ON c.id_cita = k.id_cita "
+                + "WHERE c.CURP = ? ORDER BY k.fecha DESC, k.id_consulta DESC";
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idExpediente);
+            ps.setString(1, curp);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Consulta consulta = new Consulta();
-                    consulta.setIdConsulta(rs.getInt("id_consulta"));
-                    consulta.setIdExpediente(idExpediente);
-                    consulta.setIdCita(rs.getInt("id_cita"));
-                    Object fecha = rs.getObject("fecha");
-                    if (fecha instanceof Number) {
-                        consulta.setFechaConsulta(new java.sql.Timestamp(((Number) fecha).longValue()).toLocalDateTime());
-                    } else if (fecha != null) {
-                        String textoFecha = fecha.toString().trim().replace(' ', 'T');
-                        consulta.setFechaConsulta(textoFecha.length() == 10
-                                ? java.time.LocalDate.parse(textoFecha).atStartOfDay()
-                                : java.time.LocalDateTime.parse(textoFecha));
+                    Consulta consulta = crearConsulta(rs);
+                    // Una fecha ilegible no debe verse como historial vacío ni desordenar la lista.
+                    if (consulta.getFechaConsulta() == null) {
+                        throw new IllegalStateException("Fecha de consulta inválida: " + rs.getObject("fecha"));
                     }
-                    consulta.setPadecimiento(rs.getString("padecimiento"));
-                    consulta.setMotivo(rs.getString("motivo"));
-                    consulta.setObservaciones(rs.getString("observaciones"));
-                    consulta.setEvolucion(rs.getString("evolucion"));
-                    consulta.setExploracionFisica(rs.getString("exploracion_fisica"));
-                    consulta.setResultadosEstudios(rs.getString("resultados_estudios"));
-                    consulta.setDiagnostico(rs.getString("diagnostico"));
-                    consulta.setPronostico(rs.getString("pronostico"));
-                    consulta.setIndicaciones(rs.getString("indicaciones"));
-                    consulta.setNombreMedico(rs.getString("nombre_medico"));
-                    consulta.setCedulaMedico(rs.getString("cedula_medico"));
-                    consulta.setNombrePaciente(rs.getString("nombre_paciente"));
-                    consulta.setEdadPaciente(rs.getString("edad_paciente"));
-                    consulta.setSexoPaciente(rs.getString("sexo_paciente"));
                     consulta.setReceta(cargarRecetaPorCita(consulta.getIdCita()));
-                    if (consulta.getReceta() != null) consulta.setSignosVitales(consulta.getReceta().getSignosVitales());
                     consultas.add(consulta);
                 }
             }
-        } catch (SQLException | java.time.format.DateTimeParseException e) {
+        } catch (SQLException e) {
             throw new IllegalStateException("No se pudo cargar el historial de consultas.", e);
         }
         consultas.sort(java.util.Comparator.comparing(Consulta::getFechaConsulta,
@@ -1382,7 +1432,7 @@ public class BaseDatos {
     }
 
     public boolean insertarConsulta(Consulta consulta) {
-        if (consulta == null || consulta.getIdCita() <= 0 || consulta.getIdExpediente() <= 0) {
+        if (consulta == null || consulta.getIdCita() <= 0) {
             return false;
         }
 
@@ -1447,7 +1497,7 @@ public class BaseDatos {
         }
 
         try {
-            return consultaPorIdInterna(con, idConsulta);
+            return conReceta(consultaPorIdInterna(con, idConsulta));
         } catch (SQLException e) {
             throw new IllegalStateException("No se pudo cargar la consulta.", e);
         }
@@ -1464,10 +1514,18 @@ public class BaseDatos {
         }
 
         try {
-            return consultaPorCitaInterna(con, idCita);
+            return conReceta(consultaPorCitaInterna(con, idCita));
         } catch (SQLException e) {
             throw new IllegalStateException("No se pudo cargar la consulta de la cita.", e);
         }
+    }
+
+    /** Diagnóstico, indicaciones, signos y datos de médico/paciente de la nota salen de su receta. */
+    private Consulta conReceta(Consulta consulta) {
+        if (consulta != null) {
+            consulta.setReceta(cargarRecetaPorCita(consulta.getIdCita()));
+        }
+        return consulta;
     }
 
     /**
@@ -1490,7 +1548,6 @@ public class BaseDatos {
 
         int idRecetaAnterior = receta.getIdReceta();
         int idConsultaAnterior = consulta.getIdConsulta();
-        int idExpedienteAnterior = consulta.getIdExpediente();
         boolean confirmado = false;
         try {
             con.setAutoCommit(false);
@@ -1512,11 +1569,8 @@ public class BaseDatos {
             }
             cita.setCurp(curp);
 
-            int idExpediente = idExpedientePorCurp(con, curp);
-            if (idExpediente <= 0) {
-                idExpediente = insertarExpedienteVacio(con, curp);
-            }
-            if (idExpediente <= 0) {
+            // Toda atención queda dentro de un expediente: si el paciente no tiene, se abre vacío.
+            if (idExpedientePorCurp(con, curp) <= 0 && insertarExpedienteVacio(con, curp) <= 0) {
                 con.rollback();
                 return false;
             }
@@ -1536,7 +1590,6 @@ public class BaseDatos {
 
             Consulta existente = consultaPorCitaInterna(con, idCita);
             consulta.setIdCita(idCita);
-            consulta.setIdExpediente(idExpediente);
             consulta.setIdConsulta(existente == null ? 0 : existente.getIdConsulta());
             if (consulta.getFechaConsulta() == null) {
                 consulta.setFechaConsulta(existente != null && existente.getFechaConsulta() != null
@@ -1561,7 +1614,6 @@ public class BaseDatos {
             confirmado = true;
             if (finalizar) cita.setEstado(Estado.ATENDIDA);
             consulta.setReceta(receta);
-            consulta.setSignosVitales(receta.getSignosVitales());
             return true;
         } catch (SQLException e) {
             revertir(con, "finalizar consulta", e);
@@ -1569,7 +1621,6 @@ public class BaseDatos {
             if (!confirmado) {
                 receta.setIdReceta(idRecetaAnterior);
                 consulta.setIdConsulta(idConsultaAnterior);
-                consulta.setIdExpediente(idExpedienteAnterior);
             }
             restaurarAutoCommit(con);
         }
@@ -1608,11 +1659,11 @@ public class BaseDatos {
                 "nombre_establecimiento, domicilio_establecimiento, nombre_paciente, edad_paciente, sexo_paciente, " +
                 "indicaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        int idAdministrador = receta.getIdAdministrador() > 0
+        String idAdministrador = receta.getIdAdministrador() != null
                 ? receta.getIdAdministrador()
                 : obtenerIdAdministradorPorDefecto(con);
 
-        if (idAdministrador <= 0) {
+        if (idAdministrador == null) {
             return -1;
         }
 
@@ -1668,11 +1719,11 @@ public class BaseDatos {
                 "registro_especialidad = ?, nombre_establecimiento = ?, domicilio_establecimiento = ?, nombre_paciente = " +
                 "?, edad_paciente = ?, sexo_paciente = ?, indicaciones = ? WHERE id_receta = ?";
 
-        int idAdministrador = receta.getIdAdministrador() > 0
+        String idAdministrador = receta.getIdAdministrador() != null
                 ? receta.getIdAdministrador()
                 : obtenerIdAdministradorPorDefecto(con);
 
-        if (idAdministrador <= 0) {
+        if (idAdministrador == null) {
             return false;
         }
 
@@ -1686,7 +1737,7 @@ public class BaseDatos {
         }
 
         receta.setIdAdministrador(idAdministrador);
-        eliminarDetalleReceta(con, receta.getIdReceta());
+        eliminarDetalleReceta(con, receta);
         insertarDetallesReceta(con, receta);
         insertarSignosVitales(con, receta);
         return true;
@@ -1796,22 +1847,9 @@ public class BaseDatos {
             return false;
         }
 
-        String sql = "INSERT INTO Detalle_receta (id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion, " +
-                "presentacion, via_administracion, denominacion_distintiva, cantidad, grupo_regulatorio) VALUES (?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, medicamento.getIdReceta());
-            ps.setString(2, medicamento.getNombreMedicamento());
-            ps.setString(3, medicamento.getConcentracion());
-            ps.setString(4, medicamento.getDosis());
-            ps.setString(5, medicamento.getFrecuencia());
-            ps.setString(6, medicamento.getDuradcion());
-            ps.setString(7, medicamento.getPresentacion());
-            ps.setString(8, medicamento.getViaAdministracion());
-            ps.setString(9, medicamento.getDenominacionDistintiva());
-            ps.setString(10, medicamento.getCantidad());
-            ps.setString(11, medicamento.getGrupoRegulatorio());
+        try (PreparedStatement ps = con.prepareStatement(SQL_MEDICAMENTO, Statement.RETURN_GENERATED_KEYS)) {
+            parametrosMedicamento(ps, medicamento.getIdReceta(), medicamento);
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -1847,9 +1885,28 @@ public class BaseDatos {
         return medicamentos;
     }
 
+    private static final String SQL_MEDICAMENTO = "INSERT INTO Detalle_receta (id_receta, nombre_medicamento, " +
+            "concentracion, dosis, frecuencia, duracion, presentacion, via_administracion, denominacion_distintiva, " +
+            "cantidad, grupo_regulatorio) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private static void parametrosMedicamento(PreparedStatement ps, int idReceta, Medicamento medicamento)
+            throws SQLException {
+        ps.setInt(1, idReceta);
+        ps.setString(2, medicamento.getNombreMedicamento());
+        ps.setString(3, medicamento.getConcentracion());
+        ps.setString(4, medicamento.getDosis());
+        ps.setString(5, medicamento.getFrecuencia());
+        ps.setString(6, medicamento.getDuracion());
+        ps.setString(7, medicamento.getPresentacion());
+        ps.setString(8, medicamento.getViaAdministracion());
+        ps.setString(9, medicamento.getDenominacionDistintiva());
+        ps.setString(10, medicamento.getCantidad());
+        ps.setString(11, medicamento.getGrupoRegulatorio());
+    }
+
     /** Parámetros 1-17 comunes a INSERT y UPDATE de Receta. */
-    private static void parametrosReceta(PreparedStatement ps, Receta receta, int idAdministrador) throws SQLException {
-        ps.setInt(1, idAdministrador);
+    private static void parametrosReceta(PreparedStatement ps, Receta receta, String idAdministrador) throws SQLException {
+        ps.setString(1, idAdministrador);
         ps.setInt(2, receta.getIdCita());
         ps.setTimestamp(3, toSqlTimestamp(receta.getFecha() != null ? receta.getFecha() : new java.util.Date()));
         ps.setString(4, receta.getDiagnostico());
@@ -1868,32 +1925,22 @@ public class BaseDatos {
         ps.setString(17, receta.getIndicaciones());
     }
 
-    /** Parámetros 1-17 comunes a INSERT y UPDATE de Consulta. */
+    /** Parámetros 1-9 comunes a INSERT y UPDATE de Consulta. */
     private static void parametrosConsulta(PreparedStatement ps, Consulta consulta, LocalDateTime fecha) throws SQLException {
         ps.setInt(1, consulta.getIdCita());
-        ps.setInt(2, consulta.getIdExpediente());
-        ps.setTimestamp(3, java.sql.Timestamp.valueOf(fecha));
-        ps.setString(4, consulta.getPadecimiento());
-        ps.setString(5, consulta.getMotivo());
-        ps.setString(6, consulta.getObservaciones());
-        ps.setString(7, consulta.getEvolucion());
-        ps.setString(8, consulta.getExploracionFisica());
-        ps.setString(9, consulta.getResultadosEstudios());
-        ps.setString(10, consulta.getDiagnostico());
-        ps.setString(11, consulta.getPronostico());
-        ps.setString(12, consulta.getIndicaciones());
-        ps.setString(13, consulta.getNombreMedico());
-        ps.setString(14, consulta.getCedulaMedico());
-        ps.setString(15, consulta.getNombrePaciente());
-        ps.setString(16, consulta.getEdadPaciente());
-        ps.setString(17, consulta.getSexoPaciente());
+        ps.setTimestamp(2, java.sql.Timestamp.valueOf(fecha));
+        ps.setString(3, consulta.getPadecimiento());
+        ps.setString(4, consulta.getMotivo());
+        ps.setString(5, consulta.getObservaciones());
+        ps.setString(6, consulta.getEvolucion());
+        ps.setString(7, consulta.getExploracionFisica());
+        ps.setString(8, consulta.getResultadosEstudios());
+        ps.setString(9, consulta.getPronostico());
     }
 
     private static boolean insertarConsultaInterna(Connection con, Consulta consulta) throws SQLException {
-        String sql = "INSERT INTO Consulta (id_cita, id_expediente, fecha, padecimiento, motivo, observaciones, evolucion, " +
-                "exploracion_fisica, resultados_estudios, diagnostico, pronostico, indicaciones, nombre_medico, " +
-                "cedula_medico, nombre_paciente, edad_paciente, sexo_paciente) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " +
-                "?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Consulta (id_cita, fecha, padecimiento, motivo, observaciones, evolucion, " +
+                "exploracion_fisica, resultados_estudios, pronostico) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         LocalDateTime fecha = consulta.getFechaConsulta();
         if (fecha == null) {
@@ -1918,10 +1965,8 @@ public class BaseDatos {
     }
 
     private static boolean actualizarConsultaInterna(Connection con, Consulta consulta) throws SQLException {
-        String sql = "UPDATE Consulta SET id_cita = ?, id_expediente = ?, fecha = ?, padecimiento = ?, motivo = ?, " +
-                "observaciones = ?, evolucion = ?, exploracion_fisica = ?, resultados_estudios = ?, diagnostico = ?, " +
-                "pronostico = ?, indicaciones = ?, nombre_medico = ?, cedula_medico = ?, nombre_paciente = ?, " +
-                "edad_paciente = ?, sexo_paciente = ? WHERE id_consulta = ?";
+        String sql = "UPDATE Consulta SET id_cita = ?, fecha = ?, padecimiento = ?, motivo = ?, observaciones = ?, " +
+                "evolucion = ?, exploracion_fisica = ?, resultados_estudios = ?, pronostico = ? WHERE id_consulta = ?";
 
         LocalDateTime fecha = consulta.getFechaConsulta() == null
                 ? LocalDateTime.now()
@@ -1930,7 +1975,7 @@ public class BaseDatos {
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             parametrosConsulta(ps, consulta, fecha);
-            ps.setInt(18, consulta.getIdConsulta());
+            ps.setInt(10, consulta.getIdConsulta());
             return ps.executeUpdate() > 0;
         }
     }
@@ -1960,7 +2005,7 @@ public class BaseDatos {
     private static Receta crearReceta(ResultSet rs) throws SQLException {
         Receta receta = new Receta();
         receta.setIdReceta(rs.getInt("id_receta"));
-        receta.setIdAdministrador(rs.getInt("id_administrador"));
+        receta.setIdAdministrador(rs.getString("id_administrador"));
         receta.setIdCita(rs.getInt("id_cita"));
         receta.setFecha(leerFechaHora(rs.getObject("fecha")));
         receta.setDiagnostico(rs.getString("diagnostico"));
@@ -1985,7 +2030,6 @@ public class BaseDatos {
         Consulta consulta = new Consulta();
         consulta.setIdConsulta(rs.getInt("id_consulta"));
         consulta.setIdCita(rs.getInt("id_cita"));
-        consulta.setIdExpediente(rs.getInt("id_expediente"));
 
         consulta.setFechaConsulta(leerLocalDateTime(rs.getObject("fecha")));
 
@@ -1995,14 +2039,7 @@ public class BaseDatos {
         consulta.setEvolucion(rs.getString("evolucion"));
         consulta.setExploracionFisica(rs.getString("exploracion_fisica"));
         consulta.setResultadosEstudios(rs.getString("resultados_estudios"));
-        consulta.setDiagnostico(rs.getString("diagnostico"));
         consulta.setPronostico(rs.getString("pronostico"));
-        consulta.setIndicaciones(rs.getString("indicaciones"));
-        consulta.setNombreMedico(rs.getString("nombre_medico"));
-        consulta.setCedulaMedico(rs.getString("cedula_medico"));
-        consulta.setNombrePaciente(rs.getString("nombre_paciente"));
-        consulta.setEdadPaciente(rs.getString("edad_paciente"));
-        consulta.setSexoPaciente(rs.getString("sexo_paciente"));
         return consulta;
     }
 
@@ -2068,9 +2105,9 @@ public class BaseDatos {
         Connection con = getConexion();
         if (con == null) throw new IllegalStateException("No hay conexión para cargar los datos del prescriptor.");
         try {
-            int id = receta.getIdAdministrador() > 0 ? receta.getIdAdministrador() : obtenerIdAdministradorPorDefecto(con);
+            String id = receta.getIdAdministrador() != null ? receta.getIdAdministrador() : obtenerIdAdministradorPorDefecto(con);
             try (PreparedStatement ps = con.prepareStatement("SELECT * FROM Administrador WHERE id_administrador = ?")) {
-                ps.setInt(1, id);
+                ps.setString(1, id);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) throw new IllegalStateException("No hay un prescriptor configurado en la base de datos.");
                     receta.setIdAdministrador(id);
@@ -2091,21 +2128,25 @@ public class BaseDatos {
         }
     }
 
-    private static int obtenerIdAdministradorPorDefecto(Connection con) throws SQLException {
+    private static String obtenerIdAdministradorPorDefecto(Connection con) throws SQLException {
         String sql = "SELECT id_administrador FROM Administrador ORDER BY id_administrador LIMIT 1";
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            return rs.next() ? rs.getInt(1) : -1;
+            return rs.next() ? rs.getString(1) : null;
         }
     }
 
-    private static void eliminarDetalleReceta(Connection con, int idReceta) throws SQLException {
+    private static void eliminarDetalleReceta(Connection con, Receta receta) throws SQLException {
         try (PreparedStatement ps = con.prepareStatement("DELETE FROM Detalle_receta WHERE id_receta = ?")) {
-            ps.setInt(1, idReceta);
+            ps.setInt(1, receta.getIdReceta());
             ps.executeUpdate();
         }
+        // Los signos se actualizan sobre su fila (ON CONFLICT); solo se borran si la receta ya no los trae.
+        if (receta.getSignosVitales() != null) {
+            return;
+        }
         try (PreparedStatement ps = con.prepareStatement("DELETE FROM Signos_vitales WHERE id_receta = ?")) {
-            ps.setInt(1, idReceta);
+            ps.setInt(1, receta.getIdReceta());
             ps.executeUpdate();
         }
     }
@@ -2115,27 +2156,14 @@ public class BaseDatos {
             return;
         }
 
-        String sql = "INSERT INTO Detalle_receta (id_receta, nombre_medicamento, concentracion, dosis, frecuencia, duracion, " +
-                "presentacion, via_administracion, denominacion_distintiva, cantidad, grupo_regulatorio) VALUES (?, ?, ?, " +
-                "?, ?, ?, ?, ?, ?, ?, ?)";
 
         for (Medicamento medicamento : receta.getMedicamentos()) {
             if (medicamento == null) {
                 continue;
             }
 
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, receta.getIdReceta());
-                ps.setString(2, medicamento.getNombreMedicamento());
-                ps.setString(3, medicamento.getConcentracion());
-                ps.setString(4, medicamento.getDosis());
-                ps.setString(5, medicamento.getFrecuencia());
-                ps.setString(6, medicamento.getDuradcion());
-                ps.setString(7, medicamento.getPresentacion());
-                ps.setString(8, medicamento.getViaAdministracion());
-                ps.setString(9, medicamento.getDenominacionDistintiva());
-                ps.setString(10, medicamento.getCantidad());
-                ps.setString(11, medicamento.getGrupoRegulatorio());
+            try (PreparedStatement ps = con.prepareStatement(SQL_MEDICAMENTO, Statement.RETURN_GENERATED_KEYS)) {
+                parametrosMedicamento(ps, receta.getIdReceta(), medicamento);
                 ps.executeUpdate();
 
                 medicamento.setIdReceta(receta.getIdReceta());
@@ -2156,7 +2184,12 @@ public class BaseDatos {
 
         String sql = "INSERT INTO Signos_vitales " +
                 "(id_receta, presion_arterial, frecuencia_cardiaca, frecuencia_respiratoria, " +
-                "temperatura_corporal, peso, talla, saturacion_oxigeno) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                "temperatura_corporal, peso, talla, saturacion_oxigeno) VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT(id_receta) DO UPDATE SET presion_arterial = excluded.presion_arterial, " +
+                "frecuencia_cardiaca = excluded.frecuencia_cardiaca, " +
+                "frecuencia_respiratoria = excluded.frecuencia_respiratoria, " +
+                "temperatura_corporal = excluded.temperatura_corporal, peso = excluded.peso, " +
+                "talla = excluded.talla, saturacion_oxigeno = excluded.saturacion_oxigeno";
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, receta.getIdReceta());
@@ -2217,7 +2250,7 @@ public class BaseDatos {
         medicamento.setConcentracion(rs.getString("concentracion"));
         medicamento.setDosis(rs.getString("dosis"));
         medicamento.setFrecuencia(rs.getString("frecuencia"));
-        medicamento.setDuradcion(rs.getString("duracion"));
+        medicamento.setDuracion(rs.getString("duracion"));
         medicamento.setPresentacion(rs.getString("presentacion"));
         medicamento.setViaAdministracion(rs.getString("via_administracion"));
         medicamento.setDenominacionDistintiva(rs.getString("denominacion_distintiva"));

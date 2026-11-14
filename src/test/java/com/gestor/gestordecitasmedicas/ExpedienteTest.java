@@ -31,6 +31,7 @@ class ExpedienteTest {
     private Paciente paciente;
     private Expediente expediente;
     private static boolean javafxIniciado;
+    private static int turnos;
 
     @BeforeAll static void configurar() {
         System.setProperty("gestor.db.url", "jdbc:sqlite:" + temporal.resolve("pruebas.db"));
@@ -88,20 +89,21 @@ class ExpedienteTest {
     private void historia(Paciente p, Expediente e, String motivo, String medicamento) throws Exception {
         Cita cita = new Cita();
         cita.setCurp(p.getCurp());
-        cita.setFechaCita(new Date());
+        // Cada turno admite una sola cita vigente: las de prueba no deben coincidir en el mismo instante.
+        cita.setFechaCita(new Date(System.currentTimeMillis() + 60_000L * ++turnos));
         assertTrue(bd.insertarCita(cita));
         try (PreparedStatement ps = BaseDatos.getConexion().prepareStatement(
-                "INSERT INTO Consulta(id_cita,id_expediente,fecha,motivo,padecimiento,observaciones) VALUES(?,?,?,?,?,?)")) {
-            ps.setInt(1, cita.getIdCita()); ps.setInt(2, e.getIdExpediente());
-            ps.setTimestamp(3, Timestamp.valueOf("2026-11-04 09:30:00"));
-            ps.setString(4, motivo); ps.setString(5, "Dolor de cabeza"); ps.setString(6, "Mejoría clínica");
+                "INSERT INTO Consulta(id_cita,fecha,motivo,padecimiento,observaciones) VALUES(?,?,?,?,?)")) {
+            ps.setInt(1, cita.getIdCita());
+            ps.setTimestamp(2, Timestamp.valueOf("2026-11-04 09:30:00"));
+            ps.setString(3, motivo); ps.setString(4, "Dolor de cabeza"); ps.setString(5, "Mejoría clínica");
             ps.executeUpdate();
         }
         Receta r = new Receta();
         r.setIdCita(cita.getIdCita()); r.setFecha(new Date()); r.setDiagnostico(motivo);
         Medicamento m = new Medicamento();
         m.setNombreMedicamento(medicamento); m.setDosis("Una tableta"); m.setConcentracion("500 mg");
-        m.setFrecuencia("Cada 8 horas"); m.setDuradcion("3 días");
+        m.setFrecuencia("Cada 8 horas"); m.setDuracion("3 días");
         r.getMedicamentos().add(m);
         r.setSignosVitales(new SignosVitales("120/80", 72, 18, 36.5f, 98, 70.5f, 170));
         assertTrue(bd.insertarReceta(r));

@@ -43,11 +43,12 @@ classDiagram
 
         class Personal {
             <<abstract>>
-            +autenticar(idUsuario: int, contrasena: String)$ String
+            +autenticar(idUsuario: String, contrasena: String)$ String
+            +generarUsuario(nombre: String, apellidoPaterno: String, apellidoMaterno: String, ocupados: Collection~String~)$ String
         }
 
         class Administrador {
-            -int idAdministrador
+            -String idAdministrador
             -String cedulaProfesional
             -String institucionAcademica
             -String domicilio
@@ -56,30 +57,29 @@ classDiagram
             -String registroEspecialidad
             -String nombreEstablecimiento
             -String domicilioEstablecimiento
-            +getIdAdministrador() int
+            +getIdAdministrador() String
             +getCedulaProfesional() String
             +getInstitucionAcademica() String
             +getDomicilio() String
-            +setIdAdministrador(idAdministrador: int) void
+            +setIdAdministrador(idAdministrador: String) void
             +setCedulaProfesional(cedulaProfesional: String) void
             +setInstitucionAcademica(institucionAcademica: String) void
             +setDomicilio(domicilio: String) void
             +get/set de profesion, especialidad, registroEspecialidad y establecimiento
-            +buscar(idAdministrador: int)$ Administrador
+            +buscar(idAdministrador: String)$ Administrador
             +actualizar() boolean
-            +usuarioDisponible(nuevoId: int, idActual: int)$ boolean
-            +cambiarCredenciales(idActual: int, nuevoId: int, nuevaContrasena: String)$ boolean
+            +cambiarContrasena(idAdministrador: String, nuevaContrasena: String)$ boolean
         }
 
         class Asistente {
-            -int idAsistente
+            -String idAsistente
             -String contrasena
             +Asistente()
-            +Asistente(idAsistente: int)
+            +Asistente(idAsistente: String)
             +Asistente(nombre: String, apellidoPaterno: String, apellidoMaterno: String, contrasena: String)
-            +getIdAsistente() int
+            +getIdAsistente() String
             +getContrasena() String
-            +setIdAsistente(idAsistente: int) void
+            +setIdAsistente(idAsistente: String) void
             +setContrasena(contrasena: String) void
             +validar(nombre: String, apellidoPaterno: String, apellidoMaterno: String, contrasena: String, esNuevo: boolean)$ String
             +registrar() boolean
@@ -257,27 +257,17 @@ classDiagram
 
         class Consulta {
             -int idConsulta
-            -int idExpediente
             -int idCita
             -LocalDateTime fechaConsulta
             -String padecimiento
             -String motivo
             -String observaciones
             -Receta receta
-            -SignosVitales signosVitales
             -String evolucion
             -String exploracionFisica
             -String resultadosEstudios
-            -String diagnostico
             -String pronostico
-            -String indicaciones
-            -String nombreMedico
-            -String cedulaMedico
-            -String nombrePaciente
-            -String edadPaciente
-            -String sexoPaciente
             +getIdConsulta() int
-            +getIdExpediente() int
             +getIdCita() int
             +getFechaConsulta() LocalDateTime
             +getPadecimiento() String
@@ -286,15 +276,14 @@ classDiagram
             +getReceta() Receta
             +getSignosVitales() SignosVitales
             +setIdConsulta(idConsulta: int) void
-            +setIdExpediente(idExpediente: int) void
             +setIdCita(idCita: int) void
             +setFechaConsulta(fechaConsulta: LocalDateTime) void
             +setPadecimiento(padecimiento: String) void
             +setMotivo(motivo: String) void
             +setObservaciones(observaciones: String) void
             +setReceta(receta: Receta) void
-            +setSignosVitales(signosVitales: SignosVitales) void
-            +get/set de evolucion, nota medica y datos del medico y paciente
+            +get/set de evolucion, exploracionFisica, resultadosEstudios y pronostico
+            +get (delegados en receta) de diagnostico, indicaciones, signos y datos del medico y paciente
             +deCita(idCita: int)$ Consulta
             +guardarAtencion(cita: Cita, receta: Receta, finalizar: boolean) boolean
         }
@@ -302,7 +291,7 @@ classDiagram
         class Receta {
             -int idReceta
             -int idCita
-            -int idAdministrador
+            -String idAdministrador
             -String curp
             -Date fecha
             -String diagnostico
@@ -331,7 +320,7 @@ classDiagram
             +getSignosVitales() SignosVitales
             +setIdReceta(idReceta: int) void
             +setIdCita(idCita: int) void
-            +setIdAdministrador(idAdministrador: int) void
+            +setIdAdministrador(idAdministrador: String) void
             +setCurp(curp: String) void
             +setFecha(fecha: Date) void
             +setDiagnostico(diagnostico: String) void
@@ -350,7 +339,7 @@ classDiagram
             -String dosis
             -String concentracion
             -String frecuencia
-            -String duradcion
+            -String duracion
             -String presentacion
             -String viaAdministracion
             -String denominacionDistintiva
@@ -362,14 +351,14 @@ classDiagram
             +getDosis() String
             +getConcentracion() String
             +getFrecuencia() String
-            +getDuradcion() String
+            +getDuracion() String
             +setIdDetalleReceta(idDetalleReceta: int) void
             +setIdReceta(idReceta: int) void
             +setNombreMedicamento(nombreMedicamento: String) void
             +setDosis(dosis: String) void
             +setConcentracion(concentracion: String) void
             +setFrecuencia(frecuencia: String) void
-            +setDuradcion(duradcion: String) void
+            +setDuracion(duracion: String) void
             +get/set de presentacion, viaAdministracion, denominacionDistintiva, cantidad y grupoRegulatorio
         }
 
@@ -403,15 +392,14 @@ classDiagram
             -String urlActual$
             +getConexion()$ Connection
             +cerrarConexion()$ void
-            +autenticar(id: int, contrasena: String) String
+            +autenticar(id: String, contrasena: String) String
             +obtenerConfig(clave: String, porDefecto: String) String
             +guardarConfig(clave: String, valor: String) boolean
-            +obtenerAdministrador(id: int) Administrador
+            +obtenerAdministrador(id: String) Administrador
             +actualizarAdministrador(a: Administrador) boolean
-            +idUsuarioLibre(id: int, idAdminActual: int) boolean
-            +actualizarCredencialesAdmin(idActual: int, nuevoId: int, nuevaContrasena: String) boolean
+            +actualizarContrasenaAdmin(id: String, nuevaContrasena: String) boolean
             +insertarAsistente(asistente: Asistente) boolean
-            +eliminarAsistente(idAsistente: int) boolean
+            +eliminarAsistente(idAsistente: String) boolean
             +actualizarAsistente(asistente: Asistente) boolean
             +cargarAsistentes() ArrayList~Asistente~
             +insertarPaciente(paciente: Paciente) boolean
@@ -438,7 +426,7 @@ classDiagram
             +eliminarExpediente(idExpediente: String) boolean
             +actualizarExpediente(expediente: Expediente) boolean
             +cargarExpedientePorCurp(curp: String) Expediente
-            +cargarConsultasPorExpediente(idExpediente: int) ArrayList~Consulta~
+            +cargarConsultasPorCurp(curp: String) ArrayList~Consulta~
             +insertarConsulta(consulta: Consulta) boolean
             +actualizarConsulta(consulta: Consulta) boolean
             +eliminarConsulta(idConsulta: int) boolean
@@ -533,9 +521,8 @@ classDiagram
     Expediente "1" o-- "1" Paciente : datos del paciente
     Expediente "1" *-- "0..*" Receta : contiene
     Expediente "1" *-- "0..*" Consulta : registra
-    Consulta "1" --> "0..1" Receta : genera
-    Consulta "1" --> "0..1" SignosVitales : registra
-    Consulta "0..*" --> "1" Cita : corresponde a
+    Consulta "1" --> "0..1" Receta : lee diagnostico, signos y datos de medico y paciente
+    Consulta "0..1" --> "1" Cita : corresponde a
     Receta "1" *-- "0..*" Medicamento : prescribe
     Receta "1" *-- "1" SignosVitales : registra
     Receta "0..1" --> "1" Cita : pertenece a

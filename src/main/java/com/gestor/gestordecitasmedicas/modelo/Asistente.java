@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 public class Asistente extends Personal {
 
-    private int idAsistente;
+    private String idAsistente;
     private String contrasena;
 
     public Asistente() {
     }
 
-    public Asistente(int idAsistente) {
+    public Asistente(String idAsistente) {
         this.idAsistente = idAsistente;
     }
 
@@ -21,11 +21,11 @@ public class Asistente extends Personal {
         this.contrasena = contrasena;
     }
 
-    public int getIdAsistente() {
+    public String getIdAsistente() {
         return idAsistente;
     }
 
-    public void setIdAsistente(int idAsistente) {
+    public void setIdAsistente(String idAsistente) {
         this.idAsistente = idAsistente;
     }
 

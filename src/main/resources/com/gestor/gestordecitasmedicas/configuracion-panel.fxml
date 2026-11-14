@@ -77,7 +77,7 @@
                         <VBox styleClass="edit-card">
                             <VBox spacing="4.0" styleClass="edit-header">
                                 <Label styleClass="title-section" text="CUENTA DE ADMINISTRADOR" />
-                                <Label styleClass="card-subtitle" text="Cambia el usuario (ID de acceso) y/o la contraseña. Se requiere la contraseña actual" />
+                                <Label styleClass="card-subtitle" text="El usuario (ID de acceso) se genera con tus datos y no cambia. Para cambiar la contraseña se requiere la actual" />
                             </VBox>
                             <VBox spacing="24.0" styleClass="config-body">
                                 <GridPane hgap="24.0" vgap="16.0">
@@ -87,14 +87,14 @@
                                     </columnConstraints>
                                     <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
                                         <Label styleClass="field-label" text="USUARIO (ID DE ACCESO)" />
-                                        <TextField fx:id="txtUsuario" styleClass="form-field, form-field-mono" />
+                                        <TextField fx:id="txtUsuario" editable="false" styleClass="form-field, form-field-mono" />
                                     </VBox>
                                     <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
                                         <Label styleClass="field-label" text="CONTRASEÑA ACTUAL *" />
                                         <PasswordField fx:id="pwdActual" styleClass="form-field, password-field" />
                                     </VBox>
                                     <VBox spacing="8.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                        <Label styleClass="field-label" text="NUEVA CONTRASEÑA (OPCIONAL)" />
+                                        <Label styleClass="field-label" text="NUEVA CONTRASEÑA *" />
                                         <PasswordField fx:id="pwdNueva" styleClass="form-field, password-field" />
                                     </VBox>
                                     <VBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="1">

@@ -22,15 +22,15 @@ Este documento describe los requerimientos que el sistema cumple hoy y los que s
 | Administrador | Responsable clínico. Según el modelo, atiende citas, genera recetas y administra pacientes y expedientes. En la interfaz, la consulta y la receta las registra el sistema con el administrador por defecto (RN-16). | `Administrador` (extiende `Personal`) |
 | Asistente | Según el modelo, gestiona la agenda (agendar, reprogramar, cancelar y consultar citas). Desde la agenda puede abrir el alta de paciente para completar una cita. Hoy esas operaciones están en los controladores de agenda, y los métodos de `Asistente` no están implementados. | `Asistente` (extiende `Personal`) |
 
-Observación: la aplicación todavía no separa permisos por rol. Todas las pantallas están disponibles para cualquier usuario que abra el sistema. La pantalla de acceso no valida credenciales (ver RF-01).
+Observación: la aplicación todavía no separa permisos por rol. Todas las pantallas están disponibles para cualquier usuario que abra el sistema.
 
 ## 2. Requerimientos funcionales
 
 ### RF-01 Acceso al sistema
 
 - **Estado:** Parcial.
-- La pantalla de inicio de sesión existe (`LoginController`, `login-view.fxml`), pero no valida usuario ni contraseña. Al presionar el botón, abre el menú principal sin verificar nada.
-- Pendiente: validar las credenciales contra los registros de `Administrador` y `Asistente`, y limitar las pantallas según el rol.
+- La pantalla de inicio de sesión (`LoginController`, `login-view.fxml`) valida el id de acceso y la contraseña contra los registros de `Administrador` y `Asistente` (`Personal.autenticar`).
+- El id de acceso es un texto de 10 caracteres que el sistema genera al registrar a la persona: 4 letras del apellido paterno, 2 del materno, 2 del nombre y un consecutivo de 2 dígitos (p. ej. `PERELOJU01`). No se repite entre administradores y asistentes, y no cambia si después se edita el nombre.
 
 ### RF-02 Gestión de asistentes
 
@@ -126,8 +126,7 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 ### RF-14 Bloqueo de horarios
 
 - **Estado:** Implementado (`HorarioConfigController` + `AgendaController` + `BaseDatos`).
-- Los bloqueos son rangos independientes de fecha y hora, con motivo opcional, y ya no dependen de un tramo semanal.
-- La migración reconstruye la tabla anterior `Horario_bloqueado` al esquema `id_bloqueo`, `fecha_inicio`, `fecha_fin` y `motivo`.
+- Los bloqueos son rangos independientes de fecha y hora y no dependen de un tramo semanal. La tabla `Horario_bloqueado` guarda `id_bloqueo`, `fecha_inicio` y `fecha_fin`.
 - La agenda marca los días bloqueados y no permite agendar dentro de un bloqueo.
 - Si existen citas activas en el periodo a bloquear, el bloqueo se rechaza y se pide reprogramar o cancelar primero; las citas no se cancelan automáticamente.
 
@@ -170,8 +169,10 @@ Observación: la aplicación todavía no separa permisos por rol. Todas las pant
 
 ### Base de datos
 
-- **RN-16 Administrador por defecto.** Si la tabla `Administrador` está vacía al iniciar, se inserta un registro con nombre "Administrador", apellido paterno "Sistema", contraseña `admin` y cédula `00000000`.
+- **RN-16 Administrador por defecto.** Si la tabla `Administrador` está vacía al iniciar, se inserta un registro con nombre "Administrador", apellido paterno "Sistema", id de acceso `SISTXXAD01`, contraseña `admin` y cédula `00000000`.
 - **RN-17 Claves foráneas.** Se activa `PRAGMA foreign_keys = ON` al abrir la conexión.
+- **RN-18 Sin duplicados.** La base rechaza un segundo expediente para la misma CURP, una segunda consulta o receta para la misma cita, un segundo registro de signos para la misma receta, un tramo de horario repetido y dos citas no canceladas en la misma fecha y hora.
+- **RN-19 Esquema único.** El esquema se crea completo y se marca con `PRAGMA user_version = 2`. Una base con otro esquema se rechaza; no hay migración y debe borrarse el archivo `.db` para regenerarla.
 
 ## 4. Requerimientos no funcionales
 

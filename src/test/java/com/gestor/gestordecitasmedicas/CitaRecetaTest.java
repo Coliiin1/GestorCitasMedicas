@@ -2,9 +2,12 @@ package com.gestor.gestordecitasmedicas;
 
 import com.gestor.gestordecitasmedicas.modelo.BaseDatos;
 import com.gestor.gestordecitasmedicas.modelo.Cita;
+import com.gestor.gestordecitasmedicas.modelo.Asistente;
 import com.gestor.gestordecitasmedicas.modelo.Estado;
+import com.gestor.gestordecitasmedicas.modelo.Expediente;
 import com.gestor.gestordecitasmedicas.modelo.Medicamento;
 import com.gestor.gestordecitasmedicas.modelo.Paciente;
+import com.gestor.gestordecitasmedicas.modelo.Personal;
 import com.gestor.gestordecitasmedicas.modelo.Receta;
 import com.gestor.gestordecitasmedicas.modelo.SignosVitales;
 import org.junit.jupiter.api.AfterAll;
@@ -21,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -135,6 +139,52 @@ class CitaRecetaTest {
         assertTrue(bd.eliminarReceta(receta.getIdReceta()));
         assertNull(bd.cargarRecetaPorCita(cita.getIdCita()));
         assertFalse(bd.eliminarReceta(receta.getIdReceta()));
+    }
+
+    @Test void elEsquemaRechazaDuplicados() {
+        Cita cita = cita(LocalDateTime.of(2026, 11, 13, 9, 0));
+        Cita mismoTurno = new Cita();
+        mismoTurno.setCurp(paciente.getCurp());
+        mismoTurno.setFechaCita(cita.getFechaCita());
+        mismoTurno.setEstado(Estado.AGENDADA);
+        assertFalse(bd.insertarCita(mismoTurno));
+        assertTrue(cita.cancelar());
+        assertTrue(bd.insertarCita(mismoTurno), "un turno cancelado se puede volver a ocupar");
+
+        Receta receta = new Receta();
+        receta.setIdCita(mismoTurno.getIdCita());
+        assertTrue(bd.insertarReceta(receta));
+        Receta repetida = new Receta();
+        repetida.setIdCita(mismoTurno.getIdCita());
+        assertFalse(bd.insertarReceta(repetida));
+
+        Expediente expediente = new Expediente();
+        expediente.setDatosPaciente(paciente);
+        assertTrue(bd.insertarExpediente(expediente));
+        Expediente segundo = new Expediente();
+        segundo.setDatosPaciente(paciente);
+        assertFalse(bd.insertarExpediente(segundo));
+    }
+
+    @Test void idDeAccesoSeGeneraDeLosDatosYNoSeRepite() {
+        assertEquals("PERELOJU01", Personal.generarUsuario("Juan", "Pérez", "López", new HashSet<>()));
+        assertEquals("NUXXXXAN01", Personal.generarUsuario("Ana", "Ñu", null, new HashSet<>()));
+
+        Asistente primero = new Asistente("Juan", "Pérez", "López", "clave1");
+        Asistente homonimo = new Asistente("Juana", "Pereira", "Lozano", "clave2");
+        assertTrue(primero.registrar());
+        assertTrue(homonimo.registrar());
+        try {
+            assertEquals("PERELOJU01", primero.getIdAsistente());
+            assertEquals("PERELOJU02", homonimo.getIdAsistente());
+            assertEquals("asis", Personal.autenticar("PERELOJU02", "clave2"));
+            assertNull(Personal.autenticar("PERELOJU02", "clave1"));
+            assertEquals("admin", Personal.autenticar("SISTXXAD01", "admin"));
+            assertEquals(2, Asistente.todos().size());
+        } finally {
+            assertTrue(primero.eliminar());
+            assertTrue(homonimo.eliminar());
+        }
     }
 
     private static Medicamento medicamento(String nombre, String dosis) {

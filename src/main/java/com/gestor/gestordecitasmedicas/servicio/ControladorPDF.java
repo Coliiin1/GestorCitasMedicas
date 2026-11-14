@@ -193,7 +193,7 @@ public class ControladorPDF {
                     Phrase p = new Phrase();
                     p.add(new Chunk(unir(" ", texto(m.getNombreMedicamento()), m.getConcentracion()), F_FUERTE));
                     if (!vacio(m.getPresentacion())) p.add(new Chunk(" · " + m.getPresentacion().trim(), F_DATO));
-                    String posologia = unir(" · ", m.getDosis(), m.getViaAdministracion(), m.getFrecuencia(), m.getDuradcion());
+                    String posologia = unir(" · ", m.getDosis(), m.getViaAdministracion(), m.getFrecuencia(), m.getDuracion());
                     if (!posologia.isEmpty()) {
                         p.add(Chunk.NEWLINE);
                         p.add(new Chunk(posologia, F_DATO));
@@ -404,7 +404,7 @@ public class ControladorPDF {
             tabla.addCell(celda(nombre, Rectangle.BOTTOM, BORDE_SUAVE));
             tabla.addCell(celda(new Phrase(guion(unir(" · ", m.getDosis(), m.getFrecuencia())), F_DATO), Rectangle.BOTTOM, BORDE_SUAVE));
             tabla.addCell(celda(new Phrase(guion(m.getViaAdministracion()), F_DATO), Rectangle.BOTTOM, BORDE_SUAVE));
-            tabla.addCell(celda(new Phrase(guion(m.getDuradcion()), F_DATO), Rectangle.BOTTOM, BORDE_SUAVE));
+            tabla.addCell(celda(new Phrase(guion(m.getDuracion()), F_DATO), Rectangle.BOTTOM, BORDE_SUAVE));
             tabla.addCell(numero(guion(m.getCantidad())));
         }
         documento.add(tabla);

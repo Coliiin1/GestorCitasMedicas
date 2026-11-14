@@ -353,8 +353,9 @@ public class DashboardController implements PanelControlado, PanelRefrescable {
     }
 
     private static String estiloEstado(Estado e) {
-        if (e == Estado.ATENDIDA) return "chip-blue";
-        if (e == Estado.CANCELADA) return "chip-blood";
-        return "chip-amber";
+        // Mismos colores que la agenda y su semáforo (.chip.estado-* en cita.css).
+        if (e == Estado.ATENDIDA) return "estado-atendida";
+        if (e == Estado.CANCELADA) return "estado-cancelada";
+        return "estado-agendada";
     }
 }

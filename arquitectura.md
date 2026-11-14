@@ -143,7 +143,7 @@ GestorCitasMedicas/
 
 ### 4.1 Arranque y Shell Principal (`MainController`)
 1. **`Launcher` → `HelloApplication`**: Registra en memoria la fuente tipográfica de iconos (`uicons-regular-rounded.ttf`) antes de montar el grafo de escena y abre `login-view.fxml` (1368×768 px).
-2. **Autenticación (`LoginController`)**: Valida el identificador numérico de usuario y contraseña mediante `BaseDatos.autenticar(idUsuario, password)`, determinando el rol (`"admin"` para `Administrador` o `"asis"` para `Asistente`).
+2. **Autenticación (`LoginController`)**: Valida el id de acceso (10 caracteres generados con los datos de la persona, p. ej. `PERELOJU01`) y la contraseña mediante `BaseDatos.autenticar(idUsuario, password)`, determinando el rol (`"admin"` para `Administrador` o `"asis"` para `Asistente`).
 3. **Enrutamiento y Caché de Paneles (`MainController`)**:
    - Actúa como un **Single-Page Application (SPA) Shell** de escritorio: mantiene una barra lateral (`menu`) y un contenedor central dinámico (`StackPane contenido`).
    - **Caché de Nodos y Controladores:** Los paneles FXML cargados se almacenan en `Map<String, Node> paneles` y `Map<String, Object> controladores` mediante `computeIfAbsent`. Esto preserva el estado en memoria entre cambios de pestaña (por ejemplo, el cronómetro activo o datos en captura durante una cita en curso).
@@ -214,7 +214,7 @@ El modelo de objetos separa las entidades administrativas/operativas de las enti
   - `PlanificadorAgenda` centraliza el cálculo de huecos disponibles combinando los tramos semanales activos (`Horario`) por `DiaSemana` y restando las excepciones por rango de fecha/hora (`HorarioBloqueado`) y citas activas.
 - **Subsistema Clínico (`Expediente`, `Consulta`, `Receta`, `Medicamento`, `SignosVitales`)**:
   - `Expediente`: Contiene la historia clínica ambulatoria completa del paciente (antecedentes, interrogatorio por sistemas, exploración, estudios, diagnóstico, pronóstico, terapéutica) y agrupa su historial de `Consulta` y `Receta`.
-  - `Consulta`: Representa la nota de evolución de una cita específica (`idCita`, `idExpediente`).
+  - `Consulta`: Representa la nota de evolución de una cita específica (`idCita`). El diagnóstico, las indicaciones, los signos y los datos de médico/paciente no se duplican: los lee de la `Receta` de la misma cita.
   - `Receta`: Documento de prescripción vinculado a una cita y a un administrador emisor. Congela los datos del médico/establecimiento y del paciente vigentes al momento de su emisión para garantizar inmutabilidad histórica, y agrega `SignosVitales` y una lista de `Medicamento` (`Detalle_receta`).
 
 ---
@@ -239,7 +239,6 @@ erDiagram
     PACIENTE ||--o{ CITA : "agenda (ON DELETE CASCADE)"
     PACIENTE ||--o| EXPEDIENTE : "posee (ON DELETE CASCADE)"
     CITA ||--o| CONSULTA : "origina (ON DELETE CASCADE)"
-    EXPEDIENTE ||--o{ CONSULTA : "registra (ON DELETE CASCADE)"
     CITA ||--o| RECETA : "genera (ON DELETE CASCADE)"
     ADMINISTRADOR ||--o{ RECETA : "prescribe (ON DELETE RESTRICT)"
     RECETA ||--o{ DETALLE_RECETA : "contiene (ON DELETE CASCADE)"
@@ -260,13 +259,13 @@ erDiagram
     CITA {
         integer id_cita PK
         varchar CURP FK
-        date fecha
-        varchar estado
+        timestamp fecha "NOT NULL; única entre citas no canceladas"
+        varchar estado "AGENDADA | ATENDIDA | CANCELADA"
     }
 
     EXPEDIENTE {
         integer id_expediente PK
-        varchar CURP FK
+        varchar CURP FK "UNIQUE"
         date fecha_apertura
         text antecedentes_familiares
         text antecedentes_personales
@@ -277,22 +276,25 @@ erDiagram
 
     CONSULTA {
         integer id_consulta PK
-        integer id_cita FK
-        integer id_expediente FK
-        date fecha
+        integer id_cita FK "UNIQUE"
+        timestamp fecha
         text padecimiento
         text motivo
         text observaciones
-        text _11_columnas_evolucion_NOM004
+        text evolucion
+        text exploracion_fisica
+        text resultados_estudios
+        text pronostico
     }
 
     RECETA {
         integer id_receta PK
-        integer id_administrador FK
-        integer id_cita FK
-        date fecha
+        varchar id_administrador FK
+        integer id_cita FK "UNIQUE"
+        timestamp fecha
         text diagnostico
-        text _13_columnas_prescriptor_paciente
+        text indicaciones
+        text _12_columnas_prescriptor_paciente
     }
 
     DETALLE_RECETA {
@@ -308,18 +310,18 @@ erDiagram
 
     SIGNOS_VITALES {
         integer id_signos_vitales PK
-        integer id_receta FK
+        integer id_receta FK "UNIQUE"
         varchar presion_arterial
-        varchar frecuencia_cardiaca
-        varchar frecuencia_respiratoria
+        integer frecuencia_cardiaca
+        integer frecuencia_respiratoria
         real temperatura_corporal
         real peso
-        real talla
+        integer talla
         integer saturacion_oxigeno
     }
 
     ADMINISTRADOR {
-        integer id_administrador PK
+        varchar id_administrador PK "10 caracteres"
         varchar nombre
         varchar apellido_paterno
         varchar contrasena
@@ -329,7 +331,7 @@ erDiagram
     }
 
     ASISTENTE {
-        integer id_asistente PK
+        varchar id_asistente PK "10 caracteres; no se repite con Administrador"
         varchar nombre
         varchar apellido_paterno
         varchar contrasena
@@ -339,7 +341,7 @@ erDiagram
         integer id_horario PK
         integer dia
         time hora_inicio
-        time hora_fin
+        time hora_fin "UNIQUE(dia, hora_inicio, hora_fin)"
         boolean estado
     }
 
@@ -347,7 +349,6 @@ erDiagram
         integer id_bloqueo PK
         timestamp fecha_inicio
         timestamp fecha_fin
-        text motivo
     }
 
     CONFIGURACION {
@@ -356,12 +357,14 @@ erDiagram
     }
 ```
 
-### 6.3 Motores de Migración y Auditoría Histórica (Triggers)
-- **`MigracionClinica` (Evolución Aditiva y Versionado)**:
-  - Inspecciona el esquema mediante `PRAGMA table_info(...)` y agrega dinámicamente más de 50 columnas `TEXT` requeridas por la normativa clínica mexicana en `Administrador`, `Expediente`, `Consulta`, `Receta` y `Detalle_receta` sin alterar datos existentes.
-  - Crea 5 tablas espejo de auditoría (`Version_Expediente`, `Version_Consulta`, `Version_Receta`, `Version_Detalle_receta`, `Version_Signos_vitales`) y **10 triggers SQLite** (`BEFORE UPDATE` y `BEFORE DELETE`) que archivan automáticamente la copia previa del registro con marca de tiempo UTC (`archivado_en`) y tipo de operación (`UPDATE` / `DELETE`).
+### 6.3 Esquema, Auditoría Histórica (Triggers) y Siembra Inicial
+- **Esquema único (`BaseDatos.inicializarBaseDatos`)**:
+  - Todas las tablas, restricciones `UNIQUE`/`CHECK` e índices se crean completos en un solo paso y la base se marca con `PRAGMA user_version = 2`. No hay migración entre versiones: una base creada con otro esquema se rechaza y debe borrarse el archivo `.db` para regenerarla.
+  - Dos triggers `BEFORE INSERT` impiden que un id de acceso exista a la vez en `Administrador` y `Asistente`.
+- **`MigracionClinica` (Versionado)**:
+  - Crea 5 tablas espejo de auditoría (`Version_Expediente`, `Version_Consulta`, `Version_Receta`, `Version_Detalle_receta`, `Version_Signos_vitales`) y **10 triggers SQLite** (`BEFORE UPDATE` y `BEFORE DELETE`) que archivan automáticamente la copia previa del registro con marca de tiempo UTC (`archivado_en`) y tipo de operación (`UPDATE` / `DELETE`). El trigger de `UPDATE` solo archiva si alguna columna cambió.
 - **`MigracionAgenda`**:
-  - Migra la estructura antigua de bloqueos a rangos independientes de `TIMESTAMP` (`fecha_inicio`, `fecha_fin`, `motivo`), crea índices de rendimiento (`idx_horario_dia_estado`, `idx_bloqueo_rango`) y siembra por única vez (controlado mediante la tabla `Version_esquema`) el horario laboral por defecto de lunes a viernes (09:00–13:00 y 16:00–18:00).
+  - Siembra por única vez (controlado con la clave `esquema.horario_inicial` de `Configuracion`) el horario laboral por defecto de lunes a viernes (09:00–13:00 y 16:00–18:00).
 
 ---
 

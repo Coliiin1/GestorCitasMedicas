@@ -3,26 +3,12 @@ package com.gestor.gestordecitasmedicas.modelo;
 import java.sql.*;
 import java.util.List;
 
-/** Migración aditiva de los formatos ambulatorios; no modifica datos históricos. */
+/** Historial de cambios de los registros clínicos: cada edición o baja archiva la versión anterior. */
 final class MigracionClinica {
     private MigracionClinica() { }
     static void aplicar(Connection con) throws SQLException {
-        agregarColumnas(con, "Administrador", new String[]{"profesion", "especialidad", "registro_especialidad",
-                "nombre_establecimiento", "domicilio_establecimiento"});
-        agregarColumnas(con, "Expediente", new String[]{"tipo_sangre", "tipo_establecimiento", "nombre_establecimiento", "domicilio_establecimiento", "institucion_establecimiento", "propietario", "grupo_etnico", "antecedentes_no_patologicos", "consumo_sustancias", "padecimiento_actual", "interrogatorio_sistemas", "exploracion_fisica", "resultados_estudios", "diagnostico", "pronostico", "indicacion_terapeutica", "autor_historia", "cedula_historia", "fecha_hora_historia", "signos_historia"});
-        agregarColumnas(con, "Consulta", new String[]{"evolucion", "exploracion_fisica", "resultados_estudios", "diagnostico", "pronostico", "indicaciones", "nombre_medico", "cedula_medico", "nombre_paciente", "edad_paciente", "sexo_paciente"});
-        agregarColumnas(con, "Receta", new String[]{"nombre_medico", "cedula_medico", "profesion", "institucion_titulo", "domicilio_medico", "especialidad", "registro_especialidad", "nombre_establecimiento", "domicilio_establecimiento", "nombre_paciente", "edad_paciente", "sexo_paciente", "indicaciones"});
-        agregarColumnas(con, "Detalle_receta", new String[]{"presentacion", "via_administracion", "denominacion_distintiva", "cantidad", "grupo_regulatorio"});
         for (String tabla : new String[]{"Expediente", "Consulta", "Receta", "Detalle_receta", "Signos_vitales"}) {
             conservarVersiones(con, tabla);
-        }
-    }
-    private static void agregarColumnas(Connection con, String tabla, String[] columnas) throws SQLException {
-        List<String> existentes = MigracionAgenda.columnas(con, tabla);
-        try (Statement s = con.createStatement()) {
-            for (String columna : columnas) {
-                if (!existentes.contains(columna)) s.execute("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " TEXT");
-            }
         }
     }
 
@@ -31,11 +17,16 @@ final class MigracionClinica {
         List<String> columnas = MigracionAgenda.columnas(con, tabla);
         String nombres = String.join(", ", columnas);
         String anteriores = columnas.stream().map(c -> "OLD." + c).collect(java.util.stream.Collectors.joining(", "));
+        // Guardar sin cambios no debe llenar el historial de copias idénticas.
+        String cambio = columnas.stream().map(c -> "OLD." + c + " IS NOT NEW." + c)
+                .collect(java.util.stream.Collectors.joining(" OR "));
         try (Statement s = con.createStatement()) {
             s.execute("CREATE TABLE IF NOT EXISTS Version_" + tabla + " AS SELECT *, '' AS archivado_en, '' AS operacion FROM " + tabla + " WHERE 0");
             for (String evento : new String[]{"UPDATE", "DELETE"}) {
                 s.execute("CREATE TRIGGER IF NOT EXISTS version_" + tabla + "_" + evento
-                        + " BEFORE " + evento + " ON " + tabla + " BEGIN INSERT INTO Version_" + tabla
+                        + " BEFORE " + evento + " ON " + tabla
+                        + ("UPDATE".equals(evento) ? " WHEN " + cambio : "")
+                        + " BEGIN INSERT INTO Version_" + tabla
                         + " (" + nombres + ", archivado_en, operacion) VALUES (" + anteriores
                         + ", strftime('%Y-%m-%dT%H:%M:%fZ','now'), '" + evento + "'); END");
             }

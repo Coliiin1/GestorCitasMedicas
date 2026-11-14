@@ -113,7 +113,7 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
             c.campo.setText(admin == null || c.leer.apply(admin) == null ? "" : c.leer.apply(admin));
         }
         txtDirectorio.setText(ControladorPDF.carpetaSalida());
-        txtUsuario.setText(String.valueOf(mainController.idAdministrador()));
+        txtUsuario.setText(mainController.idAdministrador());
         pwdActual.clear();
         pwdNueva.clear();
         pwdConfirmar.clear();
@@ -166,33 +166,21 @@ public class ConfiguracionController implements PanelControlado, PanelRefrescabl
 
     @FXML
     private void onGuardarCredenciales() {
-        int idActual = mainController.idAdministrador();
-        int nuevoId;
-        try {
-            nuevoId = Integer.parseInt(txtUsuario.getText().trim().replaceFirst("^#", ""));
-        } catch (NumberFormatException e) {
-            nuevoId = -1;
-        }
+        String id = mainController.idAdministrador();
         String nueva = pwdNueva.getText();
-        if (nuevoId <= 0) {
-            Notificador.advertencia("Usuario inválido", "El usuario debe ser un número entero positivo.");
+        if (nueva.isEmpty()) {
+            Notificador.info("Sin cambios", "Escribe la nueva contraseña.");
         } else if (!nueva.equals(pwdConfirmar.getText())) {
             Notificador.advertencia("Contraseñas distintas", "La confirmación no coincide con la nueva contraseña.");
-        } else if (nuevoId == idActual && nueva.isEmpty()) {
-            Notificador.info("Sin cambios", "No hay cambios que guardar.");
-        } else if (!"admin".equals(Personal.autenticar(idActual, pwdActual.getText()))) {
+        } else if (!"admin".equals(Personal.autenticar(id, pwdActual.getText()))) {
             Notificador.advertencia("Contraseña incorrecta", "La contraseña actual es incorrecta.");
-        } else if (!Administrador.usuarioDisponible(nuevoId, idActual)) {
-            Notificador.advertencia("Usuario en uso", "El usuario " + nuevoId + " ya está en uso por otra cuenta.");
-        } else if (!Administrador.cambiarCredenciales(idActual, nuevoId, nueva)) {
+        } else if (!Administrador.cambiarContrasena(id, nueva)) {
             Notificador.error("Cambios no guardados", "No se pudieron guardar los cambios.");
         } else {
-            mainController.setIdAdministrador(nuevoId);
             pwdActual.clear();
             pwdNueva.clear();
             pwdConfirmar.clear();
-            Notificador.exito("Acceso actualizado", "Datos de acceso actualizados. Usa el usuario " + nuevoId
-                    + " y la contraseña vigente en el próximo inicio de sesión.");
+            Notificador.exito("Contraseña actualizada", "Usa la nueva contraseña en el próximo inicio de sesión.");
         }
     }
 

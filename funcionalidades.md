@@ -37,7 +37,7 @@ Plan técnico detallado de los pendientes: [Plan de implementación por entregas
 | Editar expediente | Botón Editar → panel integrado → guardar/cancelar | Conectado. Valida el formato de fecha/hora; guarda, recarga y muestra confirmación verde durante cinco segundos. Cancelar no persiste cambios. |
 | Exportar expediente | `exportarPdf` → selector de archivo → `generarExpediente` | Conectado. Usa el expediente cargado y permite elegir destino; no modifica el estado de la cita. |
 
-La navegación actual distingue los roles provisionales `admin` y `asis`: el administrador inicia atención y el asistente queda limitado a agenda, aunque ambos pueden abrir el alta de paciente desde el diálogo de cita. El login decide el rol por el texto ingresado, sin autenticar la contraseña contra SQLite. El menú no ofrece un listado independiente de recetas: el acceso operativo a la consulta parte de una cita.
+La navegación actual distingue los roles provisionales `admin` y `asis`: el administrador inicia atención y el asistente queda limitado a agenda, aunque ambos pueden abrir el alta de paciente desde el diálogo de cita. El login autentica el id de acceso (10 caracteres, p. ej. `PERELOJU01`) y la contraseña contra SQLite (`Personal.autenticar`). El menú no ofrece un listado independiente de recetas: el acceso operativo a la consulta parte de una cita.
 
 ### Hallazgos que impiden declarar el flujo cerrado
 
@@ -83,39 +83,41 @@ Estos hallazgos se documentan como pendientes; esta revisión no los marca corre
 - `CitaRecetaTest`: 3 pruebas de citas/fecha-hora, guardado/actualización de receta y bajas.
 - `ConsultaTest`: 4 pruebas de CRUD, finalización, creación de expediente faltante y rollback.
 - `ExpedienteTest`: 6 pruebas de recarga, aislamiento de pacientes, fechas, PDF, panel de edición, guardar/cancelar y ocultamiento real de la confirmación a los cinco segundos. También comprueba captura/recarga/finalización de la consulta desde JavaFX y carga de datos fijos.
-- `FormatoClinicoTest`: 8 pruebas de validación, atención sin fármacos, persistencia y versiones, rollback, aislamiento entre citas, PDF de una o varias páginas, historia clínica y migración antigua.
+- `FormatoClinicoTest`: 7 pruebas de validación, atención sin fármacos, persistencia y versiones (guardar sin cambios no agrega versiones), rollback, aislamiento entre citas, PDF de una o varias páginas e historia clínica.
 - Se regeneraron y revisaron visualmente la receta de un medicamento (una página), la receta de seis medicamentos (dos páginas), el expediente con historial y la historia completa (dos páginas en los ejemplos). Se comprobaron legibilidad, tablas, continuidad, firma e identificación.
 - Las pruebas usan datos ficticios y la propiedad `gestor.db.url`; no validan los datos reales del médico/establecimiento ni la impresión física y firma. Tampoco comprueban que se transfiera el motivo de recepción o se respeten los signos nuevos al reabrir: esos casos son los pendientes anteriores.
 
 ## Cambios detallados de base de datos y persistencia
 
-### Migración de formatos clínicos
+### Esquema de formatos clínicos
 
-`MigracionClinica.aplicar(Connection)` se ejecuta al abrir la conexión, después de crear las tablas base. Consulta `PRAGMA table_info` y agrega únicamente las columnas que faltan mediante `ALTER TABLE ... ADD COLUMN ... TEXT`. La inicialización y la migración están dentro de una transacción; si fallan se hace rollback y se cierra la conexión fallida. Reabrir una base ya migrada no vuelve a crear esas columnas ni sustituye los datos existentes.
+`BaseDatos.inicializarBaseDatos()` crea el esquema completo en un solo paso, dentro de una transacción, y marca la base con `PRAGMA user_version = 2`. No hay migración entre versiones: una base creada con otro esquema se rechaza al abrir la conexión y hay que borrar el archivo `.db` para regenerarla. `MigracionClinica.aplicar(Connection)` ya no agrega columnas; solo crea las tablas y disparadores de versiones.
 
-Se añadieron **53 columnas TEXT en cinco tablas**. Los valores previos permanecen y las nuevas columnas de filas antiguas pueden quedar `NULL`; la migración no inventa datos clínicos ni del profesional.
+Las columnas de formato clínico son **46 columnas TEXT en cinco tablas** y forman parte de cada `CREATE TABLE`.
 
-| Tabla | Columnas añadidas | Uso |
+| Tabla | Columnas de formato clínico | Uso |
 |---|---|---|
 | `Administrador` (5) | `profesion`, `especialidad`, `registro_especialidad`, `nombre_establecimiento`, `domicilio_establecimiento` | Datos fijos de emisión. Reutiliza `nombre`, apellidos, `cedula`, `institución` y `domicilio` existentes. |
 | `Expediente` (19) | `tipo_establecimiento`, `nombre_establecimiento`, `domicilio_establecimiento`, `institucion_establecimiento`, `propietario`, `grupo_etnico`, `antecedentes_no_patologicos`, `consumo_sustancias`, `padecimiento_actual`, `interrogatorio_sistemas`, `exploracion_fisica`, `resultados_estudios`, `diagnostico`, `pronostico`, `indicacion_terapeutica`, `autor_historia`, `cedula_historia`, `fecha_hora_historia`, `signos_historia` | Historia clínica ambulatoria. Reutiliza antecedentes familiares/personales, alergias y observaciones anteriores. |
-| `Consulta` (11) | `evolucion`, `exploracion_fisica`, `resultados_estudios`, `diagnostico`, `pronostico`, `indicaciones`, `nombre_medico`, `cedula_medico`, `nombre_paciente`, `edad_paciente`, `sexo_paciente` | Nota de evolución y datos de identidad de la atención. Conserva las columnas previas de motivo, padecimiento, observaciones y fecha. |
+| `Consulta` (4) | `evolucion`, `exploracion_fisica`, `resultados_estudios`, `pronostico` | Nota de evolución, junto con motivo, padecimiento, observaciones y fecha. El diagnóstico, las indicaciones, los signos y los datos de médico y paciente no se guardan aquí: `Consulta` los lee de la `Receta` de la misma cita. |
 | `Receta` (13) | `nombre_medico`, `cedula_medico`, `profesion`, `institucion_titulo`, `domicilio_medico`, `especialidad`, `registro_especialidad`, `nombre_establecimiento`, `domicilio_establecimiento`, `nombre_paciente`, `edad_paciente`, `sexo_paciente`, `indicaciones` | Datos impresos guardados con la receta para evitar que cambios posteriores del perfil alteren el documento original. |
 | `Detalle_receta` (5) | `presentacion`, `via_administracion`, `denominacion_distintiva`, `cantidad`, `grupo_regulatorio` | Completa los campos existentes de nombre, concentración, dosis, frecuencia y duración. |
 
-No se renombró `institución` en `Administrador`. El modelo `Medicamento` conserva por compatibilidad el método heredado `getDuradcion`/`setDuradcion`, que corresponde a la columna `duracion`; el formulario muestra “Duración”. Los datos fijos de `Administrador` y los del establecimiento del expediente son almacenamientos separados: no se sincronizan automáticamente.
+No se renombró `institución` en `Administrador`. El modelo `Medicamento` usa `getDuracion`/`setDuracion` para la columna `duracion`. Los datos fijos de `Administrador` y los del establecimiento del expediente son almacenamientos separados: no se sincronizan automáticamente.
 
 ### Versiones anteriores
 
 Se crearon cinco tablas: `Version_Expediente`, `Version_Consulta`, `Version_Receta`, `Version_Detalle_receta` y `Version_Signos_vitales`.
 
-Cada una conserva las columnas de su tabla original y agrega `archivado_en` y `operacion`. Diez disparadores —`version_<Tabla>_UPDATE` y `version_<Tabla>_DELETE`— copian el registro **anterior** antes de actualizarlo o borrarlo. La fecha se registra en UTC y la operación es `UPDATE` o `DELETE`. Las versiones también se revierten si falla la transacción de la que forman parte.
+Cada una conserva las columnas de su tabla original y agrega `archivado_en` y `operacion`. Diez disparadores —`version_<Tabla>_UPDATE` y `version_<Tabla>_DELETE`— copian el registro **anterior** antes de actualizarlo o borrarlo. La fecha se registra en UTC y la operación es `UPDATE` o `DELETE`. El disparador de `UPDATE` solo archiva si alguna columna cambió, así que guardar sin cambios no agrega versiones. Las versiones también se revierten si falla la transacción de la que forman parte.
 
 Las tablas de versiones no tienen las bajas en cascada de los registros operativos; permiten conservar el contenido anterior al reemplazo de detalles y otras bajas. No reconstruyen cambios anteriores a su creación, no registran la identidad autenticada de quien realizó la operación y no constituyen una bitácora inviolable. Aún no hay una pantalla de consulta/restauración de versiones ni una política automatizada de archivo.
 
 ### Relaciones y operaciones
 
-- Se mantienen las relaciones: paciente por CURP → citas/expedientes; consulta → cita/expediente; receta → cita/administrador; medicamentos y signos → receta. No se añadió columna `motivo` a `Cita`.
+- Se mantienen las relaciones: paciente por CURP → citas/expedientes; consulta → cita (su expediente se obtiene por la CURP de la cita; ya no existe `Consulta.id_expediente`); receta → cita/administrador; medicamentos y signos → receta. No se añadió columna `motivo` a `Cita`.
+- El esquema impide duplicados: un expediente por CURP, una consulta y una receta por cita, un registro de signos por receta, un tramo de horario por día y horas, y una sola cita no cancelada por fecha y hora.
+- El id de acceso de `Administrador` y `Asistente` es un texto de 10 caracteres generado por `Personal.generarUsuario` (4 letras del apellido paterno, 2 del materno, 2 del nombre y un consecutivo de 2 dígitos). Dos disparadores impiden que el mismo id exista en ambas tablas.
 - `guardarAtencion(cita, consulta, receta, finalizar)` comprueba la CURP real de la cita y que una receta existente pertenezca a esa cita, resuelve o crea el expediente, guarda los detalles y la nota, y solo si `finalizar` es verdadero actualiza `ATENDIDA`.
 - `finalizarConsulta` permanece como método de conveniencia que llama a `guardarAtencion(..., true)`; la interfaz usa `guardarAtencion` para poder exportar sin finalizar.
 - Al fallar, se hace rollback, se restaura autocommit y se recuperan los identificadores originales de receta, consulta y expediente en los objetos de esa operación.
@@ -303,7 +305,7 @@ Interfaz conectada: `HorarioConfigController`, `AgendaController`, `agenda-panel
 
 - `[x]` Implementar CRUD de horarios bloqueados en `BaseDatos`.
 - `[x]` Bloquear periodos en la agenda y evitar citas en esos horarios.
-- `[x]` Usar rangos de fecha y hora con motivo, independientes de un tramo semanal.
+- `[x]` Usar rangos de fecha y hora, independientes de un tramo semanal.
 - `[x]` Rechazar bloqueos o cambios de horario que dejen citas activas en el periodo.
 
 Interfaz conectada: `HorarioConfigController`, `AgendaController`, `PlanificadorAgenda`, `MigracionAgenda`.
@@ -323,6 +325,15 @@ Interfaz conectada: `HorarioConfigController`, `AgendaController`, `Planificador
 ## Registro de cambios
 
 Las entradas antiguas describen el estado de cada fecha. Para el estado actual y sus límites, prevalecen la revisión de integración y los pendientes de este documento.
+
+### 2026-11-13
+
+- Se auditó la base de datos y se regeneró con un esquema único (`PRAGMA user_version = 2`), sin migración desde esquemas anteriores.
+- Se agregaron restricciones `UNIQUE`, `CHECK` y `NOT NULL` para impedir expedientes, consultas, recetas, signos, horarios y turnos de cita duplicados.
+- El id de acceso pasó de número a texto de 10 caracteres generado con los datos de la persona; el administrador por defecto es `SISTXXAD01`. En Configuración solo se cambia la contraseña.
+- `Consulta` dejó de guardar `id_expediente` y los siete datos que duplicaba de `Receta`; se eliminó `Horario_bloqueado.motivo` y la tabla `Version_esquema`.
+- Los disparadores de versiones ya no archivan guardados sin cambios; `Medicamento.duradcion` se renombró a `duracion`.
+- Total: 47 pruebas.
 
 ### 2026-11-09
 

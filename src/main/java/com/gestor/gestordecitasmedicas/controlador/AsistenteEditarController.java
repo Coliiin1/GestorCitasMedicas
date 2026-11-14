@@ -37,7 +37,7 @@ public class AsistenteEditarController implements PanelControlado {
         asistenteActual = null;
         contrasenaOriginal = null;
         lblTitulo.setText("NUEVO ASISTENTE");
-        txtId.setText("Sin asignar");
+        txtId.setText("Se genera al guardar");
         txtNombre.clear();
         txtApellidoPaterno.clear();
         txtApellidoMaterno.clear();
@@ -50,7 +50,7 @@ public class AsistenteEditarController implements PanelControlado {
         asistenteActual = asistente;
         contrasenaOriginal = asistente.getContrasena();
         lblTitulo.setText("EDITAR ASISTENTE");
-        txtId.setText(String.valueOf(asistente.getIdAsistente()));
+        txtId.setText(asistente.getIdAsistente());
         txtNombre.setText(valor(asistente.getNombre()));
         txtApellidoPaterno.setText(valor(asistente.getApellidoPaterno()));
         txtApellidoMaterno.setText(valor(asistente.getApellidoMaterno()));
