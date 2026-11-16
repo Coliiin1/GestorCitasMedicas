@@ -41,7 +41,7 @@ public class ControladorPDF {
     public static final String CLAVE_CARPETA = "directorio.pdf";
 
     public static String carpetaSalida() {
-        return new BaseDatos().obtenerConfig(CLAVE_CARPETA, "pdf");
+        return new BaseDatos().obtenerConfig(CLAVE_CARPETA, System.getProperty("gestor.pdf", "pdf"));
     }
 
     /** Guarda la carpeta donde se generan los PDF. */

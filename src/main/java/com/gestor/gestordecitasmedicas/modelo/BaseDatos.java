@@ -288,6 +288,8 @@ public class BaseDatos {
     }
 
     private static void insertarAdministradorPorDefecto(Statement stmt) throws SQLException {
+        // La versión instalada nunca tiene admin/admin: el administrador lo captura el instalador.
+        if (Boolean.getBoolean("gestor.instalado")) return;
         try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM Administrador")) {
             if (rs.next() && rs.getInt(1) == 0) {
                 stmt.executeUpdate("INSERT INTO Administrador (id_administrador, " +
@@ -353,6 +355,34 @@ public class BaseDatos {
             }
         } catch (SQLException e) {
             System.err.println("Error al insertar asistente: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean insertarAdministrador(Administrador admin) {
+        Connection con = getConexion();
+        if (con == null || admin == null) {
+            return false;
+        }
+        String sql = "INSERT INTO Administrador (id_administrador, nombre, apellido_paterno, apellido_materno, \"contraseña\") " +
+                "VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            String id = Personal.generarUsuario(admin.getNombre(), admin.getApellidoPaterno(),
+                    admin.getApellidoMaterno(), idsDeAcceso(con));
+            if (id == null) {
+                return false;
+            }
+            ps.setString(1, id);
+            ps.setString(2, valor(admin.getNombre()));
+            ps.setString(3, valor(admin.getApellidoPaterno()));
+            ps.setString(4, admin.getApellidoMaterno());
+            ps.setString(5, admin.getContrasena());
+            if (ps.executeUpdate() > 0) {
+                admin.setIdAdministrador(id);
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al insertar administrador: " + e.getMessage());
         }
         return false;
     }

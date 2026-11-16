@@ -1,6 +1,8 @@
 package com.gestor.gestordecitasmedicas.controlador;
 
+import com.gestor.gestordecitasmedicas.modelo.Administrador;
 import com.gestor.gestordecitasmedicas.modelo.Personal;
+import javafx.application.Platform;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -55,6 +57,34 @@ public class LoginController {
         logo.setClip(redondeoLogo);
         passwordVisible.textProperty().bindBidirectional(password.textProperty());
         iniciarCarrusel();
+        txtUsuario.setText(Ui.ultimoUsuario());
+        if (Boolean.getBoolean("gestor.instalado")) {
+            crearAdministradorInicial();
+        }
+    }
+
+    /** Primer arranque tras instalar: da de alta al administrador que capturó el asistente de instalación. */
+    private void crearAdministradorInicial() {
+        try {
+            String id = Administrador.crearDesdeInstalador(
+                    java.nio.file.Paths.get(System.getProperty("gestor.datos"), "admin-inicial.txt"));
+            if (id != null) {
+                txtUsuario.setText(id);
+                Ui.recordarUsuario(id); // sobrevive aunque cierre el programa sin iniciar sesión
+                // runLater: el aviso necesita la ventana ya visible.
+                Platform.runLater(() -> {
+                    Notificador.exito("Administrador creado", "Tu usuario es " + id + ". Guárdalo para iniciar sesión.");
+                    password.requestFocus();
+                });
+            } else if (Administrador.buscar(null) == null) {
+                Platform.runLater(() -> Notificador.error("Sin administrador",
+                        "No hay un administrador registrado. Vuelve a ejecutar el instalador."));
+            }
+        } catch (IOException | RuntimeException e) {
+            System.err.println("Error al crear el administrador inicial: " + e.getMessage());
+            Platform.runLater(() -> Notificador.error("Administrador no creado",
+                    "No se pudo crear el administrador. Vuelve a ejecutar el instalador."));
+        }
     }
 
     private static final int FOTOS = 5;
@@ -133,6 +163,7 @@ public class LoginController {
             Notificador.advertencia("Acceso denegado", "Usuario o contraseña incorrectos.");
             return;
         }
+        Ui.recordarUsuario(idUsuario);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/gestor/gestordecitasmedicas/main-view.fxml"));
             Parent raiz = loader.load();

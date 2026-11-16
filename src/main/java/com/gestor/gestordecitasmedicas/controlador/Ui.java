@@ -47,6 +47,15 @@ public final class Ui {
         PREFS.putBoolean("modoOscuro", oscuro);
     }
 
+    /** Último id de acceso que entró en este equipo; el login lo precarga para que no se pierda. */
+    static String ultimoUsuario() {
+        return PREFS.get("ultimoUsuario", "");
+    }
+
+    static void recordarUsuario(String idUsuario) {
+        PREFS.put("ultimoUsuario", idUsuario);
+    }
+
     /** Guarda la preferencia y cambia de tema con un fundido: una foto del tema anterior se desvanece sobre el nuevo. */
     static void cambiarTema(boolean oscuro) {
         StackPane capa = capa(); // antes de guardar: crear la capa aplica el tema guardado y la foto saldría ya cambiada

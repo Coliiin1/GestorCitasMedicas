@@ -51,12 +51,8 @@
     -bg-emerald-50: #ecfdf5;
     -bg-emerald-100: #d1fae5;
     -bg-emerald-200: #a7f3d0;
-    -bg-emerald-300: #6ee7b7;
     -bg-amber-50: #fffbeb;
-    -bg-amber-100: #fef3c7;
     -bg-amber-200: #fde68a;
-    -bg-blue-100: #dbeafe;
-    -bg-blue-300: #93c5fd;
 
     -tx-slate-900: #0f172a;
     -tx-slate-800: #1e293b;
@@ -64,7 +60,6 @@
     -tx-slate-600: #475569;
     -tx-slate-500: #64748b;
     -tx-slate-400: #94a3b8;
-    -tx-sky-800: #075985;
     -tx-sky-700: #0369a1;
     -tx-sky-600: #0284c7;
     -tx-rose-700: #be123c;
@@ -73,7 +68,6 @@
     -tx-emerald-800: #065f46;
     -tx-emerald-700: #047857;
     -tx-amber-700: #b45309;
-    -tx-blue-800: #1e40af;
 
     /* Estados de cita (agenda, semáforo, Dashboard): pastel con algo de saturación, sin llegar a neón. */
     -agenda-libre-fondo: #e9f5ee;
@@ -117,7 +111,6 @@
 }
 
 .root {
-    -fx-background-color: -bg-slate-100;
     -fx-font-family: "Manrope";
     -fx-font-size: 13px;
 }
@@ -141,12 +134,8 @@
     -bg-emerald-50: #19261f;
     -bg-emerald-100: #1e3028;
     -bg-emerald-200: #2a4538;
-    -bg-emerald-300: #36594a;
     -bg-amber-50: #29231a;
-    -bg-amber-100: #332b1d;
     -bg-amber-200: #4d3f26;
-    -bg-blue-100: #222c40;
-    -bg-blue-300: #34466b;
 
     -tx-slate-900: #e6e8eb;
     -tx-slate-800: #d3d7dd;
@@ -154,7 +143,6 @@
     -tx-slate-600: #aab1bc;
     -tx-slate-500: #8b93a0;
     -tx-slate-400: #838b98;
-    -tx-sky-800: #9cc3e0;
     -tx-sky-700: #7fb2d9;
     -tx-sky-600: #7fb2d9;
     -tx-rose-700: #e08a96;
@@ -163,7 +151,6 @@
     -tx-emerald-800: #93cdb2;
     -tx-emerald-700: #7cc4a4;
     -tx-amber-700: #d9b36a;
-    -tx-blue-800: #9db8e0;
 
     -agenda-libre-fondo: #1e2622;
     -agenda-libre-hover: #24302a;
@@ -232,7 +219,6 @@
    Sidebar
    --------------------------------------------------------------------- */
 .sidebar {
-    -fx-background-color: -bg-sidebar;
     -fx-background-radius: 12;
 }
 
@@ -280,18 +266,9 @@
     -fx-text-fill: white;
 }
 
-.nav-item:hover .ikonli-font-icon {
-    -fx-icon-color: white;
-}
-
 .nav-item-active,
 .nav-item-active:hover {
-    -fx-background-color: -acento-2;
     -fx-text-fill: white;
-}
-
-.nav-item-active .ikonli-font-icon {
-    -fx-icon-color: white;
 }
 
 .nav-logout {
@@ -302,10 +279,6 @@
 .nav-logout:hover {
     -fx-background-color: -peligro-2;
     -fx-text-fill: white;
-}
-
-.live-dot {
-    -fx-icon-color: #22c55e;
 }
 
 .sidebar-footer {
@@ -356,7 +329,6 @@
 /* ---------------------------------------------------------------------
    Tipografía
    --------------------------------------------------------------------- */
-.title-page,
 .panel-title,
 .h-title,
 .patient-name {
@@ -377,7 +349,6 @@
     -fx-text-fill: -tx-slate-900;
 }
 
-.title-item,
 .card-title,
 .row-name,
 .patient-card-name {
@@ -444,7 +415,6 @@
 /* caption / meta secundaria */
 .caption,
 .hint,
-.caption-blue,
 .list-caption,
 .section-label,
 .cal-head,
@@ -459,11 +429,6 @@
 
 .hint {
     -fx-text-fill: -tx-slate-500;
-}
-
-.caption-blue {
-    -fx-font-weight: bold;
-    -fx-text-fill: -tx-sky-700;
 }
 
 .list-caption {
@@ -519,7 +484,6 @@
 .card-flat,
 .row-card,
 .patient-card,
-.pager-card,
 .edit-card,
 .notice-box {
     -fx-background-color: -bg-white;
@@ -542,14 +506,6 @@
 
 .patient-card {
     -fx-padding: 16;
-}
-
-.patient-card:hover {
-    -fx-border-color: -bg-slate-300;
-}
-
-.pager-card {
-    -fx-padding: 12 16;
 }
 
 .edit-card {
@@ -631,12 +587,6 @@
     -fx-text-fill: -tx-emerald-700;
 }
 
-.chip-blue {
-    -fx-background-color: -bg-blue-100;
-    -fx-border-color: -bg-blue-300;
-    -fx-text-fill: -tx-blue-800;
-}
-
 .chip-amber {
     -fx-background-color: -bg-amber-50;
     -fx-border-color: -bg-amber-200;
@@ -673,10 +623,6 @@
     -fx-icon-color: -tx-emerald-700;
 }
 
-.chip-blue .ikonli-font-icon {
-    -fx-icon-color: -tx-blue-800;
-}
-
 .chip-amber .ikonli-font-icon {
     -fx-icon-color: -tx-amber-700;
 }
@@ -688,12 +634,7 @@
 /* ---------------------------------------------------------------------
    Botones - una sola jerarquía visual
    --------------------------------------------------------------------- */
-.btn-primary,
-.btn-primary-blue,
-.btn-accent,
-.btn-create,
-.btn-save {
-    -fx-background-color: -acento;
+.btn-primary {
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -705,25 +646,11 @@
     -fx-cursor: hand;
 }
 
-.btn-primary:hover,
-.btn-primary-blue:hover,
-.btn-accent:hover,
-.btn-create:hover,
-.btn-save:hover {
-    -fx-background-color: -acento-prof;
-}
-
-.btn-primary .ikonli-font-icon,
-.btn-primary-blue .ikonli-font-icon,
-.btn-accent .ikonli-font-icon,
-.btn-create .ikonli-font-icon,
-.btn-save .ikonli-font-icon {
+.btn-primary .ikonli-font-icon {
     -fx-icon-color: white;
 }
 
-.btn-secondary,
-.btn-outline,
-.btn-dark {
+.btn-secondary {
     -fx-font-family: "Manrope SemiBold";
     -fx-background-color: -bg-white;
     -fx-border-color: -bg-slate-300;
@@ -738,16 +665,7 @@
     -fx-cursor: hand;
 }
 
-.btn-secondary:hover,
-.btn-outline:hover,
-.btn-dark:hover {
-    -fx-background-color: -bg-slate-50;
-    -fx-text-fill: -tx-slate-800;
-}
-
-.btn-secondary .ikonli-font-icon,
-.btn-outline .ikonli-font-icon,
-.btn-dark .ikonli-font-icon {
+.btn-secondary .ikonli-font-icon {
     -fx-icon-color: -tx-slate-600;
 }
 
@@ -770,18 +688,9 @@
     -fx-text-fill: -tx-slate-600;
 }
 
-.btn-edit:hover {
-    -fx-background-color: -bg-slate-50;
-    -fx-text-fill: -tx-slate-800;
-}
-
 .btn-del {
     -fx-border-color: -bg-rose-200;
     -fx-text-fill: -tx-rose-600;
-}
-
-.btn-del:hover {
-    -fx-background-color: -bg-rose-50;
 }
 
 .btn-edit .ikonli-font-icon {
@@ -808,17 +717,12 @@
     -fx-cursor: hand;
 }
 
-.btn-dashed:hover {
-    -fx-background-color: -bg-sky-50;
-}
-
 .btn-dashed .ikonli-font-icon {
     -fx-icon-color: -tx-sky-700;
 }
 
 /* Iconos: 36 x 36, sin fondo hasta hover */
-.btn-icon,
-.icon-button {
+.btn-icon {
     -fx-background-color: transparent;
     -fx-text-fill: -tx-slate-600;
     -fx-background-radius: 8;
@@ -834,56 +738,20 @@
     -fx-cursor: hand;
 }
 
-.btn-icon:hover,
-.icon-button:hover {
+.btn-icon:hover {
     -fx-background-color: -bg-slate-100;
 }
 
-.btn-icon .ikonli-font-icon,
-.icon-button .ikonli-font-icon {
+.btn-icon .ikonli-font-icon {
     -fx-icon-color: -tx-slate-600;
 }
 
-.btn-icon-danger,
-.icon-button-danger {
+.btn-icon-danger {
     -fx-text-fill: -tx-rose-600;
 }
 
-.btn-icon-danger .ikonli-font-icon,
-.icon-button-danger .ikonli-font-icon {
+.btn-icon-danger .ikonli-font-icon {
     -fx-icon-color: -tx-rose-600;
-}
-
-.pager-btn,
-.pager-btn-active {
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-font-size: 12px;
-    -fx-padding: 0 10;
-    -fx-min-height: 32;
-    -fx-pref-height: 32;
-    -fx-cursor: hand;
-}
-
-.pager-btn {
-    -fx-background-color: -bg-white;
-    -fx-border-color: -bg-slate-300;
-    -fx-text-fill: -tx-slate-600;
-}
-
-.pager-btn:hover {
-    -fx-background-color: -bg-slate-50;
-}
-
-.pager-btn-muted {
-    -fx-text-fill: -tx-slate-400;
-}
-
-.pager-btn-active {
-    -fx-background-color: -acento;
-    -fx-border-color: -acento;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
 }
 
 /* ---------------------------------------------------------------------
@@ -1274,15 +1142,6 @@
 /* ---------------------------------------------------------------------
    Listado de pacientes
    --------------------------------------------------------------------- */
-.panel-header {
-    -fx-border-color: transparent transparent -bg-slate-200 transparent;
-    -fx-padding: 0 0 16 0;
-}
-
-.patient-card-name {
-    -fx-font-size: 14px;
-}
-
 .avatar {
     -fx-background-color: -bg-sky-100;
     -fx-text-fill: -tx-sky-700;
@@ -1311,11 +1170,6 @@
     -fx-pref-height: 44;
     -fx-max-height: 44;
     -fx-alignment: CENTER;
-}
-
-.avatar-amber {
-    -fx-background-color: -bg-amber-100;
-    -fx-text-fill: -tx-amber-700;
 }
 
 /* Pestañas del expediente */
@@ -1767,7 +1621,6 @@
 }
 
 .btn-peligro {
-    -fx-background-color: -peligro;
     -fx-text-fill: white;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -1776,10 +1629,6 @@
     -fx-min-height: 40;
     -fx-pref-height: 40;
     -fx-cursor: hand;
-}
-
-.btn-peligro:hover {
-    -fx-background-color: -peligro-2;
 }
 
 .confirm-dialogo .button:focused {
@@ -1810,45 +1659,28 @@
 }
 
 /* Botones: degradado horizontal (sin relieve) y halo de color solo al pasar el cursor o con foco de teclado. */
-.btn-primary,
-.btn-primary-blue,
-.btn-accent,
-.btn-create,
-.btn-save {
+.btn-primary {
     -fx-background-color: linear-gradient(to right, -acento, -acento-2);
 }
 
-.btn-primary:hover,
-.btn-primary-blue:hover,
-.btn-accent:hover,
-.btn-create:hover,
-.btn-save:hover {
+.btn-primary:hover {
     -fx-background-color: linear-gradient(to right, -acento-2, -acento-3);
     -fx-effect: dropshadow(gaussian, -halo, 14, 0, 0, 3);
 }
 
-.btn-primary:pressed,
-.btn-primary-blue:pressed,
-.btn-accent:pressed,
-.btn-create:pressed,
-.btn-save:pressed {
+.btn-primary:pressed {
     -fx-background-color: -acento-prof;
     -fx-effect: null;
 }
 
 .btn-secondary:hover,
-.btn-outline:hover,
-.btn-dark:hover,
-.btn-edit:hover,
-.pager-btn:hover {
+.btn-edit:hover {
     -fx-background-color: -bg-sky-50;
     -fx-border-color: -acento-2;
     -fx-text-fill: -tx-sky-700;
 }
 
 .btn-secondary:hover .ikonli-font-icon,
-.btn-outline:hover .ikonli-font-icon,
-.btn-dark:hover .ikonli-font-icon,
 .btn-edit:hover .ikonli-font-icon {
     -fx-icon-color: -tx-sky-700;
 }
@@ -1877,13 +1709,11 @@
     -fx-effect: dropshadow(gaussian, -halo-peligro, 14, 0, 0, 3);
 }
 
-.btn-icon:hover .ikonli-font-icon,
-.icon-button:hover .ikonli-font-icon {
+.btn-icon:hover .ikonli-font-icon {
     -fx-icon-color: -tx-sky-700;
 }
 
-.btn-icon-danger:hover .ikonli-font-icon,
-.icon-button-danger:hover .ikonli-font-icon {
+.btn-icon-danger:hover .ikonli-font-icon {
     -fx-icon-color: -tx-rose-600;
 }
 
@@ -1894,7 +1724,6 @@
 .card,
 .row-card,
 .patient-card,
-.pager-card,
 .edit-card {
     -fx-background-color: rgba(15, 23, 42, 0.06), -bg-white;
     -fx-background-insets: 0 0 -2 0, 0;
@@ -1929,10 +1758,6 @@
 .avatar,
 .avatar-lg {
     -fx-background-color: linear-gradient(to bottom right, -bg-sky-100, -bg-sky-200);
-}
-
-.avatar-amber {
-    -fx-background-color: linear-gradient(to bottom right, -bg-amber-100, -bg-amber-200);
 }
 
 /* Gráficas con la paleta del sistema */

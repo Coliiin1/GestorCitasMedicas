@@ -11,6 +11,10 @@ public class Administrador extends Personal {
     private String registroEspecialidad;
     private String nombreEstablecimiento;
     private String domicilioEstablecimiento;
+    private String contrasena;
+
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String v) { this.contrasena = v; }
 
     public String getProfesion() { return profesion; }
     public void setProfesion(String v) { this.profesion = v; }
@@ -65,6 +69,48 @@ public class Administrador extends Personal {
     /** Guarda los datos personales y del consultorio. */
     public boolean actualizar() {
         return new BaseDatos().actualizarAdministrador(this);
+    }
+
+    /** Crea la cuenta (el id de acceso se genera aquí); valida como {@link Asistente#validar}. */
+    public boolean registrar() {
+        String n = getNombre() == null ? "" : getNombre().trim();
+        String ap = getApellidoPaterno() == null ? "" : getApellidoPaterno().trim();
+        String am = getApellidoMaterno() == null ? "" : getApellidoMaterno().trim();
+        if (n.isEmpty() || ap.isEmpty() || n.length() > 20 || ap.length() > 20 || am.length() > 20
+                || contrasena == null || contrasena.isEmpty()) {
+            return false;
+        }
+        setNombre(n);
+        setApellidoPaterno(ap);
+        setApellidoMaterno(am);
+        return new BaseDatos().insertarAdministrador(this);
+    }
+
+    /**
+     * Crea el administrador con el archivo que deja el instalador (líneas UTF-8: nombre, apellido paterno,
+     * apellido materno, contraseña) y lo borra. Devuelve el id generado, o null si ya había administrador
+     * o no hay archivo. Si los datos no sirven, conserva el archivo y lanza IllegalStateException.
+     */
+    public static String crearDesdeInstalador(java.nio.file.Path archivo) throws java.io.IOException {
+        if (!java.nio.file.Files.exists(archivo)) return null;
+        if (buscar(null) != null) {
+            java.nio.file.Files.delete(archivo);
+            return null;
+        }
+        java.util.List<String> l = java.nio.file.Files.readAllLines(archivo, java.nio.charset.StandardCharsets.UTF_8);
+        if (!l.isEmpty() && l.get(0).startsWith("﻿")) l.set(0, l.get(0).substring(1));
+        Administrador a = new Administrador();
+        if (l.size() >= 4) {
+            a.setNombre(l.get(0));
+            a.setApellidoPaterno(l.get(1));
+            a.setApellidoMaterno(l.get(2));
+            a.setContrasena(l.get(3));
+        }
+        if (!a.registrar()) {
+            throw new IllegalStateException("No se pudo crear el administrador con los datos del instalador.");
+        }
+        java.nio.file.Files.delete(archivo);
+        return a.getIdAdministrador();
     }
 
     /** El id de acceso se genera al crear la cuenta y no cambia; solo la contraseña es editable. */

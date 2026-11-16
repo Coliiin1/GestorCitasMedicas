@@ -176,7 +176,7 @@ public class ControladorCorreo {
     }
 
     private void cargarArchivo(Properties propiedades) {
-        File archivo = new File(ARCHIVO_CONFIGURACION);
+        File archivo = new File(System.getProperty("gestor.datos", "."), ARCHIVO_CONFIGURACION);
         if (archivo.isFile()) {
             try (InputStream entrada = new FileInputStream(archivo)) {
                 propiedades.load(entrada);
